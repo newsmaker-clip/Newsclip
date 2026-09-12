@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Clipping Maker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dhurjati&family=Gidugu&family=Mallanna&family=Mandali&family=NTR&family=Peddana&family=Ponnala&family=Ramabhadra&family=Sree+Krushnadevaraya&family=Suravaram&family=TenaliRamakrishna&family=Tiro+Telugu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ఇక్కడ CSS కోడ్ వస్తుంది */
+        body { font-family: 'Mandali', sans-serif; background-color: #e9ecef; margin: 0; padding: 0; }
+        .app-container { display: flex; height: 100vh; overflow: hidden; }
+        .controls-panel { width: 400px; background: #fff; padding: 15px; overflow-y: auto; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }
+        .controls-panel h2 { font-size: 20px; color: #111; border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-top:0; }
+        .tool-section { background: #f8f9fa; padding: 12px; margin-bottom: 15px; border-radius: 5px; border: 1px solid #ddd; }
+        .tool-section h3 { font-size: 15px; margin: 0 0 10px 0; color: #333; }
+        .controls-panel label { display: block; font-size: 12px; font-weight: bold; margin-top: 10px; color: #444; }
+        .controls-panel input[type="text"], .controls-panel textarea, .controls-panel select, .controls-panel input[type="file"] { width: 100%; padding: 6px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .controls-panel input[type="range"] { width: 100%; margin-top: 5px; }
+        .flex-row { display: flex; gap: 10px; margin-top: 5px; align-items: center; }
+        .flex-row select { flex-grow: 1; margin-top: 0; }
+        .download-btn { width: 100%; background: #28a745; color: #fff; padding: 15px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 5px; margin-bottom: 30px; }
+        .preview-panel { flex-grow: 1; padding: 30px; display: flex; justify-content: center; align-items: flex-start; overflow-y: auto; background-color: #555; }
+        .newspaper-wrapper { background-color: #ffffff; width: 800px; border: 2px solid #000; padding: 10px; box-shadow: 5px 5px 20px rgba(0,0,0,0.5); box-sizing: border-box; transition: width 0.3s; }
+        .paper-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px;}
+        .paper-header img { max-width: 100%; max-height: 120px; object-fit: contain; }
+        .overall-wrap-none { padding: 0; background: transparent; border: none; }
+        .overall-wrap-active { padding: 15px; border: 1px solid #999; border-radius: 4px; }
+        .sub-headline { text-align: center; color: #cc0000; font-size: 18px; margin-bottom: 5px; font-family: 'Mandali', sans-serif; line-height: 1.3;}
+        .main-headline-box { background-color: #002b80; color: #ffffff; text-align: center; font-family: 'Ramabhadra', sans-serif; font-size: 36px; line-height: 1.2; padding: 8px 10px; margin: 0 0 10px 0; border: 1px solid #000; }
+        .main-headline-text { background-color: transparent !important; color: #002b80; text-align: center; font-family: 'Ramabhadra', sans-serif; font-size: 36px; line-height: 1.2; padding: 8px 0; margin: 0 0 10px 0; border: none !important; }
+        .image-container { text-align: center; display: block; box-sizing: border-box; margin-bottom:10px; }
+        .image-container img { width: 100%; height: auto; border: 1px solid #000; display: block; }
+        .caption { font-size: 12px; font-weight: bold; margin-top: 3px; color: #222; text-align: center; }
+        .stamp-container { display: block; box-sizing: border-box; margin: 10px; shape-outside: circle(50%); border-radius: 50%; overflow: hidden; }
+        .stamp-container img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .img-block { display: block; margin: 0 auto 15px auto !important; clear: both; }
+        .img-float-left { float: left; margin: 0 15px 10px 0 !important; }
+        .img-float-right { float: right; margin: 0 0 10px 15px !important; }
+        .stamp-center { float: left; margin: 10px auto; }
+        .news-body { column-count: 2; column-gap: 20px; column-rule: 1px solid #bbb; text-align: justify; font-size: 17px; line-height: 1.5; font-family: 'Tiro Telugu', serif; color: #111; margin-top: 10px; }
+        .news-body p { margin: 0 0 10px 0; text-indent: 25px; }
+        .news-body p::after { content: ""; display: table; clear: none; }
+        @media (max-width: 900px) { .app-container { flex-direction: column; overflow: auto;} .controls-panel { width: 100%; } .newspaper-wrapper { transform: scale(0.9); transform-origin: top center;} }
+    </style>
+</head>
+<body>
+    <!-- ఇక్కడ HTML కోడ్ వస్తుంది -->
+    <div class="app-container">
+      <div class="controls-panel">
+        <h2>🛠️ క్లిప్పింగ్ టూల్స్</h2>
+        <div class="tool-section">
+          <label style="color:#002b80; font-size:14px;"><b>క్లిప్పింగ్ వెడల్పు (Width):</b> <span id="val-wrap-w">800</span>px</label>
+          <input type="range" id="in-wrap-w" min="500" max="2000" value="800">
+        </div>
+        <div class="tool-section">
+          <h3>1. ఓవరాల్ బ్యాక్‌గ్రౌండ్</h3>
+          <label><input type="checkbox" id="in-overall-box-check"> వార్త మొత్తానికి లైట్ కలర్ బాక్స్ కావాలా?</label>
+          <input type="color" id="in-overall-color" value="#fcfad9">
+        </div>
+        <div class="tool-section">
+          <h3>2. పత్రిక లోగో సెట్టింగ్స్</h3>
+          <label style="color:#d32f2f">లోగో ఏ రకంగా కావాలి?</label>
+          <select id="in-logo-type">
+            <option value="top">టాప్ హెడ్డింగ్ లోగో (Top Header)</option>
+            <option value="stamp">మధ్యలో రౌండ్ సీల్ స్టాంప్ (Round Stamp in Text)</option>
+          </select>
+          <div id="top-logo-controls">
+            <label>టాప్ హెడ్డింగ్ లోగో అప్‌లోడ్:</label>
+            <input type="file" id="in-logo-top" accept="image/*">
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc;">
+              <label><input type="checkbox" id="in-logo-line-check" checked> లోగో కింద గీత (Divider Line) కావాలా?</label>
+              <div id="logo-line-color-wrap" style="display: block; margin-top: 5px;">
+                <label>గీత రంగు:</label>
+                <input type="color" id="in-logo-line-color" value="#000000">
+              </div>
+            </div>
+          </div>
+          <div id="stamp-logo-controls" style="display:none; background:#ffefef; padding:10px; border:1px solid #f9c2c2; margin-top:10px; border-radius:5px;">
+            <label>రౌండ్ స్టాంప్ లోగో అప్‌లోడ్:</label>
+            <input type="file" id="in-logo-stamp" accept="image/*">
+            <label>అలైన్‌మెంట్ (ఎటువైపు ఉండాలి):</label>
+            <select id="stamp-align">
+              <option value="center">మధ్యలో (Center / Left margin)</option>
+              <option value="left">ఎడమ వైపు (Left)</option>
+              <option value="right">కుడి వైపు (Right)</option>
+            </select>
+            <label>సైజు (వెడల్పు %):</label>
+            <input type="range" id="stamp-w" min="10" max="100" value="30">
+            <label>టెక్స్ట్‌లో స్థానం (Position %):</label>
+            <input type="range" id="stamp-para-pos" min="0" max="100" value="50">
+          </div>
+        </div>
+        <div class="tool-section">
+          <h3>3. ఉప శీర్షిక (Sub Headline)</h3>
+          <input type="text" id="in-sub-headline" value="వేలాది మందికి ఉపాధి అవకాశాలు • అధికారుల హర్షం">
+          <div class="flex-row">
+            <select id="in-sub-font">
+              <option value="'Mandali', sans-serif">Mandali (నార్మల్)</option>
+              <option value="'Ramabhadra', sans-serif">Ramabhadra (బోల్డ్)</option>
+              <option value="'Mallanna', sans-serif">Mallanna</option>
+              <option value="'Dhurjati', sans-serif">Dhurjati</option>
+              <option value="'TenaliRamakrishna', sans-serif">TenaliRamakrishna</option>
+              <option value="'Gidugu', sans-serif">Gidugu</option>
+              <option value="'Suravaram', sans-serif">Suravaram</option>
+            </select>
+            <input type="color" id="in-sub-color" value="#cc0000">
+          </div>
+          <label>సైజు: <span id="val-sub-size">18</span>px</label>
+          <input type="range" id="in-sub-size" min="12" max="40" value="18">
+        </div>
+        <div class="tool-section">
+          <h3>4. ప్రధాన శీర్షిక (Main Headline)</h3>
+          <textarea id="in-main-headline" rows="2">నగరంలో ఘనంగా ప్రారంభమైన నూతన ప్రాజెక్ట్</textarea>
+          <div class="flex-row">
+            <select id="in-main-font">
+              <option value="'Ramabhadra', sans-serif">Ramabhadra (బోల్డ్)</option>
+              <option value="'Dhurjati', sans-serif">Dhurjati (పొడవుగా)</option>
+              <option value="'Mallanna', sans-serif">Mallanna</option>
+              <option value="'TenaliRamakrishna', sans-serif">TenaliRamakrishna</option>
+              <option value="'Gidugu', sans-serif">Gidugu</option>
+              <option value="'Suravaram', sans-serif">Suravaram</option>
+              <option value="'Mandali', sans-serif">Mandali</option>
+            </select>
+            <input type="color" id="in-main-color" value="#002b80">
+          </div>
+          <label>సైజు: <span id="val-main-size">36</span>px</label>
+          <input type="range" id="in-main-size" min="20" max="60" value="36">
+          <label><input type="checkbox" id="in-main-bg-check" checked> వెనుక కలర్ బాక్స్ కావాలా?</label>
+          <input type="color" id="in-main-bg-color" value="#002b80">
+        </div>
+        <div class="tool-section">
+          <h3>5. ఇమేజెస్ (2 Photos)</h3>
+          <label><b>ఇమేజ్ 1:</b></label>
+          <input type="file" id="in-image-1" accept="image/*">
+          <label><input type="checkbox" id="check-cap-1" checked> క్యాప్షన్ కావాలా?</label>
+          <input type="text" id="in-caption-1" value="కార్యక్రమంలో పాల్గొన్న నాయకులు">
+          <label style="color:#d32f2f">అలైన్‌మెంట్:</label>
+          <select id="img-align-1">
+            <option value="top">పైన సెంటర్లో (Top Center)</option>
+            <option value="left">ఎడమవైపు (Left Wrap)</option>
+            <option value="right">కుడివైపు (Right Wrap)</option>
+          </select>
+          <label>టెక్స్ట్‌లో స్థానం (Position 0% to 100%):</label> 
+          <input type="range" id="img-para-1" min="0" max="100" value="0">
+          <label>వెడల్పు (%):</label> <input type="range" id="img-w-1" min="20" max="100" value="100">
+          <hr style="margin:15px 0; border:0; border-top:1px dashed #ccc;">
+          <label><b>ఇమేజ్ 2:</b> <span style="color:#d32f2f; font-size:12px;">(కుడి కాలమ్‌కి ఫిక్స్ చేయబడింది)</span></label>
+          <input type="file" id="in-image-2" accept="image/*">
+          <label><input type="checkbox" id="check-cap-2"> క్యాప్షన్ కావాలా?</label>
+          <input type="text" id="in-caption-2" value="మరొక దృశ్యం">
+          <input type="hidden" id="img-align-2" value="right">
+          <label>టెక్స్ట్‌లో స్థానం (Position 0% to 100%):</label> 
+          <input type="range" id="img-para-2" min="0" max="100" value="50">
+          <label>వెడల్పు (%):</label> <input type="range" id="img-w-2" min="20" max="100" value="50">
+        </div>
+        <div class="tool-section">
+          <h3>6. వార్త మేటర్ (News Text)</h3>
+          <label>కాలమ్స్ సంఖ్య:</label>
+          <select id="in-columns">
+            <option value="1">1 కాలమ్</option>
+            <option value="2" selected>2 కాలమ్స్</option>
+            <option value="3">3 కాలమ్స్</option>
+            <option value="4">4 కాలమ్స్</option>
+          </select>
+          <label>మేటర్ ఫాంట్ స్టైల్:</label>
+          <select id="in-body-font">
+            <option value="'Tiro Telugu', serif">Tiro Telugu (క్లాసిక్ న్యూస్)</option>
+            <option value="'NTR', sans-serif">NTR</option>
+            <option value="'Sree Krushnadevaraya', serif">Sree Krushnadevaraya</option>
+            <option value="'Ponnala', sans-serif">Ponnala</option>
+            <option value="'Peddana', serif">Peddana</option>
+            <option value="'Mandali', sans-serif">Mandali</option>
+          </select>
+          <label>అక్షరాల సైజు: <span id="val-body-size">17</span>px</label>
+          <input type="range" id="in-body-size" min="12" max="25" value="17">
+          <label>లైన్ గ్యాప్: <span id="val-body-lh">1.5</span></label>
+          <input type="range" id="in-body-lh" min="1.0" max="2.5" step="0.1" value="1.5">
+          <textarea id="in-news-body" rows="8">నగర అభివృద్ధిలో భాగంగా ప్రభుత్వం చేపట్టిన ఈ నూతన ప్రాజెక్ట్ శరవేగంగా పూర్తయింది. ఈ కార్యక్రమానికి స్థానిక నాయకులు, ప్రజలు పెద్ద ఎత్తున హాజరయ్యారు.
+    
+ఈ ప్రాజెక్ట్ ద్వారా రాబోయే రోజుల్లో యువతకు మెండుగా ఉపాధి అవకాశాలు లభిస్తాయని అధికారులు స్పష్టం చేశారు. స్థానికుల నుంచి ఈ ప్రాజెక్టుకు విశేష స్పందన లభిస్తోంది. 
+    
+నూతన సాంకేతిక పరిజ్ఞానంతో నిర్మించిన ఈ కేంద్రం రాష్ట్రానికే తలమానికంగా నిలవనుందని వారు పేర్కొన్నారు. యువతకు సరైన శిక్షణ అందించి ఐటీ రంగంలో మరింత ముందుకు తీసుకెళ్లేందుకు ఈ ప్రాజెక్ట్ ఉపయోగపడుతుంది.</textarea>
+        </div>
+        <button id="main-download-btn" class="download-btn" onclick="downloadClipping()">⬇️ ఇమేజ్‌గా డౌన్‌లోడ్ చేయండి (HD JPG)</button>
+      </div>
+    
+      <div class="preview-panel">
+        <div class="newspaper-wrapper" id="capture-area">
+          <div class="paper-header" id="out-header-top">
+            <img id="out-logo-top" src="https://via.placeholder.com/600x100?text=Upload+Your+Newspaper+Logo" alt="Paper Logo">
+          </div>
+          <div id="out-overall-wrap" class="overall-wrap-none">
+            <div class="sub-headline" id="out-sub-headline">వేలాది మందికి ఉపాధి అవకాశాలు • అధికారుల హర్షం</div>
+            <div class="main-headline-box" id="out-main-headline">నగరంలో ఘనంగా ప్రారంభమైన నూతన ప్రాజెక్ట్</div>
+            <div id="image-storage" style="display:none;">
+               <div class="image-container img-block" id="out-image-container-1">
+                  <img id="out-image-1" src="https://via.placeholder.com/800x400?text=Upload+News+Photo+1">
+                  <div class="caption" id="out-caption-1">కార్యక్రమంలో పాల్గొన్న నాయకులు</div>
+               </div>
+               <div class="image-container img-block" id="out-image-container-2">
+                  <img id="out-image-2" src="https://via.placeholder.com/400x300?text=Photo+2">
+                  <div class="caption" id="out-caption-2" style="display:none;">మరొక దృశ్యం</div>
+               </div>
+               <div class="stamp-container img-block" id="out-stamp-container">
+                  <img id="out-logo-stamp" src="https://via.placeholder.com/200x200?text=Round+Seal">
+               </div>
+            </div>
+            <div id="top-image-dock"></div> 
+            <div class="news-body" id="out-news-body">
+              <div id="news-text-content"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ఇక్కడ JS కోడ్ వస్తుంది -->
+    <script>
+        function bindText(inId, outId, isHtml = false) {
+          document.getElementById(inId).addEventListener('input', function() {
+            if(isHtml) document.getElementById(outId).innerHTML = this.value.replace(/\n/g, '<br>');
+            else document.getElementById(outId).innerText = this.value;
+          });
+        }
+        
+        bindText('in-sub-headline', 'out-sub-headline');
+        bindText('in-main-headline', 'out-main-headline', true);
+        bindText('in-caption-1', 'out-caption-1');
+        bindText('in-caption-2', 'out-caption-2');
+        
+        document.getElementById('in-wrap-w').addEventListener('input', function() {
+          document.getElementById('val-wrap-w').innerText = this.value;
+          document.getElementById('capture-area').style.width = this.value + 'px';
+        });
+        
+        document.getElementById('in-overall-box-check').addEventListener('change', updateOverallBox);
+        document.getElementById('in-overall-color').addEventListener('input', updateOverallBox);
+        function updateOverallBox() {
+          let wrap = document.getElementById('out-overall-wrap');
+          if(document.getElementById('in-overall-box-check').checked) {
+            wrap.className = 'overall-wrap-active';
+            wrap.style.backgroundColor = document.getElementById('in-overall-color').value;
+          } else {
+            wrap.className = 'overall-wrap-none';
+            wrap.style.backgroundColor = 'transparent';
+          }
+        }
+        
+        let isStampMode = false;
+        let stampUploaded = false;
+        
+        document.getElementById('in-logo-type').addEventListener('change', function() {
+          if(this.value === 'stamp') {
+            document.getElementById('top-logo-controls').style.display = 'none';
+            document.getElementById('stamp-logo-controls').style.display = 'block';
+            document.getElementById('out-header-top').style.display = 'none';
+            isStampMode = true;
+          } else {
+            document.getElementById('top-logo-controls').style.display = 'block';
+            document.getElementById('stamp-logo-controls').style.display = 'none';
+            document.getElementById('out-header-top').style.display = 'block';
+            isStampMode = false;
+          }
+          rebuildNewsBody(); 
+        });
+        
+        let logoLineCheck = document.getElementById('in-logo-line-check');
+        let logoLineColor = document.getElementById('in-logo-line-color');
+        let logoLineControlDiv = document.getElementById('logo-line-color-wrap');
+        let outHeaderTop = document.getElementById('out-header-top');
+        
+        function updateLogoLine() {
+          if (logoLineCheck.checked) {
+            logoLineControlDiv.style.display = 'block';
+            outHeaderTop.style.borderBottom = `2px solid ${logoLineColor.value}`;
+          } else {
+            logoLineControlDiv.style.display = 'none';
+            outHeaderTop.style.borderBottom = 'none';
+          }
+        }
+        logoLineCheck.addEventListener('change', updateLogoLine);
+        logoLineColor.addEventListener('input', updateLogoLine);
+        updateLogoLine();
+        
+        document.getElementById('in-logo-top').addEventListener('change', function(e) {
+          if(e.target.files && e.target.files[0]) {
+            let reader = new FileReader();
+            reader.onload = e => document.getElementById('out-logo-top').src = e.target.result;
+            reader.readAsDataURL(e.target.files[0]);
+          }
+        });
+        
+        document.getElementById('in-logo-stamp').addEventListener('change', function(e) {
+          if(e.target.files && e.target.files[0]) {
+            let reader = new FileReader();
+            reader.onload = e => {
+              document.getElementById('out-logo-stamp').src = e.target.result;
+              stampUploaded = true;
+              rebuildNewsBody();
+            }
+            reader.readAsDataURL(e.target.files[0]);
+          }
+        });
+        document.getElementById('stamp-align').addEventListener('change', rebuildNewsBody);
+        document.getElementById('stamp-w').addEventListener('input', function() {
+          document.getElementById('out-stamp-container').style.width = this.value + '%';
+          document.getElementById('out-stamp-container').style.height = document.getElementById('out-stamp-container').offsetWidth + 'px'; 
+        });
+        document.getElementById('stamp-para-pos').addEventListener('input', rebuildNewsBody);
+        
+        document.getElementById('in-sub-font').addEventListener('change', e => document.getElementById('out-sub-headline').style.fontFamily = e.target.value);
+        document.getElementById('in-sub-color').addEventListener('input', e => document.getElementById('out-sub-headline').style.color = e.target.value);
+        document.getElementById('in-sub-size').addEventListener('input', function() {
+          document.getElementById('val-sub-size').innerText = this.value;
+          document.getElementById('out-sub-headline').style.fontSize = this.value + 'px';
+        });
+        
+        document.getElementById('in-main-font').addEventListener('change', e => document.getElementById('out-main-headline').style.fontFamily = e.target.value);
+        document.getElementById('in-main-size').addEventListener('input', function() {
+          document.getElementById('val-main-size').innerText = this.value;
+          document.getElementById('out-main-headline').style.fontSize = this.value + 'px';
+        });
+        function updateMainHeadlineBox() {
+          let hl = document.getElementById('out-main-headline');
+          let txtColor = document.getElementById('in-main-color').value;
+          let bgColor = document.getElementById('in-main-bg-color').value;
+          let isBox = document.getElementById('in-main-bg-check').checked;
+          if (isBox) {
+            hl.className = 'main-headline-box';
+            hl.style.backgroundColor = bgColor;
+            hl.style.color = txtColor === '#002b80' ? '#ffffff' : txtColor; 
+          } else {
+            hl.className = 'main-headline-text';
+            hl.style.backgroundColor = 'transparent';
+            hl.style.color = txtColor;
+          }
+        }
+        document.getElementById('in-main-color').addEventListener('input', updateMainHeadlineBox);
+        document.getElementById('in-main-bg-color').addEventListener('input', updateMainHeadlineBox);
+        document.getElementById('in-main-bg-check').addEventListener('change', updateMainHeadlineBox);
+        
+        let imgState = {
+          1: { uploaded: false, align: 'top' },
+          2: { uploaded: false, align: 'right' }
+        };
+        
+        function setupImageControl(imgNum) {
+          document.getElementById(`in-image-${imgNum}`).addEventListener('change', function(e) {
+            if(e.target.files && e.target.files[0]) {
+              let reader = new FileReader();
+              reader.onload = event => {
+                document.getElementById(`out-image-${imgNum}`).src = event.target.result;
+                imgState[imgNum].uploaded = true;
+                rebuildNewsBody();
+              }
+              reader.readAsDataURL(e.target.files[0]);
+            }
+          });
+          
+          document.getElementById(`check-cap-${imgNum}`).addEventListener('change', function() {
+            document.getElementById(`out-caption-${imgNum}`).style.display = this.checked ? 'block' : 'none';
+          });
+          
+          document.getElementById(`img-w-${imgNum}`).addEventListener('input', function(){
+            document.getElementById(`out-image-container-${imgNum}`).style.width = this.value + '%';
+          });
+          
+          let alignEl = document.getElementById(`img-align-${imgNum}`);
+          if(alignEl) {
+            alignEl.addEventListener('change', function() {
+              imgState[imgNum].align = this.value;
+              rebuildNewsBody();
+            });
+          }
+          
+          document.getElementById(`img-para-${imgNum}`).addEventListener('input', rebuildNewsBody);
+        }
+        setupImageControl(1);
+        setupImageControl(2);
+        
+        document.getElementById('in-body-font').addEventListener('change', e => document.getElementById('out-news-body').style.fontFamily = e.target.value);
+        document.getElementById('in-columns').addEventListener('change', e => document.getElementById('out-news-body').style.columnCount = e.target.value);
+        document.getElementById('in-body-size').addEventListener('input', function() {
+          document.getElementById('val-body-size').innerText = this.value;
+          document.getElementById('out-news-body').style.fontSize = this.value + 'px';
+        });
+        document.getElementById('in-body-lh').addEventListener('input', function() {
+          document.getElementById('val-body-lh').innerText = this.value;
+          document.getElementById('out-news-body').style.lineHeight = this.value;
+        });
+        
+        let rawNewsText = "";
+        document.getElementById('in-news-body').addEventListener('input', function() {
+          rawNewsText = this.value;
+          rebuildNewsBody();
+        });
+        rawNewsText = document.getElementById('in-news-body').value;
+        
+        function rebuildNewsBody() {
+          let rawParagraphs = rawNewsText.split('\n').filter(p => p.trim() !== '');
+          if (rawParagraphs.length === 0) rawParagraphs = [""];
+          
+          let containerNode = document.getElementById('news-text-content');
+          let topDock = document.getElementById('top-image-dock');
+          let storage = document.getElementById('image-storage');
+          
+          ['out-image-container-1', 'out-image-container-2', 'out-stamp-container'].forEach(id => {
+            let el = document.getElementById(id);
+            if(el) storage.appendChild(el);
+          });
+          
+          containerNode.innerHTML = '';
+          topDock.innerHTML = '';
+          
+          function prepElement(elId, align) {
+            let el = document.getElementById(elId);
+            if(!el) return null;
+            el.classList.remove('img-block', 'img-float-left', 'img-float-right');
+            el.style.display = 'block'; 
+            if(align === 'top' && elId !== 'out-stamp-container') {
+              el.classList.add('img-block');
+              topDock.appendChild(el);
+              return null;
+            }
+            if(align === 'left') el.classList.add('img-float-left');
+            else if(align === 'right') el.classList.add('img-float-right');
+            else if(align === 'center' && elId === 'out-stamp-container') {
+                el.classList.add('img-float-left');
+                el.style.margin = "10px 15px 10px 15px";
+            }
+            return el;
+          }
+        
+          let el1 = (imgState[1].uploaded || document.getElementById('out-image-1').src.includes("via.placeholder")) ? prepElement('out-image-container-1', imgState[1].align) : null;
+          let align2 = document.getElementById('img-align-2') ? document.getElementById('img-align-2').value : 'right';
+          let el2 = (imgState[2].uploaded) ? prepElement('out-image-container-2', align2) : null;
+          let elStamp = (isStampMode && stampUploaded) ? prepElement('out-stamp-container', document.getElementById('stamp-align').value) : null;
+        
+          if(elStamp) {
+            setTimeout(() => {
+                let stampEl = document.getElementById('out-stamp-container');
+                if(stampEl) stampEl.style.height = stampEl.offsetWidth + 'px';
+            }, 50);
+          }
+        
+          let totalWords = 0;
+          rawParagraphs.forEach(p => { totalWords += p.split(/\s+/).filter(w=>w.length>0).length; });
+        
+          let pos1 = el1 ? parseInt(document.getElementById('img-para-1').value) : 0;
+          let pos2 = el2 ? parseInt(document.getElementById('img-para-2').value) : 50;
+          let posStamp = elStamp ? parseInt(document.getElementById('stamp-para-pos').value) : 50;
+          
+          let targetWord1 = Math.floor(totalWords * (pos1 / 100));
+          let targetWord2 = Math.floor(totalWords * (pos2 / 100));
+          let targetWordStamp = Math.floor(totalWords * (posStamp / 100));
+          
+          let injections = [];
+          if(el1) injections.push({ idx: targetWord1, el: el1 });
+          if(el2) injections.push({ idx: targetWord2, el: el2 });
+          if(elStamp) injections.push({ idx: targetWordStamp, el: elStamp });
+          
+          let currentWordIndex = 0;
+          
+          rawParagraphs.forEach((text, pIdx) => {
+            let pNode = document.createElement('p');
+            let words = text.split(/\s+/).filter(w=>w.length>0);
+            
+            if(words.length === 0) {
+                let injectHere = injections.filter(inj => inj.idx === currentWordIndex);
+                injectHere.forEach(inj => pNode.appendChild(inj.el));
+            } else {
+                let currentText = "";
+                for(let i=0; i<words.length; i++) {
+                    let injectHere = injections.filter(inj => inj.idx === currentWordIndex);
+                    if(injectHere.length > 0) {
+                        if(currentText !== "") {
+                            pNode.appendChild(document.createTextNode(currentText));
+                            currentText = "";
+                        }
+                        injectHere.forEach(inj => pNode.appendChild(inj.el));
+                    }
+                    currentText += words[i] + " ";
+                    currentWordIndex++;
+                }
+                if(currentText !== "") pNode.appendChild(document.createTextNode(currentText));
+            }
+            
+            if (pIdx === rawParagraphs.length - 1) {
+                let endInjections = injections.filter(inj => inj.idx >= totalWords);
+                endInjections.forEach(inj => pNode.appendChild(inj.el));
+            }
+            
+            containerNode.appendChild(pNode);
+          });
+        }
+        rebuildNewsBody();
+        
+        function downloadClipping() {
+          const btn = document.getElementById('main-download-btn');
+          const originalText = btn.innerText;
+          btn.innerText = "⏳ డౌన్‌లోడ్ అవుతోంది...";
+          btn.style.backgroundColor = "#ff9800"; 
+          
+          setTimeout(() => {
+            window.scrollTo(0, 0); 
+            const element = document.getElementById('capture-area');
+            const oldTransform = element.style.transform;
+            element.style.transform = 'none'; 
+            
+            html2canvas(element, { 
+                scale: 3, 
+                useCORS: true, 
+                backgroundColor: "#ffffff", 
+                logging: false 
+            }).then(canvas => {
+                let link = document.createElement('a');
+                link.download = 'Ultra_HD_Clipping.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+                
+                element.style.transform = oldTransform;
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "#28a745";
+            }).catch(err => {
+                alert("డౌన్‌లోడ్ లో ఎర్రర్ వచ్చింది.");
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "#28a745";
+            });
+          }, 10); 
+        }
+    </script>
+</body>
+</html>
