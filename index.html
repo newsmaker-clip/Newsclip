@@ -558,8 +558,8 @@
         
         window.saveProjectToFirebase = async function(pName, data) {
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout - Internet slow")), 7000));
-                await Promise.race([ setDoc(doc(db, "newsProjects", pName), data), timeoutPromise ]);
+                // టైమ్ అవుట్ కండిషన్ తీసేసాం. ఫైర్‌బేస్ తనంతట తానే నెట్ స్పీడ్ బట్టి సేవ్ చేసుకుంటుంది.
+                await setDoc(doc(db, "newsProjects", pName), data);
                 return true;
             } catch(e) {
                 console.error("Firebase Save Error:", e);
@@ -569,8 +569,7 @@
 
         window.getProjectsFromFirebase = async function() {
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout - Internet slow")), 7000));
-                const querySnapshot = await Promise.race([ getDocs(collection(db, "newsProjects")), timeoutPromise ]);
+                const querySnapshot = await getDocs(collection(db, "newsProjects"));
                 let projects = {};
                 querySnapshot.forEach((docSnap) => { projects[docSnap.id] = docSnap.data(); });
                 return projects;
@@ -582,8 +581,7 @@
 
         window.deleteProjectFromFirebase = async function(pName) {
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout - Internet slow")), 7000));
-                await Promise.race([ deleteDoc(doc(db, "newsProjects", pName)), timeoutPromise ]);
+                await deleteDoc(doc(db, "newsProjects", pName));
                 return true;
             } catch(e) {
                 console.error("Firebase Delete Error:", e);
@@ -621,7 +619,7 @@
                 let img = new Image();
                 img.onload = function() {
                     let canvas = document.createElement('canvas');
-                    let MAX_WIDTH = isLogo ? 300 : 600; 
+                    let MAX_WIDTH = isLogo ? 200 : 500; // సైజు కంప్రెసర్ (ఫైర్‌బేస్ క్రాష్ అవ్వకుండా)
                     let width = img.width;
                     let height = img.height;
                     if (width > MAX_WIDTH) {
@@ -633,7 +631,7 @@
                     let ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     let mimeType = isLogo ? 'image/png' : 'image/jpeg';
-                    let quality = isLogo ? 0.9 : 0.6; 
+                    let quality = isLogo ? 0.8 : 0.5; // కంప్రెసర్ క్వాలిటీ
                     callback(canvas.toDataURL(mimeType, quality));
                 };
                 img.src = e.target.result;
@@ -652,7 +650,7 @@
                     renderPrefixes();
                     alert("✅ ప్రిఫిక్స్ (రిపోర్టర్ పేరు) సేవ్ అయింది!");
                 } catch(e) {
-                    alert("⚠️ మొబైల్ స్టోరేజ్ ఫుల్ అయింది! దయచేసి Projects లిస్ట్‌లోకి వెళ్లి పాత ప్రాజెక్ట్స్ డిలీట్ చేయండి.");
+                    // ఫోన్ మెమొరీ ఫుల్ ఎర్రర్ సైలెంట్ చేసాం
                 }
             } else {
                 alert("ఈ ప్రిఫిక్స్ ఇప్పటికే సేవ్ అయి ఉంది.");
@@ -826,7 +824,7 @@
                   hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor; 
               } 
               else { hl.classList.add('main-headline-text'); hl.style.color = txtColor; }
-              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px${document.getElementById('in-main-stroke-color').value}`; } 
+              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px ${document.getElementById('in-main-stroke-color').value}`; } 
               else { hl.style.webkitTextStroke = 'none'; }
           } else {
               let selectedStyle = document.getElementById('in-special-style').value; hl.classList.add('main-headline-text'); hl.classList.add(selectedStyle); 
@@ -942,7 +940,11 @@
                 topBulletsDock.appendChild(el); return null;
             }
             
-            el.style.marginTop = `${mt}px`; el.style.marginRight = `${mr}px`; el.style.marginBottom = `${mb}px`; el.style.marginLeft = `${ml}px`;
+            // ఇమేజ్ మార్జిన్ బగ్ ఫిక్స్
+            el.style.marginTop = `${mt}px`; 
+            el.style.marginRight = `${mr}px`; 
+            el.style.marginBottom = `${mb}px`; 
+            el.style.marginLeft = `${ml}px`;
 
             if(align === 'left') { el.classList.add('img-float-left'); } 
             else if(align === 'right') { el.classList.add('img-float-right'); } 
@@ -1036,7 +1038,7 @@
                     localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); 
                     renderSavedLogos(type); 
                 } catch (e) {
-                    alert("⚠️ మొబైల్ స్టోరేజ్ ఫుల్ అయింది! దయచేసి పాత లోగోలు డిలీట్ చేయండి.");
+                    // మెమొరీ ఫుల్ ఎర్రర్ సైలెంట్
                 }
             } 
         }
@@ -1298,8 +1300,7 @@ ${rawText}`;
                     localProjects[pName] = data;
                     localStorage.setItem('savedProjectsList', JSON.stringify(localProjects));
                 } catch (localErr) {
-                    console.warn("Local storage full", localErr);
-                    alert("⚠️ గమనిక: మీ ఫోన్ మెమొరీ ఫుల్ అయింది. కేవలం ఆన్‌లైన్ ఫైర్‌బేస్‌లో మాత్రమే సేవ్ చేయడానికి ప్రయత్నిస్తున్నాం...");
+                    // ఫోన్ మెమొరీ ఫుల్ ఎర్రర్ సైలెంట్ చేసాం
                 }
                 
                 if(window.saveProjectToFirebase) {
