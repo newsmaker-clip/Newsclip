@@ -538,7 +538,7 @@
     <a id="hidden-download-link" style="display:none;"></a>
 
     <!-- ============================================== -->
-    <!-- FIREBASE MODULE (WITH ANTI-HANG TIMEOUTS) -->
+    <!-- FIREBASE MODULE -->
     <!-- ============================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -559,8 +559,7 @@
         
         window.saveProjectToFirebase = async function(pName, data) {
             try {
-                // ఫైర్‌బేస్ హ్యాంగ్ కాకుండా 5 సెకన్ల టైమ్ ఔట్ కంట్రోలర్
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firebase Timeout")), 5000));
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout - Internet slow")), 7000));
                 await Promise.race([ setDoc(doc(db, "newsProjects", pName), data), timeoutPromise ]);
                 return true;
             } catch(e) {
@@ -571,7 +570,7 @@
 
         window.getProjectsFromFirebase = async function() {
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firebase Timeout")), 5000));
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout - Internet slow")), 7000));
                 const querySnapshot = await Promise.race([ getDocs(collection(db, "newsProjects")), timeoutPromise ]);
                 let projects = {};
                 querySnapshot.forEach((docSnap) => { projects[docSnap.id] = docSnap.data(); });
@@ -584,7 +583,7 @@
 
         window.deleteProjectFromFirebase = async function(pName) {
             try {
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Firebase Timeout")), 5000));
+                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout - Internet slow")), 7000));
                 await Promise.race([ deleteDoc(doc(db, "newsProjects", pName)), timeoutPromise ]);
                 return true;
             } catch(e) {
@@ -616,14 +615,59 @@
             });
         }
 
-        document.querySelectorAll('input[type="file"]').forEach(input => {
-            input.addEventListener('change', function(e) {
-                if (e.target.files && e.target.files[0] && e.target.files[0].size > 3 * 1024 * 1024) {
-                    alert("దయచేసి 3MB లోపు ఉన్న ఫోటోను మాత్రమే అప్‌లోడ్ చేయండి. (మెమొరీ క్రాష్ అవ్వకుండా ఉండటానికి)");
-                    e.target.value = ''; 
-                }
+        // IMAGE COMPRESSOR - ఫైర్‌బేస్ "1MB లిమిట్" దాటకుండా ఆటోమేటిక్ సైజ్ తగ్గిస్తుంది
+        function resizeImageFile(file, callback, isLogo = false) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let img = new Image();
+                img.onload = function() {
+                    let canvas = document.createElement('canvas');
+                    let MAX_WIDTH = isLogo ? 400 : 800; // లోగోకి 400px, ఫోటోకి 800px లిమిట్
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > MAX_WIDTH) {
+                        height = Math.round(height * (MAX_WIDTH / width));
+                        width = MAX_WIDTH;
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    let ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    let mimeType = isLogo ? 'image/png' : 'image/jpeg';
+                    let quality = isLogo ? 1.0 : 0.8; // క్వాలిటీ తగ్గకుండా డేటా సైజు తగ్గిస్తుంది
+                    callback(canvas.toDataURL(mimeType, quality));
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // రిపోర్టర్ పేరు / ప్రిఫిక్స్ సేవ్ చేయడానికి మిస్సయిన ఫంక్షన్స్ ఇవే
+        function savePrefix() {
+            let val = document.getElementById('in-news-prefix').value.trim();
+            if(!val) { alert("ముందుగా రిపోర్టర్ పేరు / ప్రిఫిక్స్ టైప్ చేయండి!"); return; }
+            let saved = JSON.parse(localStorage.getItem('savedPrefixes')) || [];
+            if(!saved.includes(val)) {
+                saved.push(val);
+                localStorage.setItem('savedPrefixes', JSON.stringify(saved));
+                renderPrefixes();
+                alert("✅ ప్రిఫిక్స్ (రిపోర్టర్ పేరు) సేవ్ అయింది!");
+            } else {
+                alert("ఈ ప్రిఫిక్స్ ఇప్పటికే సేవ్ అయి ఉంది.");
+            }
+        }
+
+        function renderPrefixes() {
+            let saved = JSON.parse(localStorage.getItem('savedPrefixes')) || [];
+            let sel = document.getElementById('saved-prefixes');
+            sel.innerHTML = '<option value="">-- Saved Prefixes Here --</option>';
+            saved.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p; opt.innerText = p;
+                sel.appendChild(opt);
             });
-        });
+        }
+        renderPrefixes(); // పేజీ ఓపెన్ అవ్వగానే లోడ్ అవుతుంది
 
         function openTab(tabId, btn) {
             document.querySelectorAll('.tool-section').forEach(el => el.classList.remove('active'));
@@ -732,18 +776,18 @@
         }
         document.getElementById('in-logo-line-check').addEventListener('change', updateLogoLine); document.getElementById('in-logo-line-color').addEventListener('input', updateLogoLine);
         
+        // లోగోలో కంప్రెసర్ యాడ్ చేసాము
         document.getElementById('in-logo-top').addEventListener('change', e => loadLogoFile(e, 'out-logo-top'));
-        document.getElementById('in-logo-stamp').addEventListener('change', e => { loadLogoFile(e, 'out-logo-stamp'); stampUploaded = true; rebuildNewsBody(); });
+        document.getElementById('in-logo-stamp').addEventListener('change', e => { loadLogoFile(e, 'out-logo-stamp'); });
         
         function loadLogoFile(e, outId) { 
             if(e.target.files && e.target.files[0]) { 
-                let reader = new FileReader(); 
-                reader.onload = event => {
+                resizeImageFile(e.target.files[0], function(base64Data) {
                     let imgEl = document.getElementById(outId);
-                    imgEl.src = event.target.result; 
-                    imgEl.style.display = 'block'; 
-                };
-                reader.readAsDataURL(e.target.files[0]); 
+                    imgEl.src = base64Data;
+                    imgEl.style.display = 'block';
+                    if(outId === 'out-logo-stamp') { stampUploaded = true; rebuildNewsBody(); }
+                }, true);
             } 
         }
 
@@ -782,7 +826,7 @@
                   hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor; 
               } 
               else { hl.classList.add('main-headline-text'); hl.style.color = txtColor; }
-              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px ${document.getElementById('in-main-stroke-color').value}`; } 
+              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px${document.getElementById('in-main-stroke-color').value}`; } 
               else { hl.style.webkitTextStroke = 'none'; }
           } else {
               let selectedStyle = document.getElementById('in-special-style').value; hl.classList.add('main-headline-text'); hl.classList.add(selectedStyle); 
@@ -819,19 +863,19 @@
         }
 
         let imgState = { 1: { uploaded: false, align: 'top' }, 2: { uploaded: false, align: 'right' } };
+        
+        // ఫోటోలలో కంప్రెసర్ యాడ్ చేసాము
         function setupImageControl(imgNum) {
           document.getElementById(`in-image-${imgNum}`).addEventListener('change', function(e) { 
               if(e.target.files && e.target.files[0]) { 
-                  let reader = new FileReader(); 
-                  reader.onload = event => { 
+                  resizeImageFile(e.target.files[0], function(base64Data) {
                       let imgEl = document.getElementById(`out-image-${imgNum}`);
-                      imgEl.src = event.target.result; 
-                      imgEl.style.display = 'block'; 
-                      imgState[imgNum].uploaded = true; 
-                      applyImageFrameAndStroke(imgNum); 
-                      rebuildNewsBody(); 
-                  }; 
-                  reader.readAsDataURL(e.target.files[0]); 
+                      imgEl.src = base64Data;
+                      imgEl.style.display = 'block';
+                      imgState[imgNum].uploaded = true;
+                      applyImageFrameAndStroke(imgNum);
+                      rebuildNewsBody();
+                  }, false);
               } 
           });
           document.getElementById(`check-cap-${imgNum}`).addEventListener('change', function() { document.getElementById(`out-caption-${imgNum}`).style.display = this.checked ? 'block' : 'none'; });
@@ -890,7 +934,7 @@
 
             if(align === 'top' && elId !== 'out-stamp-container' && elId !== 'out-bullets-wrap') { 
                 el.classList.add('img-block'); 
-                el.style.margin = `${mt}px auto ${mb}px auto`; // SPACING BUG FIXED
+                el.style.margin = `${mt}px auto${mb}px auto`; 
                 topDock.appendChild(el); return null; 
             }
             if(align === 'top' && elId === 'out-bullets-wrap') { 
@@ -899,7 +943,7 @@
                 topBulletsDock.appendChild(el); return null;
             }
             
-            el.style.margin = `${mt}px ${mr}px ${mb}px ${ml}px`; // SPACING BUG FIXED
+            el.style.margin = `${mt}px${mr}px ${mb}px${ml}px`; 
 
             if(align === 'left') { el.classList.add('img-float-left'); } 
             else if(align === 'right') { el.classList.add('img-float-right'); } 
@@ -1043,14 +1087,15 @@
             document.getElementById('ai-img-file-2').style.display = val == 2 ? 'block' : 'none';
         }
 
+        // AI ఫోటోలలో కంప్రెసర్ యాడ్ చేసాము
         document.getElementById('ai-img-file-1').addEventListener('change', e => {
-            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg1Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+            if(e.target.files[0]) { resizeImageFile(e.target.files[0], data => aiImg1Data = data, false); }
         });
         document.getElementById('ai-img-file-2').addEventListener('change', e => {
-            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg2Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+            if(e.target.files[0]) { resizeImageFile(e.target.files[0], data => aiImg2Data = data, false); }
         });
         document.getElementById('ai-logo-file').addEventListener('change', e => {
-            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiSelectedLogoData = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+            if(e.target.files[0]) { resizeImageFile(e.target.files[0], data => aiSelectedLogoData = data, true); }
         });
 
 
@@ -1247,12 +1292,10 @@ ${rawText}`;
                 columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
             };
             
-            // 1. ఎప్పుడూ ముందుగా మీ ఫోన్‌లో (Local Storage) సేవ్ చేయండి (Safety Backup)
             let localProjects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
             localProjects[pName] = data;
             localStorage.setItem('savedProjectsList', JSON.stringify(localProjects));
             
-            // 2. ఇప్పుడు ఆన్‌లైన్ ఫైర్‌బేస్‌లోకి సేవ్ చేయడానికి ప్రయత్నించండి
             if(window.saveProjectToFirebase) {
                 let success = await window.saveProjectToFirebase(pName, data);
                 if(success) {
@@ -1278,7 +1321,6 @@ ${rawText}`;
                 projects = await window.getProjectsFromFirebase();
             } 
             
-            // ఫైర్‌బేస్ రెస్పాండ్ అవ్వకపోతే ఫోన్‌లోని డేటాని వాడుకుంటుంది
             if(!projects) {
                 projects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
             }
@@ -1304,7 +1346,6 @@ ${rawText}`;
                             if (window.deleteProjectFromFirebase) {
                                 await window.deleteProjectFromFirebase(pName);
                             }
-                            // ఫోన్ లోకల్ స్టోరేజ్ నుండి కూడా తీసేస్తుంది
                             let localProjects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
                             delete localProjects[pName];
                             localStorage.setItem('savedProjectsList', JSON.stringify(localProjects));
