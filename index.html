@@ -73,7 +73,6 @@
 
         /* --- CLIPPING INNER STYLES --- */
         .paper-header { text-align: center; margin-bottom: 10px; border-bottom: 2px solid #000; padding-bottom: 5px;}
-        .paper-header img { max-width: 100%; object-fit: contain; } 
         
         .overall-wrap-none { padding: 0; background: transparent; border: none; }
         .overall-wrap-active { padding: 15px; border: 1px solid #999; border-radius: 4px; }
@@ -120,7 +119,8 @@
         .image-container img { width: 100%; height: auto; display: block; object-fit: cover; } 
         .caption { font-size: 12px; font-weight: bold; margin-top: 3px; color: #222; text-align: center; }
         
-        .stamp-container { display: block; box-sizing: border-box; margin: 10px; border-radius: 50%; overflow: hidden; aspect-ratio: 1 / 1; object-fit: cover; }
+        /* ROUND SEAL TEXT WRAP FIX */
+        .stamp-container { display: block; box-sizing: border-box; margin: 10px; border-radius: 50%; overflow: hidden; aspect-ratio: 1 / 1; object-fit: cover; shape-outside: circle(50%); }
         .stamp-container img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
         /* Updated Floating Rules */
@@ -170,8 +170,12 @@
       <div class="preview-panel" id="preview-panel">
         <div class="scale-container" id="scale-container">
             <div class="newspaper-wrapper" id="capture-area">
+              
+              <!-- LOGO QUALITY & STRETCH FIX (WRAPPED IN DIV) -->
               <div class="paper-header" id="out-header-top">
-                <img id="out-logo-top" src="" alt="Paper Logo" style="width: 100%; height: 120px; display:none;">
+                <div id="out-logo-box" style="display:none; width:100%; height:120px; margin:0 auto; align-items:center; justify-content:center;">
+                  <img id="out-logo-top" src="" alt="Paper Logo" style="max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:none; margin:0 auto;">
+                </div>
               </div>
               
               <div id="out-overall-wrap" class="overall-wrap-none">
@@ -591,7 +595,6 @@
         let currentImageDataUrl = ""; 
         window.loadedFirebaseProjects = {}; 
         
-        // BUG FIX: API KEY LOCAL STORAGE & HEADLINE BOX FIX
         window.addEventListener('load', () => {
             let savedApiKey = localStorage.getItem('gemini_api_key');
             if(savedApiKey) {
@@ -760,11 +763,11 @@
         
         document.getElementById('logo-top-w').addEventListener('input', function() {
             document.getElementById('val-logo-top-w').innerText = this.value;
-            document.getElementById('out-logo-top').style.width = this.value + '%';
+            document.getElementById('out-logo-box').style.width = this.value + '%';
         });
         document.getElementById('logo-top-h').addEventListener('input', function() {
             document.getElementById('val-logo-top-h').innerText = this.value;
-            document.getElementById('out-logo-top').style.height = this.value + 'px';
+            document.getElementById('out-logo-box').style.height = this.value + 'px';
         });
 
         document.getElementById('in-logo-type').addEventListener('change', function() {
@@ -782,7 +785,13 @@
         document.getElementById('in-logo-top').addEventListener('change', e => {
             if(e.target.files && e.target.files[0]) {
                 let reader = new FileReader();
-                reader.onload = event => { let el = document.getElementById('out-logo-top'); el.src = event.target.result; el.style.display = 'block'; document.getElementById('logo-top-w').dispatchEvent(new Event('input')); };
+                reader.onload = event => { 
+                    let el = document.getElementById('out-logo-top'); 
+                    el.src = event.target.result; 
+                    el.style.display = 'block'; 
+                    document.getElementById('out-logo-box').style.display = 'flex';
+                    document.getElementById('logo-top-w').dispatchEvent(new Event('input')); 
+                };
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
@@ -1066,6 +1075,7 @@
                 img.onclick = () => { 
                     let mainImg = document.getElementById(type === 'top' ? 'out-logo-top' : 'out-logo-stamp');
                     mainImg.src = src; mainImg.style.display = 'block';
+                    if(type === 'top') document.getElementById('out-logo-box').style.display = 'flex';
                     if(type==='stamp') { stampUploaded = true; rebuildNewsBody(); } 
                 }; 
                 let delBtn = document.createElement('button'); delBtn.className = 'logo-del-btn'; delBtn.innerHTML = '✖';
@@ -1149,8 +1159,10 @@
                 if (aiSelectedLogoData) {
                     document.getElementById('out-logo-top').src = aiSelectedLogoData;
                     document.getElementById('out-logo-top').style.display = 'block';
+                    document.getElementById('out-logo-box').style.display = 'flex';
                 } else {
                     document.getElementById('out-logo-top').style.display = 'none';
+                    document.getElementById('out-logo-box').style.display = 'none';
                 }
             } 
 
@@ -1282,8 +1294,7 @@ ${rawText}`;
                 const lastBrace = aiText.lastIndexOf('}');
                 if (firstBrace !== -1 && lastBrace !== -1) { aiText = aiText.substring(firstBrace, lastBrace + 1); }
                 
-                // ఫైనల్ JSON బగ్ ఫిక్స్: AI పొరపాటున పంక్తుల మధ్య 'Enter' (New line) ఇస్తే JSON క్రాష్ అవుతుంది.
-                // కాబట్టి ఆ ఎంటర్స్, ట్యాబ్స్ అన్నింటినీ కేవలం ఒక స్పేస్ (Space) లాగా మార్చే బ్రహ్మాస్త్రం ఇది.
+                // FINAL BUG FIX: AI పొరపాటున న్యూ లైన్స్ ఇస్తే JSON క్రాష్ అవ్వకుండా అన్నింటినీ ఒకే స్పేస్ లాగా క్లీన్ చేసే కోడ్ (The Parsing Fix)
                 aiText = aiText.replace(/[\n\r\t]+/g, ' ');
 
                 const newsData = JSON.parse(aiText);
@@ -1433,7 +1444,7 @@ ${rawText}`;
             
             imgState[1].uploaded = false; document.getElementById('out-image-1').src = ""; document.getElementById('out-image-1').style.display = 'none';
             imgState[2].uploaded = false; document.getElementById('out-image-2').src = ""; document.getElementById('out-image-2').style.display = 'none';
-            document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none';
+            document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none'; document.getElementById('out-logo-box').style.display = 'none';
             stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
 
             document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
@@ -1441,7 +1452,7 @@ ${rawText}`;
             document.getElementById('in-logo-type').value = data.logoType || 'top'; 
             
             document.getElementById('in-logo-line-check').checked = data.logoLineCheck !== undefined ? data.logoLineCheck : true; document.getElementById('in-logo-line-color').value = data.logoLineColor || '#000000';
-            document.getElementById('logo-top-w').value = data.logoTopW || 100; document.getElementById('logo-top-h').value = data.logoTopH || 120; document.getElementById('out-logo-top').style.width = (data.logoTopW || 100) + '%'; document.getElementById('out-logo-top').style.height = (data.logoTopH || 120) + 'px';
+            document.getElementById('logo-top-w').value = data.logoTopW || 100; document.getElementById('logo-top-h').value = data.logoTopH || 120; document.getElementById('out-logo-box').style.width = (data.logoTopW || 100) + '%'; document.getElementById('out-logo-box').style.height = (data.logoTopH || 120) + 'px';
             
             document.getElementById('stamp-align').value = data.stampAlign || 'center'; document.getElementById('stamp-w').value = data.stampW || 30; document.getElementById('stamp-para-pos').value = data.stampParaPos || 50; 
             document.getElementById('smt').value = data.smt !== undefined ? data.smt : 0; document.getElementById('smr').value = data.smr !== undefined ? data.smr : 15; document.getElementById('smb').value = data.smb !== undefined ? data.smb : 15; document.getElementById('sml').value = data.sml !== undefined ? data.sml : 15;
@@ -1463,6 +1474,7 @@ ${rawText}`;
             if(data.logoTopSrc && data.logoTopSrc.startsWith('data:image')) { 
                 document.getElementById('out-logo-top').src = data.logoTopSrc; 
                 document.getElementById('out-logo-top').style.display = 'block'; 
+                document.getElementById('out-logo-box').style.display = 'flex';
             }
             if(data.logoStampSrc && data.logoStampSrc.startsWith('data:image')) { 
                 document.getElementById('out-logo-stamp').src = data.logoStampSrc; 
@@ -1490,7 +1502,7 @@ ${rawText}`;
         }
 
         // ==========================================
-        // EXPORT / DOWNLOAD LOGIC (Double-Click Lock & Error Zoom Fix)
+        // EXPORT / DOWNLOAD LOGIC
         // ==========================================
         async function downloadClipping() {
           if (!navigator.onLine) { alert("⚠️ ఎక్స్‌పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
