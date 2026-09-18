@@ -218,11 +218,10 @@
       <div class="controls-wrapper">
           <div class="tool-content-area">
               
-              <!-- Tab 0: AI AUTO GENERATOR (UPDATED) -->
+              <!-- Tab 0: AI AUTO GENERATOR -->
               <div id="tool-ai" class="tool-section active">
                   <h4 style="color:#00c6ff; margin: 0 0 10px 0; font-size:16px;">🤖 జెమిని AI ఆటోమేషన్</h4>
                   
-                  <!-- NEW: AI TEMPLATE SELECTOR -->
                   <label style="color:#00c6ff; font-size:14px; margin-top:10px;">🌟 సేవ్ చేసిన మోడల్ (Template):</label>
                   <select id="ai-template-select" style="border: 1px solid #00c6ff; background:#1e1e1e; color:#00c6ff; font-weight:bold;">
                       <option value="DEFAULT">-- సాధారణ డిజైన్ (Default) --</option>
@@ -250,7 +249,6 @@
 
                   <hr style="border-color:#444;">
                   
-                  <!-- AI Logo Upload Section -->
                   <label style="color:#00c6ff;">లోగో సెటప్ (Logo):</label>
                   <div class="flex-row">
                       <input type="file" id="ai-logo-file" accept="image/*">
@@ -271,7 +269,6 @@
                       <option value="2">2 ఫోటోలు</option>
                   </select>
                   
-                  <!-- AI Images Upload Section -->
                   <div id="ai-img-inputs" style="display:none; margin-top:10px; background:#2a2a2a; padding:10px; border-radius:5px;">
                       <label id="lbl-ai-img-1" style="margin-top:0; display:none;">Photo 1 అప్‌లోడ్ చేయండి:</label>
                       <input type="file" id="ai-img-file-1" accept="image/*" style="display:none;">
@@ -539,130 +536,77 @@
     
     <a id="hidden-download-link" style="display:none;"></a>
 
-    <!-- FIREBASE MODULE & INTEGRATION -->
+    <!-- ============================================== -->
+    <!-- FIREBASE MODULE (GLOBAL BRIDGE) -->
+    <!-- ============================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDocs, getDoc, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
+        import { getFirestore, doc, setDoc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        
+        // మీ ఫైర్‌బేస్ కాన్ఫిగరేషన్
         const firebaseConfig = {
-          apiKey: "AIzaSyC1sJzozMuSQIhPZACIQ4Qw6O_rczVaoGk",
-          authDomain: "news-cliping.firebaseapp.com",
-          projectId: "news-cliping",
-          storageBucket: "news-cliping.firebasestorage.app",
-          messagingSenderId: "636642468863",
-          appId: "1:636642468863:web:802cf2e676afc4e1297dca"
+            apiKey: "AIzaSyC1sJzozMuSQIhPZACIQ4Qw6O_rczVaoGk",
+            authDomain: "news-cliping.firebaseapp.com",
+            projectId: "news-cliping",
+            storageBucket: "news-cliping.firebasestorage.app",
+            messagingSenderId: "636642468863",
+            appId: "1:636642468863:web:802cf2e676afc4e1297dca"
         };
-
-        // Initialize Firebase
+        
+        // ఫైర్‌బేస్ ఇనిషియలైజేషన్
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        // Map Firebase interactions to global scope so your existing UI buttons can use them
-        window.saveProjectData = async function() {
-            let pName = prompt("Project Name (ప్రాజెక్ట్ పేరు ఇవ్వండి):", "My News " + new Date().toLocaleTimeString());
-            if(!pName || pName.trim() === '') return;
-            
-            let data = window.getProjectDataObject(); 
-            
+        
+        // ఫంక్షన్లను గ్లోబల్ విండోకి అటాచ్ చేయడం (బటన్లు పనిచేయడానికి)
+        window.saveProjectToFirebase = async function(pName, data) {
             try {
-                const btn = document.querySelector('button[title="Save Project"]');
-                const oldText = btn.innerText;
-                btn.innerText = "⏳ Saving...";
-                
-                await setDoc(doc(db, "projects", pName), data);
-                alert("✅ ప్రాజెక్ట్ '" + pName + "' Firebase లో భద్రంగా సేవ్ అయింది!");
-                
-                btn.innerText = oldText;
-                window.updateAiTemplateDropdown();
-            } catch (e) {
-                console.error(e);
-                alert("⚠️ Firebase ఎర్రర్: ప్రాజెక్ట్ సేవ్ కాలేదు. " + e.message);
-                document.querySelector('button[title="Save Project"]').innerText = "💾 Save";
+                await setDoc(doc(db, "newsProjects", pName), data);
+                return true;
+            } catch(e) {
+                console.error("Firebase Save Error:", e);
+                return false;
             }
         };
 
-        window.openProjectsModal = async function() {
-            let container = document.getElementById('projects-list-container');
-            container.innerHTML = '<p style="color:#00c6ff; text-align:center;">⏳ Firebase నుండి ప్రాజెక్ట్స్ లోడ్ అవుతున్నాయి...</p>';
-            document.getElementById('projects-modal').style.display = 'flex';
-            
+        window.getProjectsFromFirebase = async function() {
             try {
-                const querySnapshot = await getDocs(collection(db, "projects"));
-                container.innerHTML = '';
-                
-                if(querySnapshot.empty) {
-                    container.innerHTML = '<p style="color:#888;">No saved projects yet.</p>';
-                } else {
-                    querySnapshot.forEach((docSnap) => {
-                        let pName = docSnap.id;
-                        let div = document.createElement('div'); div.className = 'project-item';
-                        let nameSpan = document.createElement('span'); nameSpan.className = 'project-name'; nameSpan.innerText = pName;
-                        let actions = document.createElement('div'); actions.className = 'project-actions';
-                        
-                        let loadBtn = document.createElement('button'); loadBtn.className = 'btn-load'; loadBtn.innerText = 'Load';
-                        loadBtn.onclick = () => window.loadProjectByName(pName);
-                        
-                        let delBtn = document.createElement('button'); delBtn.className = 'btn-del'; delBtn.innerText = 'Delete';
-                        delBtn.onclick = async () => { 
-                            if(confirm(`'${pName}' ని శాశ్వతంగా డిలీట్ చేయాలా?`)) {
-                                await deleteDoc(doc(db, "projects", pName));
-                                window.openProjectsModal(); 
-                                window.updateAiTemplateDropdown();
-                            }
-                        };
-                        
-                        actions.appendChild(loadBtn); actions.appendChild(delBtn);
-                        div.appendChild(nameSpan); div.appendChild(actions);
-                        container.appendChild(div);
-                    });
-                }
-            } catch (e) {
-                container.innerHTML = '<p style="color:#e74c3c;">⚠️ ఎర్రర్: డేటాబేస్ కు కనెక్ట్ కాలేకపోయాం.</p>';
-                console.error(e);
-            }
-        };
-
-        window.loadProjectByName = async function(pName, isSilent = false) {
-            try {
-                if(!isSilent) document.getElementById('projects-list-container').innerHTML = '<p style="color:#00c6ff; text-align:center;">⏳ లోడ్ అవుతోంది...</p>';
-                
-                const docRef = doc(db, "projects", pName);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    window.applyProjectData(docSnap.data(), isSilent);
-                } else {
-                    if(!isSilent) alert("⚠️ ప్రాజెక్ట్ డేటా ఫైర్‌బేస్ లో దొరకలేదు.");
-                }
-            } catch (e) {
-                console.error(e);
-                if(!isSilent) alert("⚠️ ఎర్రర్: ప్రాజెక్ట్ లోడ్ కాలేదు.");
-            }
-        };
-
-        window.updateAiTemplateDropdown = async function() {
-            let select = document.getElementById('ai-template-select');
-            select.innerHTML = '<option value="DEFAULT">-- సాధారణ డిజైన్ (Default) --</option>';
-            try {
-                const querySnapshot = await getDocs(collection(db, "projects"));
+                const querySnapshot = await getDocs(collection(db, "newsProjects"));
+                let projects = {};
                 querySnapshot.forEach((docSnap) => {
-                    let opt = document.createElement('option');
-                    opt.value = docSnap.id;
-                    opt.innerText = docSnap.id;
-                    select.appendChild(opt);
+                    projects[docSnap.id] = docSnap.data();
                 });
-            } catch (e) {
-                console.error("Templates fetch error:", e);
+                return projects;
+            } catch(e) {
+                console.error("Firebase Load Error:", e);
+                return null;
             }
         };
 
-        // Fetch templates on page load
-        window.updateAiTemplateDropdown();
+        window.deleteProjectFromFirebase = async function(pName) {
+            try {
+                await deleteDoc(doc(db, "newsProjects", pName));
+                return true;
+            } catch(e) {
+                console.error("Firebase Delete Error:", e);
+                return false;
+            }
+        };
+        
+        // ఆటోమేటిక్ గా పేజీ లోడ్ అయిన వెంటనే ఫైర్‌బేస్ నుండి డ్రాప్‌డౌన్ అప్‌డేట్ చేయి
+        window.addEventListener('load', () => {
+            if (typeof window.refreshTemplateDropdown === 'function') {
+                window.refreshTemplateDropdown();
+            }
+        });
     </script>
 
-    <!-- MAIN UI & EDITOR SCRIPT -->
+    <!-- ============================================== -->
+    <!-- MAIN APPLICATION LOGIC -->
+    <!-- ============================================== -->
     <script>
+        let currentImageDataUrl = ""; // బగ్ ఫిక్స్: ఎక్స్‌పోర్ట్ ఎర్రర్ రాకుండా గ్లోబల్ వేరియబుల్
+        window.loadedFirebaseProjects = {}; // ఫైర్‌బేస్ డేటాను తాత్కాలికంగా దాచుకోవడానికి
+        
         // --- BASE FUNCTIONS ---
         function escapeHTML(str) {
             if (!str) return '';
@@ -752,7 +696,7 @@
           if(isBox) { 
               wrap.className = 'overall-wrap-active'; 
               if(bgType === 'gradient') {
-                  wrap.style.background = `linear-gradient(${dir}, ${c1}, ${c2})`;
+                  wrap.style.background = `linear-gradient(${dir}, ${c1},${c2})`;
               } else {
                   wrap.style.background = c1;
               }
@@ -838,7 +782,7 @@
                   hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor; 
               } 
               else { hl.classList.add('main-headline-text'); hl.style.color = txtColor; }
-              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px ${document.getElementById('in-main-stroke-color').value}`; } 
+              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px${document.getElementById('in-main-stroke-color').value}`; } 
               else { hl.style.webkitTextStroke = 'none'; }
           } else {
               let selectedStyle = document.getElementById('in-special-style').value; hl.classList.add('main-headline-text'); hl.classList.add(selectedStyle); 
@@ -946,7 +890,7 @@
 
             if(align === 'top' && elId !== 'out-stamp-container' && elId !== 'out-bullets-wrap') { 
                 el.classList.add('img-block'); 
-                el.style.margin = `${mt}px auto ${mb}px auto`; 
+                el.style.margin = `${mt}px auto${mb}px auto`; 
                 topDock.appendChild(el); return null; 
             }
             if(align === 'top' && elId === 'out-bullets-wrap') { 
@@ -955,7 +899,7 @@
                 topBulletsDock.appendChild(el); return null;
             }
             
-            el.style.margin = `${mt}px ${mr}px ${mb}px ${ml}px`;
+            el.style.margin = `${mt}px${mr}px ${mb}px${ml}px`;
 
             if(align === 'left') { el.classList.add('img-float-left'); } 
             else if(align === 'right') { el.classList.add('img-float-right'); } 
@@ -1000,12 +944,300 @@
         }
         rebuildNewsBody();
 
+
         // ==========================================
-        // FIREBASE DATA BRIDGE (GLOBAL MAPPING)
+        // UI & TEMPLATE LOGIC
         // ==========================================
-        window.getProjectDataObject = function() {
+        
+        // 1. Populate AI Templates Dropdown dynamically
+        window.refreshTemplateDropdown = async function() {
+            let select = document.getElementById('ai-template-select');
+            select.innerHTML = '<option value="DEFAULT">-- సాధారణ డిజైన్ (Default) --</option>';
+            
+            let projects = null;
+            if(window.getProjectsFromFirebase) {
+                projects = await window.getProjectsFromFirebase();
+            } else {
+                projects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
+            }
+            
+            if(projects) {
+                window.loadedFirebaseProjects = projects; // సేవ్ చేయబడిన ప్రాజెక్ట్స్ ని దాచుకోవడానికి
+                for(let pName in projects) {
+                    let opt = document.createElement('option');
+                    opt.value = pName;
+                    opt.innerText = pName;
+                    select.appendChild(opt);
+                }
+            }
+        };
+
+        // 2. Saved Logos logic
+        let aiSelectedLogoData = ""; 
+
+        function saveLogoToStorage(type) {
+            let imgEl = document.getElementById(type === 'top' ? 'out-logo-top' : 'out-logo-stamp');
+            if(!imgEl.src || imgEl.src.length < 100) { alert("దయచేసి ముందుగా లోగో/స్టాంప్ అప్‌లోడ్ చేయండి!"); return; }
+            saveBaseLogo(imgEl.src, type);
+        }
+
+        function saveAILogo() {
+            if(!aiSelectedLogoData) { alert("దయచేసి ముందుగా లోగో ఫైల్ ఎంచుకోండి!"); return; }
+            saveBaseLogo(aiSelectedLogoData, 'top');
+            alert("లోగో గ్యాలరీలో సేవ్ అయింది!");
+        }
+
+        function saveBaseLogo(srcData, type) {
+            let saved = JSON.parse(localStorage.getItem('savedLogos_' + type)) || [];
+            try {
+                if(!saved.includes(srcData)) { 
+                    saved.push(srcData); 
+                    if(saved.length > 5) saved.shift(); 
+                    localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); 
+                    renderSavedLogos(type); 
+                }
+            } catch (e) { alert("మెమొరీ ఫుల్! దయచేసి పాత ఫోటోలను తొలగించండి."); }
+        }
+
+        function renderSavedLogos(type) {
+            let saved = JSON.parse(localStorage.getItem('savedLogos_' + type)) || []; 
+            let container = document.getElementById(type === 'top' ? 'saved-top-logos' : 'saved-stamp-logos');
+            let aiContainer = document.getElementById('ai-saved-logo-gallery'); 
+            
+            container.innerHTML = ''; 
+            if (type === 'top' && aiContainer) aiContainer.innerHTML = ''; 
+
+            saved.forEach((src, idx) => { 
+                let wrap = document.createElement('div'); wrap.className = 'logo-item-wrapper';
+                let img = document.createElement('img'); img.src = src; 
+                img.onclick = () => { 
+                    let mainImg = document.getElementById(type === 'top' ? 'out-logo-top' : 'out-logo-stamp');
+                    mainImg.src = src; mainImg.style.display = 'block';
+                    if(type==='stamp') { stampUploaded = true; rebuildNewsBody(); } 
+                }; 
+                let delBtn = document.createElement('button'); delBtn.className = 'logo-del-btn'; delBtn.innerHTML = '✖';
+                delBtn.onclick = () => { saved.splice(idx, 1); localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); renderSavedLogos(type); };
+                wrap.appendChild(img); wrap.appendChild(delBtn); container.appendChild(wrap); 
+
+                // Inject into AI Tab Gallery
+                if (type === 'top' && aiContainer) {
+                    let aiWrap = document.createElement('div'); aiWrap.className = 'logo-item-wrapper';
+                    let aiImg = document.createElement('img'); aiImg.src = src; 
+                    aiImg.onclick = () => { 
+                        aiSelectedLogoData = src;
+                        Array.from(aiContainer.children).forEach(c => c.querySelector('img').style.borderColor = '#555');
+                        aiImg.style.borderColor = '#00c6ff'; aiImg.style.borderWidth = '2px';
+                        document.getElementById('ai-chk-use-logo').checked = true;
+                    }; 
+                    let aiDelBtn = document.createElement('button'); aiDelBtn.className = 'logo-del-btn'; aiDelBtn.innerHTML = '✖';
+                    aiDelBtn.onclick = () => { saved.splice(idx, 1); localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); renderSavedLogos(type); };
+                    aiWrap.appendChild(aiImg); aiWrap.appendChild(aiDelBtn); aiContainer.appendChild(aiWrap); 
+                }
+            });
+        }
+        renderSavedLogos('top'); renderSavedLogos('stamp');
+
+        // AI specific inputs logic
+        let aiImg1Data = "", aiImg2Data = "";
+        
+        function toggleAiImgInputs(val) {
+            document.getElementById('ai-img-inputs').style.display = val == 0 ? 'none' : 'block';
+            document.getElementById('lbl-ai-img-1').style.display = val >= 1 ? 'block' : 'none';
+            document.getElementById('ai-img-file-1').style.display = val >= 1 ? 'block' : 'none';
+            document.getElementById('lbl-ai-img-2').style.display = val == 2 ? 'block' : 'none';
+            document.getElementById('ai-img-file-2').style.display = val == 2 ? 'block' : 'none';
+        }
+
+        document.getElementById('ai-img-file-1').addEventListener('change', e => {
+            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg1Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+        });
+        document.getElementById('ai-img-file-2').addEventListener('change', e => {
+            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg2Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+        });
+        document.getElementById('ai-logo-file').addEventListener('change', e => {
+            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiSelectedLogoData = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+        });
+
+
+        // ==========================================
+        // THE MAIN AI GENERATION LOGIC
+        // ==========================================
+        document.getElementById('btn-ai-generate').addEventListener('click', async () => {
+            const rawText = document.getElementById('ai-raw-text').value.trim();
+            const apiKey = document.getElementById('ai-api-key').value.trim();
+
+            if(!rawText) { alert("దయచేసి ముడి వార్తను ఎంటర్ చేయండి!"); return; }
+            if(!apiKey) { alert("దయచేసి Gemini API Key ఎంటర్ చేయండి!"); return; }
+
+            // 1. TEMPLATE LOADING (Apply user's saved layout first)
+            const selectedTemplate = document.getElementById('ai-template-select').value;
+            if (selectedTemplate !== "DEFAULT") {
+                // Pass true to load silently without alerting
+                loadProjectByName(selectedTemplate, true);
+            }
+
+            // 2. READ AI TAB OVERRIDES
+            const wantsSubHead = document.getElementById('ai-chk-subhead').checked;
+            const wantsBullets = document.getElementById('ai-chk-bullets').checked;
+            const wantsBgBox = document.getElementById('ai-chk-bgbox').checked;
+            const wantsNewLogo = document.getElementById('ai-chk-use-logo').checked;
+            const imgCount = document.getElementById('ai-img-count').value;
+
+            // Apply Background Box override
+            document.getElementById('in-overall-box-check').checked = wantsBgBox;
+            document.getElementById('in-overall-box-check').dispatchEvent(new Event('change'));
+
+            // Apply Logo override
+            if (wantsNewLogo) {
+                if (aiSelectedLogoData) {
+                    document.getElementById('out-logo-top').src = aiSelectedLogoData;
+                    document.getElementById('out-logo-top').style.display = 'block';
+                } else {
+                    document.getElementById('out-logo-top').style.display = 'none';
+                }
+            } 
+
+            // Apply Images override
+            if (imgCount == '0') {
+                document.getElementById('out-image-1').style.display = 'none'; imgState[1].uploaded = false;
+                document.getElementById('out-image-2').style.display = 'none'; imgState[2].uploaded = false;
+            } else if (imgCount == '1') {
+                if(aiImg1Data) { 
+                    document.getElementById('out-image-1').src = aiImg1Data; 
+                    imgState[1].uploaded = true; 
+                } 
+                document.getElementById('out-image-1').style.display = 'block';
+                document.getElementById('out-image-2').style.display = 'none'; imgState[2].uploaded = false;
+            } else {
+                if(aiImg1Data) { document.getElementById('out-image-1').src = aiImg1Data; imgState[1].uploaded = true; }
+                if(aiImg2Data) { document.getElementById('out-image-2').src = aiImg2Data; imgState[2].uploaded = true; }
+                document.getElementById('out-image-1').style.display = 'block';
+                document.getElementById('out-image-2').style.display = 'block';
+            }
+            rebuildNewsBody();
+
+            const btn = document.getElementById('btn-ai-generate');
+            const oldText = btn.innerText;
+            btn.innerText = "⏳ జెమిని వార్త రాస్తోంది... దయచేసి ఆగండి";
+            btn.disabled = true;
+
+            let activeModel = "gemini-1.5-flash"; 
+            try {
+                const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                if (!modelsRes.ok) {
+                    const errData = await modelsRes.json();
+                    throw new Error(errData.error ? errData.error.message : "Invalid API Key");
+                }
+                const modelsData = await modelsRes.json();
+                
+                const validModels = modelsData.models.filter(m => 
+                    m.supportedGenerationMethods && 
+                    m.supportedGenerationMethods.includes("generateContent") && 
+                    m.name.includes("gemini")
+                );
+
+                if (validModels.length === 0) {
+                    throw new Error("మీ API కీ కి ఎలాంటి Gemini మోడల్స్ అందుబాటులో లేవు.");
+                }
+
+                let bestModelObj = validModels.find(m => m.name.includes("flash"));
+                if (!bestModelObj) bestModelObj = validModels.find(m => !m.name.includes("pro")); 
+                if (!bestModelObj) bestModelObj = validModels[0]; 
+                
+                activeModel = bestModelObj.name.split('/')[1]; 
+            } catch (e) {
+                alert("API కీ ఎర్రర్: " + e.message + "\n\nదయచేసి మీ API కీ కరెక్ట్ గా ఉందో లేదో సరిచూసుకోండి.");
+                btn.innerText = oldText;
+                btn.disabled = false;
+                return;
+            }
+
+            const prompt = `Act as a veteran, senior Telugu investigative journalist and newspaper editor.
+Read the raw, unorganized input text below and rewrite it into a professional Telugu news report.
+
+STRICT RULES (MUST FOLLOW):
+1. NO ENGLISH: Use pure Telugu. Absolutely no English words. Transliterate technical terms if absolutely necessary.
+2. SINGLE PARAGRAPH: The "BodyMatter" MUST be a single, continuous paragraph. Do not use line breaks (\\n) or split it into multiple paragraphs.
+3. CONDITIONAL SUBHEAD: Only generate "Subheading" if this flag is true: ${wantsSubHead}. If false, leave it empty ("").
+4. CONDITIONAL BULLETS: Only extract "Bullets" if this flag is true: ${wantsBullets}. If false, leave it as an empty array [].
+5. STRICT JSON FORMAT: Output ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json. Start directly with { and end with }.
+6. HEADLINE FORMAT: The "Headline" MUST be a single continuous sentence/phrase. Do NOT use colons (:) to divide the headline into two parts (e.g., Do NOT write "విషయం: ఇంకో విషయం").
+
+JSON Format:
+{
+  "Headline": "Catchy, professional main headline in Telugu as a single continuous line without colons",
+  "Subheading": "Italic-style subheading (if required)",
+  "BodyMatter": "The entire news report in one single continuous paragraph.",
+  "Bullets": ["Point 1", "Point 2"]
+}
+
+Input Text:
+${rawText}`;
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.7 } 
+                    })
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json();
+                    throw new Error(errData.error ? errData.error.message : 'API Request Failed');
+                }
+                
+                const data = await response.json();
+                let aiText = data.candidates[0].content.parts[0].text;
+                
+                // Bulletproof JSON Parsing
+                aiText = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
+                const firstBrace = aiText.indexOf('{');
+                const lastBrace = aiText.lastIndexOf('}');
+                if (firstBrace !== -1 && lastBrace !== -1) { aiText = aiText.substring(firstBrace, lastBrace + 1); }
+                const newsData = JSON.parse(aiText);
+
+                document.getElementById('in-main-headline').value = newsData.Headline || "";
+                document.getElementById('in-main-headline').dispatchEvent(new Event('input'));
+
+                if (wantsSubHead && newsData.Subheading) {
+                    document.getElementById('in-sub-headline').value = newsData.Subheading;
+                } else { document.getElementById('in-sub-headline').value = ""; }
+                document.getElementById('in-sub-headline').dispatchEvent(new Event('input'));
+
+                document.getElementById('in-news-body').value = newsData.BodyMatter || "";
+                document.getElementById('in-news-body').dispatchEvent(new Event('input'));
+
+                if (wantsBullets && newsData.Bullets && Array.isArray(newsData.Bullets) && newsData.Bullets.length > 0) {
+                    document.getElementById('in-bullets').value = newsData.Bullets.join("\n");
+                } else { document.getElementById('in-bullets').value = ""; }
+                document.getElementById('in-bullets').dispatchEvent(new Event('input'));
+
+                alert("✅ మోడల్ & వార్త రెండు విజయవంతంగా జనరేట్ అయ్యాయి!");
+
+            } catch (error) {
+                console.error("Generation Error:", error);
+                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: " + error.message + "\n\nదయచేసి మీ API కీ కరెక్ట్ గా ఉందో లేదో సరిచూసుకోండి.");
+            } finally {
+                btn.innerText = oldText;
+                btn.disabled = false;
+            }
+        });
+
+        // ==========================================
+        // SAVING AND LOADING PROJECTS LOGIC (FIREBASE INTEGRATED)
+        // ==========================================
+        async function saveProjectData() {
+            let pName = prompt("Project Name (ప్రాజెక్ట్ పేరు ఇవ్వండి):", "My News " + new Date().toLocaleTimeString());
+            if(!pName || pName.trim() === '') return;
+            
             let img2Dropdown = document.getElementById('img-align-2');
-            return {
+            
+            let data = {
                 wrapW: document.getElementById('in-wrap-w').value, ovrCheck: document.getElementById('in-overall-box-check').checked, ovrColor: document.getElementById('in-overall-color').value,
                 bgType: document.getElementById('in-bg-type').value, ovrColor2: document.getElementById('in-overall-color2').value, bgDir: document.getElementById('in-bg-direction').value,
                 logoType: document.getElementById('in-logo-type').value, logoTopSrc: document.getElementById('out-logo-top').src, logoLineCheck: document.getElementById('in-logo-line-check').checked, logoLineColor: document.getElementById('in-logo-line-color').value,
@@ -1022,9 +1254,79 @@
                 newsPrefix: document.getElementById('in-news-prefix').value, newsPrefixBold: document.getElementById('in-news-prefix-bold').checked, newsPrefixColor: document.getElementById('in-news-prefix-color').value, newsPrefixLayout: document.getElementById('in-news-prefix-layout').value,
                 columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
             };
-        };
+            
+            // Firebase లోకి సేవ్ చేయడం
+            if(window.saveProjectToFirebase) {
+                let success = await window.saveProjectToFirebase(pName, data);
+                if(success) {
+                    alert("✅ ప్రాజెక్ట్ '" + pName + "' ఫైర్‌బేస్ (ఆన్‌లైన్) లో సేవ్ అయింది!");
+                    if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
+                } else {
+                    alert("⚠️ ఫైర్‌బేస్‌లో సేవ్ అవ్వలేదు. ఇంటర్నెట్ సరిగా ఉందో లేదో చూడండి.");
+                }
+            } else {
+                // ఫైర్‌బేస్ ఎర్రర్ వస్తే ఫోన్ స్టోరేజ్ లోకి వెళ్ళేలా ఫాల్-బ్యాక్ ఆప్షన్
+                let projects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
+                projects[pName] = data;
+                localStorage.setItem('savedProjectsList', JSON.stringify(projects));
+                alert("✅ ప్రాజెక్ట్ '" + pName + "' మీ డివైజ్ లోకల్‌ స్టోరేజ్ లో సేవ్ అయింది!");
+                if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
+            }
+        }
 
-        window.applyProjectData = function(data, isSilent = false) {
+        async function openProjectsModal() {
+            let container = document.getElementById('projects-list-container');
+            document.getElementById('projects-modal').style.display = 'flex';
+            container.innerHTML = '<p style="color:#00c6ff; font-weight:bold; text-align:center;">Firebase లోడింగ్ అవుతోంది... ఆగండి</p>';
+            
+            let projects = null;
+            if(window.getProjectsFromFirebase) {
+                projects = await window.getProjectsFromFirebase();
+            } else {
+                projects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
+            }
+            
+            window.loadedFirebaseProjects = projects || {};
+            container.innerHTML = '';
+            
+            if(!projects || Object.keys(projects).length === 0) {
+                container.innerHTML = '<p style="color:#888;">No saved projects yet.</p>';
+            } else {
+                for(let pName in projects) {
+                    let div = document.createElement('div'); div.className = 'project-item';
+                    let nameSpan = document.createElement('span'); nameSpan.className = 'project-name'; nameSpan.innerText = pName;
+                    let actions = document.createElement('div'); actions.className = 'project-actions';
+                    
+                    let loadBtn = document.createElement('button'); loadBtn.className = 'btn-load'; loadBtn.innerText = 'Load';
+                    loadBtn.onclick = () => loadProjectByName(pName);
+                    
+                    let delBtn = document.createElement('button'); delBtn.className = 'btn-del'; delBtn.innerText = 'Delete';
+                    delBtn.onclick = async () => { 
+                        if(confirm("ఈ ప్రాజెక్ట్‌ను డిలీట్ చేయాలనుకుంటున్నారా?")) {
+                            loadBtn.innerText = '...'; delBtn.innerText = '...';
+                            if (window.deleteProjectFromFirebase) {
+                                await window.deleteProjectFromFirebase(pName);
+                            } else {
+                                delete projects[pName]; 
+                                localStorage.setItem('savedProjectsList', JSON.stringify(projects)); 
+                            }
+                            openProjectsModal(); 
+                            if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
+                        }
+                    };
+                    
+                    actions.appendChild(loadBtn); actions.appendChild(delBtn);
+                    div.appendChild(nameSpan); div.appendChild(actions);
+                    container.appendChild(div);
+                }
+            }
+        }
+
+        function loadProjectByName(pName, isSilent = false) {
+            // ఫైర్‌బేస్ నుండి లోడ్ అయిన ప్రాజెక్ట్స్
+            let projects = window.loadedFirebaseProjects || JSON.parse(localStorage.getItem('savedProjectsList')) || {};
+            let data = projects[pName]; if(!data) return;
+            
             document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
             document.getElementById('in-bg-type').value = data.bgType || 'solid'; document.getElementById('in-overall-color2').value = data.ovrColor2 || '#e3f2fd'; document.getElementById('in-bg-direction').value = data.bgDir || 'to bottom';
             
@@ -1051,7 +1353,7 @@
             document.getElementById('mt-1').value = data.mt1 !== undefined ? data.mt1 : 0; document.getElementById('mr-1').value = data.mr1 !== undefined ? data.mr1 : 15; document.getElementById('mb-1').value = data.mb1 !== undefined ? data.mb1 : 15; document.getElementById('ml-1').value = data.ml1 !== undefined ? data.ml1 : 15;
             
             if(data.img2Src) { document.getElementById('out-image-2').src = data.img2Src; document.getElementById('out-image-2').style.display = 'block'; imgState[2].uploaded = true; }
-            document.getElementById('img-frame-2').value = data.imgFrame2 || 'none'; document.getElementById('img-stroke-check-2').checked = data.imgStrokeCheck2 || false; document.getElementById('img-stroke-color-2').value = data.imgStrokeColor2 || '#000000'; document.getElementById('img-stroke-w-2').value = data.imgStrokeW2 || 2; document.getElementById('check-cap-2').checked = data.checkCap2 !== undefined ? data.checkCap2 : false; document.getElementById('in-caption-2').value = data.caption2 || ''; let img2Dropdown = document.getElementById('img-align-2'); if(img2Dropdown) img2Dropdown.value = data.imgAlign2 || 'right'; document.getElementById('img-para-2').value = data.imgPara2 || 50; document.getElementById('img-w-2').value = data.imgW2 || 50; 
+            document.getElementById('img-frame-2').value = data.imgFrame2 || 'none'; document.getElementById('img-stroke-check-2').checked = data.imgStrokeCheck2 || false; document.getElementById('img-stroke-color-2').value = data.imgStrokeColor2 || '#000000'; document.getElementById('img-stroke-w-2').value = data.imgStrokeW2 || 2; document.getElementById('check-cap-2').checked = data.checkCap2 !== undefined ? data.checkCap2 : false; document.getElementById('in-caption-2').value = data.caption2 || ''; if(document.getElementById('img-align-2')) document.getElementById('img-align-2').value = data.imgAlign2 || 'right'; document.getElementById('img-para-2').value = data.imgPara2 || 50; document.getElementById('img-w-2').value = data.imgW2 || 50; 
             
             document.getElementById('mt-2').value = data.mt2 !== undefined ? data.mt2 : 0; document.getElementById('mr-2').value = data.mr2 !== undefined ? data.mr2 : 15; document.getElementById('mb-2').value = data.mb2 !== undefined ? data.mb2 : 15; document.getElementById('ml-2').value = data.ml2 !== undefined ? data.ml2 : 15;
             
@@ -1067,13 +1369,11 @@
                 document.getElementById('projects-modal').style.display = 'none';
                 alert("✅ ప్రాజెక్ట్ లోడ్ అయింది!");
             }
-        };
+        }
 
         // ==========================================
-        // EXPORT / DOWNLOAD LOGIC (HIGH SPEED & HD)
+        // EXPORT / DOWNLOAD LOGIC
         // ==========================================
-        let currentImageDataUrl = "";
-        
         async function downloadClipping() {
           if (!navigator.onLine) { alert("⚠️ ఎక్స్‌పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
           const btn = document.getElementById('main-download-btn'); const originalText = btn.innerText;
@@ -1126,6 +1426,7 @@
                 else { alert("మీ యాప్‌లో డైరెక్ట్ షేర్ పనిచేయట్లేదు. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); }
             } catch (error) { alert("షేర్ చేయడంలో ఎర్రర్. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); }
         }
+
     </script>
 </body>
 </html>
