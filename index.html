@@ -276,7 +276,7 @@
                       <input type="file" id="ai-img-file-2" accept="image/*" style="display:none;">
                   </div>
                   
-                  <!-- MANUAL API KEY INPUT FIELD -->
+                  <!-- API KEY LOCAL STORAGE -->
                   <label style="color:#ff6b6b; margin-top:15px;">Gemini API Key (ఇక్కడ పేస్ట్ చేయండి):</label>
                   <input type="password" id="ai-api-key" placeholder="Paste your Gemini API Key here..." value="">
                   
@@ -558,8 +558,7 @@
         
         window.saveProjectToFirebase = function(pName, data) {
             setDoc(doc(db, "newsProjects", pName), data)
-                .then(() => console.log("Firebase sync ok"))
-                .catch(e => { console.error("Firebase sync error:", e); });
+                .catch(e => console.error("Firebase sync error:", e));
         };
 
         window.getProjectsFromFirebase = async function() {
@@ -592,6 +591,18 @@
         let currentImageDataUrl = ""; 
         window.loadedFirebaseProjects = {}; 
         
+        // BUG FIX: API KEY LOCAL STORAGE & HEADLINE BOX FIX
+        window.addEventListener('load', () => {
+            let savedApiKey = localStorage.getItem('gemini_api_key');
+            if(savedApiKey) {
+                document.getElementById('ai-api-key').value = savedApiKey;
+            }
+            document.getElementById('ai-api-key').addEventListener('input', function() {
+                localStorage.setItem('gemini_api_key', this.value.trim());
+            });
+            updateMainHeadlineBox();
+        });
+        
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, function(tag) {
@@ -600,7 +611,6 @@
             });
         }
 
-        // కంప్రెసర్ పద్ధతి మార్చాము: ఫైర్‌బేస్‌లోకి మాత్రమే కంప్రెస్ అవుతుంది, స్క్రీన్ మీద హై క్వాలిటీ లోనే ఉంటుంది!
         function compressBase64(base64Str, isLogo) {
             return new Promise((resolve) => {
                 if (!base64Str || !base64Str.startsWith('data:image')) { resolve(""); return; }
@@ -608,8 +618,19 @@
                 img.onload = function() {
                     let canvas = document.createElement('canvas');
                     let MAX_WIDTH = isLogo ? 300 : 500;
+                    let MAX_HEIGHT = isLogo ? 300 : 500;
                     let width = img.width; let height = img.height;
-                    if (width > MAX_WIDTH) { height = Math.round(height * (MAX_WIDTH / width)); width = MAX_WIDTH; }
+                    
+                    if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+                        if (width > height) {
+                            height = Math.round(height * (MAX_WIDTH / width));
+                            width = MAX_WIDTH;
+                        } else {
+                            width = Math.round(width * (MAX_HEIGHT / height));
+                            height = MAX_HEIGHT;
+                        }
+                    }
+                    
                     canvas.width = width; canvas.height = height;
                     let ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
@@ -758,11 +779,10 @@
         }
         document.getElementById('in-logo-line-check').addEventListener('change', updateLogoLine); document.getElementById('in-logo-line-color').addEventListener('input', updateLogoLine);
         
-        // ఒరిజినల్ క్వాలిటీ రీడర్ వాడాము - ఇమేజెస్ క్వాలిటీ తగ్గదు
         document.getElementById('in-logo-top').addEventListener('change', e => {
             if(e.target.files && e.target.files[0]) {
                 let reader = new FileReader();
-                reader.onload = event => { let el = document.getElementById('out-logo-top'); el.src = event.target.result; el.style.display = 'block'; };
+                reader.onload = event => { let el = document.getElementById('out-logo-top'); el.src = event.target.result; el.style.display = 'block'; document.getElementById('logo-top-w').dispatchEvent(new Event('input')); };
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
@@ -809,7 +829,7 @@
                   hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor; 
               } 
               else { hl.classList.add('main-headline-text'); hl.style.color = txtColor; }
-              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px ${document.getElementById('in-main-stroke-color').value}`; } 
+              if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px${document.getElementById('in-main-stroke-color').value}`; } 
               else { hl.style.webkitTextStroke = 'none'; }
           } else {
               let selectedStyle = document.getElementById('in-special-style').value; hl.classList.add('main-headline-text'); hl.classList.add(selectedStyle); 
@@ -850,7 +870,6 @@
         function setupImageControl(imgNum) {
           document.getElementById(`in-image-${imgNum}`).addEventListener('change', function(e) { 
               if(e.target.files && e.target.files[0]) { 
-                  // ఒరిజినల్ క్వాలిటీ రీడర్ వాడాము
                   let reader = new FileReader();
                   reader.onload = event => {
                       let imgEl = document.getElementById(`out-image-${imgNum}`);
@@ -858,6 +877,7 @@
                       imgEl.style.display = 'block';
                       imgState[imgNum].uploaded = true;
                       applyImageFrameAndStroke(imgNum);
+                      document.getElementById(`img-w-${imgNum}`).dispatchEvent(new Event('input'));
                       rebuildNewsBody();
                   };
                   reader.readAsDataURL(e.target.files[0]);
@@ -1080,13 +1100,25 @@
         }
 
         document.getElementById('ai-img-file-1').addEventListener('change', e => {
-            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg1Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+            if(e.target.files[0]) { 
+                let reader = new FileReader(); 
+                reader.onload = ev => aiImg1Data = ev.target.result; 
+                reader.readAsDataURL(e.target.files[0]); 
+            }
         });
         document.getElementById('ai-img-file-2').addEventListener('change', e => {
-            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg2Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+            if(e.target.files[0]) { 
+                let reader = new FileReader(); 
+                reader.onload = ev => aiImg2Data = ev.target.result; 
+                reader.readAsDataURL(e.target.files[0]); 
+            }
         });
         document.getElementById('ai-logo-file').addEventListener('change', e => {
-            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiSelectedLogoData = ev.target.result; r.readAsDataURL(e.target.files[0]); }
+            if(e.target.files[0]) { 
+                let reader = new FileReader(); 
+                reader.onload = ev => aiSelectedLogoData = ev.target.result; 
+                reader.readAsDataURL(e.target.files[0]); 
+            }
         });
 
         // ==========================================
@@ -1145,30 +1177,27 @@
             btn.innerText = "⏳ జెమిని వార్త రాస్తోంది... దయచేసి ఆగండి";
             btn.disabled = true;
 
-            let activeModel = "gemini-1.5-flash"; 
+            let modelsToTry = [];
             try {
                 const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                if (!modelsRes.ok) {
+                if (modelsRes.ok) {
+                    const modelsData = await modelsRes.json();
+                    const validModels = modelsData.models.filter(m => 
+                        m.supportedGenerationMethods && 
+                        m.supportedGenerationMethods.includes("generateContent") && 
+                        m.name.includes("gemini")
+                    );
+
+                    if (validModels.length > 0) {
+                        validModels.sort((a, b) => b.name.localeCompare(a.name));
+                        let flashModels = validModels.filter(m => m.name.includes("flash"));
+                        let otherModels = validModels.filter(m => !m.name.includes("flash"));
+                        modelsToTry = [...flashModels, ...otherModels].map(m => m.name.split('/')[1]);
+                    }
+                } else {
                     const errData = await modelsRes.json();
                     throw new Error(errData.error ? errData.error.message : "Invalid API Key");
                 }
-                const modelsData = await modelsRes.json();
-                
-                const validModels = modelsData.models.filter(m => 
-                    m.supportedGenerationMethods && 
-                    m.supportedGenerationMethods.includes("generateContent") && 
-                    m.name.includes("gemini")
-                );
-
-                if (validModels.length === 0) {
-                    throw new Error("మీ API కీ కి ఎలాంటి Gemini మోడల్స్ అందుబాటులో లేవు.");
-                }
-
-                let bestModelObj = validModels.find(m => m.name.includes("flash"));
-                if (!bestModelObj) bestModelObj = validModels.find(m => !m.name.includes("pro")); 
-                if (!bestModelObj) bestModelObj = validModels[0]; 
-                
-                activeModel = bestModelObj.name.split('/')[1]; 
             } catch (e) {
                 alert("API కీ ఎర్రర్: " + e.message + "\n\nదయచేసి మీ API కీ కరెక్ట్ గా ఉందో లేదో సరిచూసుకోండి.");
                 btn.innerText = oldText;
@@ -1198,30 +1227,65 @@ JSON Format:
 Input Text:
 ${rawText}`;
 
-            try {
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
-                
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.7 } 
-                    })
-                });
+            let success = false;
+            let aiText = "";
+            let lastErrorMsg = "";
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error ? errData.error.message : 'API Request Failed');
+            for (let i = 0; i < modelsToTry.length; i++) {
+                let activeModel = modelsToTry[i];
+                console.log("Trying Model:", activeModel);
+                
+                try {
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { temperature: 0.7 } 
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        lastErrorMsg = errData.error ? errData.error.message : 'API Request Failed';
+                        continue; 
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if(!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
+                        lastErrorMsg = "Google Safety Filter మీ వార్తను (Crime/Political) బ్లాక్ చేసింది.";
+                        continue; 
+                    }
+
+                    aiText = data.candidates[0].content.parts[0].text;
+                    success = true; 
+                    break;
+
+                } catch (error) {
+                    lastErrorMsg = error.message;
+                    continue; 
                 }
-                
-                const data = await response.json();
-                let aiText = data.candidates[0].content.parts[0].text;
-                
+            }
+
+            if (!success) {
+                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: " + lastErrorMsg + "\n\n(అందుబాటులో ఉన్న అన్ని మోడల్స్ ఫెయిల్ అయ్యాయి. దయచేసి API కీ చెక్ చేయండి లేదా కాసేపు ఆగి ట్రై చేయండి.)");
+                btn.innerText = oldText;
+                btn.disabled = false;
+                return;
+            }
+
+            try {
                 aiText = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
                 const firstBrace = aiText.indexOf('{');
                 const lastBrace = aiText.lastIndexOf('}');
                 if (firstBrace !== -1 && lastBrace !== -1) { aiText = aiText.substring(firstBrace, lastBrace + 1); }
+                
+                // ఫైనల్ JSON బగ్ ఫిక్స్: AI పొరపాటున పంక్తుల మధ్య 'Enter' (New line) ఇస్తే JSON క్రాష్ అవుతుంది.
+                // కాబట్టి ఆ ఎంటర్స్, ట్యాబ్స్ అన్నింటినీ కేవలం ఒక స్పేస్ (Space) లాగా మార్చే బ్రహ్మాస్త్రం ఇది.
+                aiText = aiText.replace(/[\n\r\t]+/g, ' ');
+
                 const newsData = JSON.parse(aiText);
 
                 document.getElementById('in-main-headline').value = newsData.Headline || "";
@@ -1232,7 +1296,7 @@ ${rawText}`;
                 } else { document.getElementById('in-sub-headline').value = ""; }
                 document.getElementById('in-sub-headline').dispatchEvent(new Event('input'));
 
-                document.getElementById('in-news-body').value = newsData.BodyMatter || "";
+                document.getElementById('in-news-body').value = (newsData.BodyMatter || "").replace(/\\n/g, '\n');
                 document.getElementById('in-news-body').dispatchEvent(new Event('input'));
 
                 if (wantsBullets && newsData.Bullets && Array.isArray(newsData.Bullets) && newsData.Bullets.length > 0) {
@@ -1244,7 +1308,7 @@ ${rawText}`;
 
             } catch (error) {
                 console.error("Generation Error:", error);
-                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: " + error.message + "\n\nదయచేసి మీ API కీ కరెక్ట్ గా ఉందో లేదో సరిచూసుకోండి.");
+                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: JSON Parsing Failed");
             } finally {
                 btn.innerText = oldText;
                 btn.disabled = false;
@@ -1262,7 +1326,6 @@ ${rawText}`;
             let oldBtnText = btn.innerText;
             btn.innerText = "⏳ Saving...";
             
-            // సేవ్ చేసేటప్పుడు మాత్రమే ఇమేజెస్ కంప్రెస్ అవుతాయి (UI లో డిజైన్ పాడుకాదు)
             let srcImg1 = imgState[1].uploaded ? document.getElementById('out-image-1').src : "";
             let srcImg2 = imgState[2].uploaded ? document.getElementById('out-image-2').src : "";
             let srcLogoTop = document.getElementById('out-logo-top').style.display !== 'none' ? document.getElementById('out-logo-top').src : "";
@@ -1364,18 +1427,15 @@ ${rawText}`;
             }
         }
 
-        // బ్రోకెన్ ఐకాన్ రానివ్వకుండా స్ట్రిక్ట్ ఫిల్టర్ (Broken Image Fix)
         function loadProjectByName(pName, isSilent = false) {
             let projects = window.loadedFirebaseProjects || JSON.parse(localStorage.getItem('savedProjectsList')) || {};
             let data = projects[pName]; if(!data) return;
             
-            // 1. ముందు పాత ఇమేజెస్ అన్నీ పూర్తిగా క్లియర్ (Reset) చేయాలి
             imgState[1].uploaded = false; document.getElementById('out-image-1').src = ""; document.getElementById('out-image-1').style.display = 'none';
             imgState[2].uploaded = false; document.getElementById('out-image-2').src = ""; document.getElementById('out-image-2').style.display = 'none';
             document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none';
             stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
 
-            // 2. డేటా అప్లై చేయడం
             document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
             document.getElementById('in-bg-type').value = data.bgType || 'solid'; document.getElementById('in-overall-color2').value = data.ovrColor2 || '#e3f2fd'; document.getElementById('in-bg-direction').value = data.bgDir || 'to bottom';
             document.getElementById('in-logo-type').value = data.logoType || 'top'; 
@@ -1385,6 +1445,7 @@ ${rawText}`;
             
             document.getElementById('stamp-align').value = data.stampAlign || 'center'; document.getElementById('stamp-w').value = data.stampW || 30; document.getElementById('stamp-para-pos').value = data.stampParaPos || 50; 
             document.getElementById('smt').value = data.smt !== undefined ? data.smt : 0; document.getElementById('smr').value = data.smr !== undefined ? data.smr : 15; document.getElementById('smb').value = data.smb !== undefined ? data.smb : 15; document.getElementById('sml').value = data.sml !== undefined ? data.sml : 15;
+
             document.getElementById('in-sub-headline').value = data.subHl; document.getElementById('in-sub-font').value = data.subFont || "'Mandali', sans-serif"; document.getElementById('in-sub-color').value = data.subColor || "#cc0000"; document.getElementById('in-sub-size').value = data.subSize || 18; document.getElementById('in-sub-lh').value = data.subLh || 1.3; document.getElementById('in-sub-y').value = data.subY || 0;
             document.getElementById('in-main-headline').value = data.mainHl; document.getElementById('in-main-mode').value = data.mainMode || 'normal'; document.getElementById('in-main-font').value = data.mainFont || "'Ramabhadra', sans-serif"; document.getElementById('in-main-color').value = data.mainColor || "#002b80"; document.getElementById('in-main-bg-check').checked = data.mainBgCheck || false; document.getElementById('in-main-bg-color').value = data.mainBgColor || "#002b80"; document.getElementById('in-main-stroke-check').checked = data.mainStrokeCheck || false; document.getElementById('in-main-stroke-color').value = data.mainStrokeColor || "#ffffff"; document.getElementById('in-main-stroke-w').value = data.mainStrokeW || 1; document.getElementById('in-special-style').value = data.mainStyle || 'style-1'; document.getElementById('in-main-size').value = data.mainSize || 36; document.getElementById('in-main-lh').value = data.mainLh || 1.3; document.getElementById('in-main-y').value = data.mainY || 0;
             document.getElementById('in-main-bg-shape').value = data.mainBgShape || 'bg-shape-normal'; document.getElementById('in-special-color-check').checked = data.specialColorCheck || false; document.getElementById('in-special-color').value = data.specialColor || '#ffffff'; document.getElementById('special-color-wrap').style.display = (data.specialColorCheck || false) ? 'flex' : 'none';
@@ -1399,7 +1460,6 @@ ${rawText}`;
             document.getElementById('in-news-prefix').value = data.newsPrefix || ''; document.getElementById('in-news-prefix-bold').checked = data.newsPrefixBold !== undefined ? data.newsPrefixBold : true; document.getElementById('in-news-prefix-color').value = data.newsPrefixColor || '#d32f2f'; document.getElementById('in-news-prefix-layout').value = data.newsPrefixLayout || 'inline';
             document.getElementById('in-columns').value = data.columns || 2; document.getElementById('in-body-font').value = data.bodyFont || "'Tiro Telugu', serif"; document.getElementById('in-body-size').value = data.bodySize || 17; document.getElementById('in-body-lh').value = data.bodyLh || 1.5; document.getElementById('in-news-body').value = data.newsBody || ''; rawNewsText = data.newsBody || '';
 
-            // 3. కచ్చితమైన ఇమేజ్ ఉన్నప్పుడు మాత్రమే యాడ్ చేయడం (బ్రోకెన్ ఐకాన్స్ రాకుండా)
             if(data.logoTopSrc && data.logoTopSrc.startsWith('data:image')) { 
                 document.getElementById('out-logo-top').src = data.logoTopSrc; 
                 document.getElementById('out-logo-top').style.display = 'block'; 
@@ -1430,11 +1490,16 @@ ${rawText}`;
         }
 
         // ==========================================
-        // EXPORT / DOWNLOAD LOGIC
+        // EXPORT / DOWNLOAD LOGIC (Double-Click Lock & Error Zoom Fix)
         // ==========================================
         async function downloadClipping() {
           if (!navigator.onLine) { alert("⚠️ ఎక్స్‌పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
-          const btn = document.getElementById('main-download-btn'); const originalText = btn.innerText;
+          const btn = document.getElementById('main-download-btn'); 
+          const originalText = btn.innerText;
+          
+          btn.disabled = true;
+          btn.style.opacity = '0.5';
+          btn.style.pointerEvents = 'none'; 
           
           document.getElementById('modal-title').innerText = "⏳ Processing...";
           document.getElementById('modal-desc').innerText = "ప్లీజ్ వెయిట్... Full HD ఇమేజ్ జనరేట్ అవుతోంది.";
@@ -1459,10 +1524,16 @@ ${rawText}`;
               document.getElementById('modal-desc').innerHTML = "👇 కింది ఫోటో పైన గట్టిగా నొక్కిపట్టి (Long Press) <br>'Save Image' లేదా 'Share' చేసుకోండి.";
               document.getElementById('modal-buttons').style.display = 'flex';
               
-              scaleContainer.style.transform = oldScale; btn.innerText = originalText;
+              scaleContainer.style.transform = oldScale; 
           } catch (err) {
               console.error(err); alert("ఇమేజ్ జనరేట్ చేయడంలో సాంకేతిక లోపం వచ్చింది.");
-              document.getElementById('scale-container').style.transform = 'scale(1)'; btn.innerText = originalText; document.getElementById('download-modal').style.display = 'none';
+              document.getElementById('download-modal').style.display = 'none';
+              updateScaling(); 
+          } finally {
+              btn.innerText = originalText;
+              btn.disabled = false;
+              btn.style.opacity = '1';
+              btn.style.pointerEvents = 'auto';
           }
         }
 
@@ -1482,7 +1553,10 @@ ${rawText}`;
                 const file = new File([blob], 'NewsClipping_Full_HD.jpg', { type: 'image/jpeg' });
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'News Clipping' }); } 
                 else { alert("మీ యాప్‌లో డైరెక్ట్ షేర్ పనిచేయట్లేదు. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); }
-            } catch (error) { alert("షేర్ చేయడంలో ఎర్రర్. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); }
+            } catch (error) { 
+                if (error.name === "AbortError") return; 
+                alert("షేర్ చేయడంలో ఎర్రర్. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); 
+            }
         }
 
     </script>
