@@ -559,11 +559,7 @@
         window.saveProjectToFirebase = function(pName, data) {
             setDoc(doc(db, "newsProjects", pName), data)
                 .then(() => console.log("Firebase sync ok"))
-                .catch(e => {
-                    console.error("Firebase sync error:", e);
-                    // ఇక్కడ గూగుల్ ఎర్రర్ ఉంటే చూపిస్తుంది
-                    alert("ఫైర్‌బేస్ ఎర్రర్: " + e.message);
-                });
+                .catch(e => { console.error("Firebase sync error:", e); });
         };
 
         window.getProjectsFromFirebase = async function() {
@@ -596,7 +592,6 @@
         let currentImageDataUrl = ""; 
         window.loadedFirebaseProjects = {}; 
         
-        // --- BASE FUNCTIONS ---
         function escapeHTML(str) {
             if (!str) return '';
             return str.replace(/[&<>'"]/g, function(tag) {
@@ -605,41 +600,28 @@
             });
         }
 
-        // ADVANCED COMPRESSOR - ఫైర్‌బేస్ "1MB లిమిట్" దాటకుండా పర్ఫెక్ట్ సైజ్ తగ్గింపు (WebP వాడాము)
-        function resizeImageFile(file, callback, isLogo = false) {
-            let reader = new FileReader();
-            reader.onload = function(e) {
+        // కంప్రెసర్ పద్ధతి మార్చాము: ఫైర్‌బేస్‌లోకి మాత్రమే కంప్రెస్ అవుతుంది, స్క్రీన్ మీద హై క్వాలిటీ లోనే ఉంటుంది!
+        function compressBase64(base64Str, isLogo) {
+            return new Promise((resolve) => {
+                if (!base64Str || !base64Str.startsWith('data:image')) { resolve(""); return; }
                 let img = new Image();
                 img.onload = function() {
                     let canvas = document.createElement('canvas');
-                    let MAX_WIDTH = isLogo ? 300 : 500; 
-                    let width = img.width;
-                    let height = img.height;
-                    if (width > MAX_WIDTH) {
-                        height = Math.round(height * (MAX_WIDTH / width));
-                        width = MAX_WIDTH;
-                    }
-                    canvas.width = width;
-                    canvas.height = height;
+                    let MAX_WIDTH = isLogo ? 300 : 500;
+                    let width = img.width; let height = img.height;
+                    if (width > MAX_WIDTH) { height = Math.round(height * (MAX_WIDTH / width)); width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
                     let ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // WebP బ్యాక్‌గ్రౌండ్ పోకుండా క్వాలిటీ అద్భుతంగా ఇస్తుంది
                     let mimeType = isLogo ? 'image/webp' : 'image/jpeg';
                     let quality = isLogo ? 0.8 : 0.6; 
-                    
                     let dataUrl = canvas.toDataURL(mimeType, quality);
-                    
-                    // కొన్ని పాత బ్రౌజర్లు WebP సపోర్ట్ చేయకపోతే PNG కి మారుతుంది
-                    if(isLogo && dataUrl.indexOf('data:image/webp') === -1) {
-                         dataUrl = canvas.toDataURL('image/png');
-                    }
-                    
-                    callback(dataUrl);
+                    if(isLogo && dataUrl.indexOf('data:image/webp') === -1) { dataUrl = canvas.toDataURL('image/png'); }
+                    resolve(dataUrl);
                 };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+                img.onerror = () => resolve(""); 
+                img.src = base64Str;
+            });
         }
 
         function savePrefix() {
@@ -776,19 +758,21 @@
         }
         document.getElementById('in-logo-line-check').addEventListener('change', updateLogoLine); document.getElementById('in-logo-line-color').addEventListener('input', updateLogoLine);
         
-        document.getElementById('in-logo-top').addEventListener('change', e => loadLogoFile(e, 'out-logo-top'));
-        document.getElementById('in-logo-stamp').addEventListener('change', e => { loadLogoFile(e, 'out-logo-stamp'); });
-        
-        function loadLogoFile(e, outId) { 
-            if(e.target.files && e.target.files[0]) { 
-                resizeImageFile(e.target.files[0], function(base64Data) {
-                    let imgEl = document.getElementById(outId);
-                    imgEl.src = base64Data;
-                    imgEl.style.display = 'block';
-                    if(outId === 'out-logo-stamp') { stampUploaded = true; rebuildNewsBody(); }
-                }, true);
-            } 
-        }
+        // ఒరిజినల్ క్వాలిటీ రీడర్ వాడాము - ఇమేజెస్ క్వాలిటీ తగ్గదు
+        document.getElementById('in-logo-top').addEventListener('change', e => {
+            if(e.target.files && e.target.files[0]) {
+                let reader = new FileReader();
+                reader.onload = event => { let el = document.getElementById('out-logo-top'); el.src = event.target.result; el.style.display = 'block'; };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+        document.getElementById('in-logo-stamp').addEventListener('change', e => {
+            if(e.target.files && e.target.files[0]) {
+                let reader = new FileReader();
+                reader.onload = event => { let el = document.getElementById('out-logo-stamp'); el.src = event.target.result; el.style.display = 'block'; stampUploaded = true; rebuildNewsBody(); };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
 
         document.getElementById('stamp-align').addEventListener('change', rebuildNewsBody);
         document.getElementById('stamp-w').addEventListener('input', function() { document.getElementById('out-stamp-container').style.width = this.value + '%'; });
@@ -866,14 +850,17 @@
         function setupImageControl(imgNum) {
           document.getElementById(`in-image-${imgNum}`).addEventListener('change', function(e) { 
               if(e.target.files && e.target.files[0]) { 
-                  resizeImageFile(e.target.files[0], function(base64Data) {
+                  // ఒరిజినల్ క్వాలిటీ రీడర్ వాడాము
+                  let reader = new FileReader();
+                  reader.onload = event => {
                       let imgEl = document.getElementById(`out-image-${imgNum}`);
-                      imgEl.src = base64Data;
+                      imgEl.src = event.target.result;
                       imgEl.style.display = 'block';
                       imgState[imgNum].uploaded = true;
                       applyImageFrameAndStroke(imgNum);
                       rebuildNewsBody();
-                  }, false);
+                  };
+                  reader.readAsDataURL(e.target.files[0]);
               } 
           });
           document.getElementById(`check-cap-${imgNum}`).addEventListener('change', function() { document.getElementById(`out-caption-${imgNum}`).style.display = this.checked ? 'block' : 'none'; });
@@ -1017,15 +1004,17 @@
 
         let aiSelectedLogoData = ""; 
 
-        function saveLogoToStorage(type) {
+        async function saveLogoToStorage(type) {
             let imgEl = document.getElementById(type === 'top' ? 'out-logo-top' : 'out-logo-stamp');
             if(!imgEl.src || imgEl.src.length < 100) { alert("దయచేసి ముందుగా లోగో/స్టాంప్ అప్‌లోడ్ చేయండి!"); return; }
-            saveBaseLogo(imgEl.src, type);
+            let cData = await compressBase64(imgEl.src, true);
+            saveBaseLogo(cData, type);
         }
 
-        function saveAILogo() {
+        async function saveAILogo() {
             if(!aiSelectedLogoData) { alert("దయచేసి ముందుగా లోగో ఫైల్ ఎంచుకోండి!"); return; }
-            saveBaseLogo(aiSelectedLogoData, 'top');
+            let cData = await compressBase64(aiSelectedLogoData, true);
+            saveBaseLogo(cData, 'top');
             alert("లోగో గ్యాలరీలో సేవ్ అయింది!");
         }
 
@@ -1038,7 +1027,7 @@
                     localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); 
                     renderSavedLogos(type); 
                 } catch (e) {
-                    // మెమొరీ ఫుల్ అయితే సైలెంట్
+                    // సైలెంట్ ఎర్రర్
                 }
             } 
         }
@@ -1091,15 +1080,14 @@
         }
 
         document.getElementById('ai-img-file-1').addEventListener('change', e => {
-            if(e.target.files[0]) { resizeImageFile(e.target.files[0], data => aiImg1Data = data, false); }
+            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg1Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
         });
         document.getElementById('ai-img-file-2').addEventListener('change', e => {
-            if(e.target.files[0]) { resizeImageFile(e.target.files[0], data => aiImg2Data = data, false); }
+            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiImg2Data = ev.target.result; r.readAsDataURL(e.target.files[0]); }
         });
         document.getElementById('ai-logo-file').addEventListener('change', e => {
-            if(e.target.files[0]) { resizeImageFile(e.target.files[0], data => aiSelectedLogoData = data, true); }
+            if(e.target.files[0]) { let r = new FileReader(); r.onload = ev => aiSelectedLogoData = ev.target.result; r.readAsDataURL(e.target.files[0]); }
         });
-
 
         // ==========================================
         // THE MAIN AI GENERATION LOGIC
@@ -1266,58 +1254,60 @@ ${rawText}`;
         // ==========================================
         // SAVING AND LOADING PROJECTS LOGIC (FIREBASE INTEGRATED)
         // ==========================================
-        function saveProjectData() {
+        async function saveProjectData() {
             let pName = prompt("Project Name (ప్రాజెక్ట్ పేరు ఇవ్వండి):", "My News " + new Date().toLocaleTimeString());
             if(!pName || pName.trim() === '') return;
             
             let btn = document.getElementById('main-save-btn');
             let oldBtnText = btn.innerText;
+            btn.innerText = "⏳ Saving...";
             
-            let data = {
+            // సేవ్ చేసేటప్పుడు మాత్రమే ఇమేజెస్ కంప్రెస్ అవుతాయి (UI లో డిజైన్ పాడుకాదు)
+            let srcImg1 = imgState[1].uploaded ? document.getElementById('out-image-1').src : "";
+            let srcImg2 = imgState[2].uploaded ? document.getElementById('out-image-2').src : "";
+            let srcLogoTop = document.getElementById('out-logo-top').style.display !== 'none' ? document.getElementById('out-logo-top').src : "";
+            let srcLogoStamp = stampUploaded ? document.getElementById('out-logo-stamp').src : "";
+
+            let cImg1 = await compressBase64(srcImg1, false);
+            let cImg2 = await compressBase64(srcImg2, false);
+            let cLogoTop = await compressBase64(srcLogoTop, true);
+            let cLogoStamp = await compressBase64(srcLogoStamp, true);
+            
+            let img2Dropdown = document.getElementById('img-align-2');
+            
+            let rawData = {
                 wrapW: document.getElementById('in-wrap-w').value, ovrCheck: document.getElementById('in-overall-box-check').checked, ovrColor: document.getElementById('in-overall-color').value,
                 bgType: document.getElementById('in-bg-type').value, ovrColor2: document.getElementById('in-overall-color2').value, bgDir: document.getElementById('in-bg-direction').value,
-                logoType: document.getElementById('in-logo-type').value, logoTopSrc: document.getElementById('out-logo-top').src, logoLineCheck: document.getElementById('in-logo-line-check').checked, logoLineColor: document.getElementById('in-logo-line-color').value,
+                logoType: document.getElementById('in-logo-type').value, logoTopSrc: cLogoTop, logoLineCheck: document.getElementById('in-logo-line-check').checked, logoLineColor: document.getElementById('in-logo-line-color').value,
                 logoTopW: document.getElementById('logo-top-w').value, logoTopH: document.getElementById('logo-top-h').value,
-                logoStampSrc: document.getElementById('out-logo-stamp').src, stampAlign: document.getElementById('stamp-align').value, stampW: document.getElementById('stamp-w').value, stampParaPos: document.getElementById('stamp-para-pos').value,
+                logoStampSrc: cLogoStamp, stampAlign: document.getElementById('stamp-align').value, stampW: document.getElementById('stamp-w').value, stampParaPos: document.getElementById('stamp-para-pos').value,
                 smt: document.getElementById('smt').value, smr: document.getElementById('smr').value, smb: document.getElementById('smb').value, sml: document.getElementById('sml').value,
                 subHl: document.getElementById('in-sub-headline').value, subFont: document.getElementById('in-sub-font').value, subColor: document.getElementById('in-sub-color').value, subSize: document.getElementById('in-sub-size').value, subLh: document.getElementById('in-sub-lh').value, subY: document.getElementById('in-sub-y').value,
                 mainHl: document.getElementById('in-main-headline').value, mainMode: document.getElementById('in-main-mode').value, mainFont: document.getElementById('in-main-font').value, mainColor: document.getElementById('in-main-color').value, mainBgCheck: document.getElementById('in-main-bg-check').checked, mainBgColor: document.getElementById('in-main-bg-color').value, mainStrokeCheck: document.getElementById('in-main-stroke-check').checked, mainStrokeColor: document.getElementById('in-main-stroke-color').value, mainStrokeW: document.getElementById('in-main-stroke-w').value, mainStyle: document.getElementById('in-special-style').value, mainSize: document.getElementById('in-main-size').value, mainLh: document.getElementById('in-main-lh').value, mainY: document.getElementById('in-main-y').value, mainBgShape: document.getElementById('in-main-bg-shape').value, specialColorCheck: document.getElementById('in-special-color-check').checked, specialColor: document.getElementById('in-special-color').value,
                 bullets: document.getElementById('in-bullets').value, bulletsAlign: document.getElementById('in-bullets-align').value, bulletsParaPos: document.getElementById('bullets-para-pos').value, bulletsBoxCheck: document.getElementById('in-bullets-box-check').checked, bulletsBgColor: document.getElementById('in-bullets-bg-color').value, bulletsSize: document.getElementById('in-bullets-size').value, bulletsY: document.getElementById('in-bullets-y').value,
-                img1Src: document.getElementById('out-image-1').src, imgFrame1: document.getElementById('img-frame-1').value, imgStrokeCheck1: document.getElementById('img-stroke-check-1').checked, imgStrokeColor1: document.getElementById('img-stroke-color-1').value, imgStrokeW1: document.getElementById('img-stroke-w-1').value, checkCap1: document.getElementById('check-cap-1').checked, caption1: document.getElementById('in-caption-1').value, imgAlign1: document.getElementById('img-align-1').value, imgPara1: document.getElementById('img-para-1').value, imgW1: document.getElementById('img-w-1').value, 
+                img1Src: cImg1, imgFrame1: document.getElementById('img-frame-1').value, imgStrokeCheck1: document.getElementById('img-stroke-check-1').checked, imgStrokeColor1: document.getElementById('img-stroke-color-1').value, imgStrokeW1: document.getElementById('img-stroke-w-1').value, checkCap1: document.getElementById('check-cap-1').checked, caption1: document.getElementById('in-caption-1').value, imgAlign1: document.getElementById('img-align-1').value, imgPara1: document.getElementById('img-para-1').value, imgW1: document.getElementById('img-w-1').value, 
                 mt1: document.getElementById('mt-1').value, mr1: document.getElementById('mr-1').value, mb1: document.getElementById('mb-1').value, ml1: document.getElementById('ml-1').value,
-                img2Src: document.getElementById('out-image-2').src, imgFrame2: document.getElementById('img-frame-2').value, imgStrokeCheck2: document.getElementById('img-stroke-check-2').checked, imgStrokeColor2: document.getElementById('img-stroke-color-2').value, imgStrokeW2: document.getElementById('img-stroke-w-2').value, checkCap2: document.getElementById('check-cap-2').checked, caption2: document.getElementById('in-caption-2').value, imgAlign2: document.getElementById('img-align-2') ? document.getElementById('img-align-2').value : 'right', imgPara2: document.getElementById('img-para-2').value, imgW2: document.getElementById('img-w-2').value,
+                img2Src: cImg2, imgFrame2: document.getElementById('img-frame-2').value, imgStrokeCheck2: document.getElementById('img-stroke-check-2').checked, imgStrokeColor2: document.getElementById('img-stroke-color-2').value, imgStrokeW2: document.getElementById('img-stroke-w-2').value, checkCap2: document.getElementById('check-cap-2').checked, caption2: document.getElementById('in-caption-2').value, imgAlign2: img2Dropdown ? img2Dropdown.value : 'right', imgPara2: document.getElementById('img-para-2').value, imgW2: document.getElementById('img-w-2').value,
                 mt2: document.getElementById('mt-2').value, mr2: document.getElementById('mr-2').value, mb2: document.getElementById('mb-2').value, ml2: document.getElementById('ml-2').value,
                 newsPrefix: document.getElementById('in-news-prefix').value, newsPrefixBold: document.getElementById('in-news-prefix-bold').checked, newsPrefixColor: document.getElementById('in-news-prefix-color').value, newsPrefixLayout: document.getElementById('in-news-prefix-layout').value,
                 columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
             };
             
-            // SECURITY LOCK: పాత లోగోలు 1MB దాటితే క్రాష్ అవ్వకుండా యూజర్‌కి చెప్పే వార్నింగ్
-            if (data.logoTopSrc && data.logoTopSrc.length > 900000) {
-                alert("⚠️ మీ పాత Top Logo సైజు (1MB పైన) చాలా పెద్దగా ఉంది. దయచేసి 'Logo' ట్యాబ్‌లో పాత లోగోను డిలీట్ చేసి (✖), మళ్లీ కొత్తగా అప్‌లోడ్ చేయండి.");
-                return;
-            }
-            if (data.logoStampSrc && data.logoStampSrc.length > 900000) {
-                alert("⚠️ మీ పాత రౌండ్ స్టాంప్ సైజు (1MB పైన) చాలా పెద్దగా ఉంది. దయచేసి పాత దాన్ని డిలీట్ చేసి మళ్లీ అప్‌లోడ్ చేయండి.");
-                return;
-            }
-            if (data.img1Src && data.img1Src.length > 900000) {
-                alert("⚠️ మీ ఇమేజ్-1 సైజు చాలా పెద్దగా ఉంది. దయచేసి మళ్లీ అప్‌లోడ్ చేయండి.");
-                return;
-            }
+            let cleanData = JSON.parse(JSON.stringify(rawData));
 
             try {
                 let localProjects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
-                localProjects[pName] = data;
+                localProjects[pName] = cleanData;
                 localStorage.setItem('savedProjectsList', JSON.stringify(localProjects));
             } catch (localErr) {
                 // లోకల్ ఫుల్ అయితే సైలెంట్
             }
             
             if(window.saveProjectToFirebase) {
-                window.saveProjectToFirebase(pName, data);
+                window.saveProjectToFirebase(pName, cleanData);
             }
             
-            alert("✅ ప్రాజెక్ట్ '" + pName + "' స్ప్లిట్ సెకండ్‌లో సేవ్ అయింది!");
+            alert("✅ ప్రాజెక్ట్ '" + pName + "' స్ప్లిట్ సెకండ్‌లో పర్ఫెక్ట్‌గా సేవ్ అయింది!");
             
             btn.innerText = oldBtnText;
             if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
@@ -1374,51 +1364,68 @@ ${rawText}`;
             }
         }
 
+        // బ్రోకెన్ ఐకాన్ రానివ్వకుండా స్ట్రిక్ట్ ఫిల్టర్ (Broken Image Fix)
         function loadProjectByName(pName, isSilent = false) {
             let projects = window.loadedFirebaseProjects || JSON.parse(localStorage.getItem('savedProjectsList')) || {};
             let data = projects[pName]; if(!data) return;
             
+            // 1. ముందు పాత ఇమేజెస్ అన్నీ పూర్తిగా క్లియర్ (Reset) చేయాలి
+            imgState[1].uploaded = false; document.getElementById('out-image-1').src = ""; document.getElementById('out-image-1').style.display = 'none';
+            imgState[2].uploaded = false; document.getElementById('out-image-2').src = ""; document.getElementById('out-image-2').style.display = 'none';
+            document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none';
+            stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
+
+            // 2. డేటా అప్లై చేయడం
             document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
             document.getElementById('in-bg-type').value = data.bgType || 'solid'; document.getElementById('in-overall-color2').value = data.ovrColor2 || '#e3f2fd'; document.getElementById('in-bg-direction').value = data.bgDir || 'to bottom';
-            
             document.getElementById('in-logo-type').value = data.logoType || 'top'; 
-            if(data.logoTopSrc) { document.getElementById('out-logo-top').src = data.logoTopSrc; document.getElementById('out-logo-top').style.display = 'block'; }
             
             document.getElementById('in-logo-line-check').checked = data.logoLineCheck !== undefined ? data.logoLineCheck : true; document.getElementById('in-logo-line-color').value = data.logoLineColor || '#000000';
             document.getElementById('logo-top-w').value = data.logoTopW || 100; document.getElementById('logo-top-h').value = data.logoTopH || 120; document.getElementById('out-logo-top').style.width = (data.logoTopW || 100) + '%'; document.getElementById('out-logo-top').style.height = (data.logoTopH || 120) + 'px';
             
-            if(data.logoStampSrc) { document.getElementById('out-logo-stamp').src = data.logoStampSrc; document.getElementById('out-logo-stamp').style.display = 'block'; }
-            
             document.getElementById('stamp-align').value = data.stampAlign || 'center'; document.getElementById('stamp-w').value = data.stampW || 30; document.getElementById('stamp-para-pos').value = data.stampParaPos || 50; 
-            
             document.getElementById('smt').value = data.smt !== undefined ? data.smt : 0; document.getElementById('smr').value = data.smr !== undefined ? data.smr : 15; document.getElementById('smb').value = data.smb !== undefined ? data.smb : 15; document.getElementById('sml').value = data.sml !== undefined ? data.sml : 15;
-
             document.getElementById('in-sub-headline').value = data.subHl; document.getElementById('in-sub-font').value = data.subFont || "'Mandali', sans-serif"; document.getElementById('in-sub-color').value = data.subColor || "#cc0000"; document.getElementById('in-sub-size').value = data.subSize || 18; document.getElementById('in-sub-lh').value = data.subLh || 1.3; document.getElementById('in-sub-y').value = data.subY || 0;
             document.getElementById('in-main-headline').value = data.mainHl; document.getElementById('in-main-mode').value = data.mainMode || 'normal'; document.getElementById('in-main-font').value = data.mainFont || "'Ramabhadra', sans-serif"; document.getElementById('in-main-color').value = data.mainColor || "#002b80"; document.getElementById('in-main-bg-check').checked = data.mainBgCheck || false; document.getElementById('in-main-bg-color').value = data.mainBgColor || "#002b80"; document.getElementById('in-main-stroke-check').checked = data.mainStrokeCheck || false; document.getElementById('in-main-stroke-color').value = data.mainStrokeColor || "#ffffff"; document.getElementById('in-main-stroke-w').value = data.mainStrokeW || 1; document.getElementById('in-special-style').value = data.mainStyle || 'style-1'; document.getElementById('in-main-size').value = data.mainSize || 36; document.getElementById('in-main-lh').value = data.mainLh || 1.3; document.getElementById('in-main-y').value = data.mainY || 0;
             document.getElementById('in-main-bg-shape').value = data.mainBgShape || 'bg-shape-normal'; document.getElementById('in-special-color-check').checked = data.specialColorCheck || false; document.getElementById('in-special-color').value = data.specialColor || '#ffffff'; document.getElementById('special-color-wrap').style.display = (data.specialColorCheck || false) ? 'flex' : 'none';
             document.getElementById('in-bullets').value = data.bullets || ''; document.getElementById('in-bullets-align').value = data.bulletsAlign || 'top'; document.getElementById('bullets-para-pos').value = data.bulletsParaPos || 0; document.getElementById('in-bullets-box-check').checked = data.bulletsBoxCheck || false; document.getElementById('in-bullets-bg-color').value = data.bulletsBgColor || '#e3f2fd'; document.getElementById('in-bullets-size').value = data.bulletsSize || 16; document.getElementById('in-bullets-y').value = data.bulletsY || 0;
             
-            if(data.img1Src) { document.getElementById('out-image-1').src = data.img1Src; document.getElementById('out-image-1').style.display = 'block'; imgState[1].uploaded = true; }
             document.getElementById('img-frame-1').value = data.imgFrame1 || 'none'; document.getElementById('img-stroke-check-1').checked = data.imgStrokeCheck1 || false; document.getElementById('img-stroke-color-1').value = data.imgStrokeColor1 || '#000000'; document.getElementById('img-stroke-w-1').value = data.imgStrokeW1 || 2; document.getElementById('check-cap-1').checked = data.checkCap1 !== undefined ? data.checkCap1 : true; document.getElementById('in-caption-1').value = data.caption1 || ''; document.getElementById('img-align-1').value = data.imgAlign1 || 'top'; document.getElementById('img-para-1').value = data.imgPara1 || 0; document.getElementById('img-w-1').value = data.imgW1 || 100; 
-            
             document.getElementById('mt-1').value = data.mt1 !== undefined ? data.mt1 : 0; document.getElementById('mr-1').value = data.mr1 !== undefined ? data.mr1 : 15; document.getElementById('mb-1').value = data.mb1 !== undefined ? data.mb1 : 15; document.getElementById('ml-1').value = data.ml1 !== undefined ? data.ml1 : 15;
             
-            if(data.img2Src) { document.getElementById('out-image-2').src = data.img2Src; document.getElementById('out-image-2').style.display = 'block'; imgState[2].uploaded = true; }
             document.getElementById('img-frame-2').value = data.imgFrame2 || 'none'; document.getElementById('img-stroke-check-2').checked = data.imgStrokeCheck2 || false; document.getElementById('img-stroke-color-2').value = data.imgStrokeColor2 || '#000000'; document.getElementById('img-stroke-w-2').value = data.imgStrokeW2 || 2; document.getElementById('check-cap-2').checked = data.checkCap2 !== undefined ? data.checkCap2 : false; document.getElementById('in-caption-2').value = data.caption2 || ''; if(document.getElementById('img-align-2')) document.getElementById('img-align-2').value = data.imgAlign2 || 'right'; document.getElementById('img-para-2').value = data.imgPara2 || 50; document.getElementById('img-w-2').value = data.imgW2 || 50; 
-            
             document.getElementById('mt-2').value = data.mt2 !== undefined ? data.mt2 : 0; document.getElementById('mr-2').value = data.mr2 !== undefined ? data.mr2 : 15; document.getElementById('mb-2').value = data.mb2 !== undefined ? data.mb2 : 15; document.getElementById('ml-2').value = data.ml2 !== undefined ? data.ml2 : 15;
             
             document.getElementById('in-news-prefix').value = data.newsPrefix || ''; document.getElementById('in-news-prefix-bold').checked = data.newsPrefixBold !== undefined ? data.newsPrefixBold : true; document.getElementById('in-news-prefix-color').value = data.newsPrefixColor || '#d32f2f'; document.getElementById('in-news-prefix-layout').value = data.newsPrefixLayout || 'inline';
             document.getElementById('in-columns').value = data.columns || 2; document.getElementById('in-body-font').value = data.bodyFont || "'Tiro Telugu', serif"; document.getElementById('in-body-size').value = data.bodySize || 17; document.getElementById('in-body-lh').value = data.bodyLh || 1.5; document.getElementById('in-news-body').value = data.newsBody || ''; rawNewsText = data.newsBody || '';
-            
-            if(data.logoType === 'stamp' && data.logoStampSrc) { stampUploaded = true; }
+
+            // 3. కచ్చితమైన ఇమేజ్ ఉన్నప్పుడు మాత్రమే యాడ్ చేయడం (బ్రోకెన్ ఐకాన్స్ రాకుండా)
+            if(data.logoTopSrc && data.logoTopSrc.startsWith('data:image')) { 
+                document.getElementById('out-logo-top').src = data.logoTopSrc; 
+                document.getElementById('out-logo-top').style.display = 'block'; 
+            }
+            if(data.logoStampSrc && data.logoStampSrc.startsWith('data:image')) { 
+                document.getElementById('out-logo-stamp').src = data.logoStampSrc; 
+                document.getElementById('out-logo-stamp').style.display = 'block'; 
+                stampUploaded = true; 
+            }
+            if(data.img1Src && data.img1Src.startsWith('data:image')) { 
+                document.getElementById('out-image-1').src = data.img1Src; 
+                document.getElementById('out-image-1').style.display = 'block'; 
+                imgState[1].uploaded = true; 
+            }
+            if(data.img2Src && data.img2Src.startsWith('data:image')) { 
+                document.getElementById('out-image-2').src = data.img2Src; 
+                document.getElementById('out-image-2').style.display = 'block'; 
+                imgState[2].uploaded = true; 
+            }
 
             ['in-wrap-w', 'in-sub-size', 'in-sub-lh', 'in-main-size', 'in-main-lh', 'in-bullets-size', 'in-body-size', 'in-body-lh', 'stamp-w', 'img-w-1', 'img-w-2', 'logo-top-w', 'logo-top-h', 'mt-1', 'mr-1', 'mb-1', 'ml-1', 'mt-2', 'mr-2', 'mb-2', 'ml-2', 'smt', 'smr', 'smb', 'sml'].forEach(id => { let el = document.getElementById(id); if(el) el.dispatchEvent(new Event('input')); });
             updateOverallBox(); document.getElementById('in-logo-type').dispatchEvent(new Event('change')); updateLogoLine(); document.getElementById('in-sub-font').dispatchEvent(new Event('change')); document.getElementById('in-main-mode').dispatchEvent(new Event('change')); updateBullets(); applyImageFrameAndStroke(1); applyImageFrameAndStroke(2); document.getElementById(`check-cap-1`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-2`).dispatchEvent(new Event('change')); document.getElementById('in-body-font').dispatchEvent(new Event('change')); document.getElementById('in-columns').dispatchEvent(new Event('change')); rebuildNewsBody();
             
             if(!isSilent) {
                 document.getElementById('projects-modal').style.display = 'none';
-                alert("✅ ప్రాజెక్ట్ లోడ్ అయింది!");
+                alert("✅ ప్రాజెక్ట్ పర్ఫెక్ట్‌గా లోడ్ అయింది!");
             }
         }
 
