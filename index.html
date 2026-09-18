@@ -538,7 +538,7 @@
     <a id="hidden-download-link" style="display:none;"></a>
 
     <!-- ============================================== -->
-    <!-- FIREBASE MODULE (INSTANT BACKGROUND SYNC) -->
+    <!-- FIREBASE MODULE -->
     <!-- ============================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
@@ -556,28 +556,41 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
-        // పర్ఫెక్ట్ స్ప్లిట్-సెకండ్ బ్యాక్‌గ్రౌండ్ సేవింగ్ (ఎలాంటి ఎర్రర్స్ ఇవ్వదు)
-        window.saveProjectToFirebase = function(pName, data) {
-            setDoc(doc(db, "newsProjects", pName), data)
-                .then(() => console.log("Firebase sync ok"))
-                .catch(e => console.error("Firebase sync error:", e));
+        window.saveProjectToFirebase = async function(pName, rawData) {
+            try {
+                // ఫైర్‌బేస్ రిజెక్ట్ చేయకుండా డేటాను 100% ప్యూరిఫై (క్లీన్) చేసే కోడ్
+                let cleanData = JSON.parse(JSON.stringify(rawData));
+                
+                // ఎలాంటి టైమర్ లేకుండా (నో వెయిటింగ్) కచ్చితమైన సేవింగ్
+                await setDoc(doc(db, "newsProjects", pName), cleanData);
+                return true;
+            } catch(e) {
+                alert("ఫైర్‌బేస్ ఎర్రర్: " + e.message); // ఒకవేళ ఫెయిల్ అయితే కచ్చితమైన కారణం చెప్తుంది
+                console.error("Firebase Save Error:", e);
+                return false;
+            }
         };
 
         window.getProjectsFromFirebase = async function() {
             try {
-                // లోడింగ్ దగ్గర హ్యాంగ్ అవ్వకుండా కేవలం 3 సెకన్ల టైమర్, ఫెయిల్ అయితే వెంటనే లోకల్ ఓపెన్ అవుతుంది
-                const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
-                const querySnapshot = await Promise.race([ getDocs(collection(db, "newsProjects")), timeoutPromise ]);
+                const querySnapshot = await getDocs(collection(db, "newsProjects"));
                 let projects = {};
                 querySnapshot.forEach((docSnap) => { projects[docSnap.id] = docSnap.data(); });
                 return projects;
             } catch(e) {
-                return null; // నెట్ స్లో ఉంటే వెంటనే లోకల్ ప్రాజెక్ట్స్ వస్తాయి
+                console.error("Firebase Load Error:", e);
+                return null;
             }
         };
 
-        window.deleteProjectFromFirebase = function(pName) {
-            deleteDoc(doc(db, "newsProjects", pName)).catch(e => console.error("Delete Error:", e));
+        window.deleteProjectFromFirebase = async function(pName) {
+            try {
+                await deleteDoc(doc(db, "newsProjects", pName));
+                return true;
+            } catch(e) {
+                console.error("Firebase Delete Error:", e);
+                return false;
+            }
         };
         
         window.addEventListener('load', () => {
@@ -603,14 +616,14 @@
             });
         }
 
-        // IMAGE COMPRESSOR
+        // IMAGE COMPRESSOR (కచ్చితమైన సైజు తగ్గింపు)
         function resizeImageFile(file, callback, isLogo = false) {
             let reader = new FileReader();
             reader.onload = function(e) {
                 let img = new Image();
                 img.onload = function() {
                     let canvas = document.createElement('canvas');
-                    let MAX_WIDTH = isLogo ? 200 : 500; 
+                    let MAX_WIDTH = isLogo ? 150 : 400; // సైజు లిమిట్ దాటకుండా చాలా సేఫ్ వాల్యూ
                     let width = img.width;
                     let height = img.height;
                     if (width > MAX_WIDTH) {
@@ -621,8 +634,10 @@
                     canvas.height = height;
                     let ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // కంప్రెసర్ పక్కాగా పనిచేయాలంటే JPEG లోనే ఉండాలి
                     let mimeType = isLogo ? 'image/png' : 'image/jpeg';
-                    let quality = isLogo ? 0.8 : 0.5; 
+                    let quality = isLogo ? 1.0 : 0.6; 
                     callback(canvas.toDataURL(mimeType, quality));
                 };
                 img.src = e.target.result;
@@ -889,7 +904,6 @@
         document.getElementById('in-news-body').addEventListener('input', function() { rawNewsText = this.value; rebuildNewsBody(); });
         document.getElementById('in-news-prefix').addEventListener('input', rebuildNewsBody); document.getElementById('in-news-prefix-bold').addEventListener('change', rebuildNewsBody); document.getElementById('in-news-prefix-color').addEventListener('input', rebuildNewsBody); document.getElementById('in-news-prefix-layout').addEventListener('change', rebuildNewsBody);
 
-        // ఇమేజ్ మార్జిన్స్ 100% పర్ఫెక్ట్‌గా అప్లై అయ్యే ఫంక్షన్ ఇది
         function rebuildNewsBody() {
           let endInjections = [];
             
@@ -919,7 +933,7 @@
             
             if(mt === undefined) { mt = 0; mr = 15; mb = 15; ml = 0; }
 
-            // మార్జిన్ బగ్ ఫిక్స్ ఇక్కడే జరిగింది. ఏ అక్షరం తప్పు లేకుండా విడివిడిగా అప్లై అవుతాయి.
+            // ఇమేజ్ మార్జిన్స్ 100% పర్ఫెక్ట్ గా విడివిడిగా అప్లై చేసాము
             el.style.marginTop = `${mt}px`; 
             el.style.marginRight = `${mr}px`; 
             el.style.marginBottom = `${mb}px`; 
@@ -1028,7 +1042,7 @@
                     localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); 
                     renderSavedLogos(type); 
                 } catch (e) {
-                    // మెమొరీ ఫుల్ ఎర్రర్ సైలెంట్
+                    // సైలెంట్ ఎర్రర్
                 }
             } 
         }
@@ -1256,52 +1270,50 @@ ${rawText}`;
         // ==========================================
         // SAVING AND LOADING PROJECTS LOGIC (FIREBASE INTEGRATED)
         // ==========================================
-        function saveProjectData() {
+        async function saveProjectData() {
             let pName = prompt("Project Name (ప్రాజెక్ట్ పేరు ఇవ్వండి):", "My News " + new Date().toLocaleTimeString());
             if(!pName || pName.trim() === '') return;
             
             let btn = document.getElementById('main-save-btn');
             let oldBtnText = btn.innerText;
+            btn.innerText = "⏳ Saving...";
             
             let img2Dropdown = document.getElementById('img-align-2');
             
-            let data = {
-                wrapW: document.getElementById('in-wrap-w').value, ovrCheck: document.getElementById('in-overall-box-check').checked, ovrColor: document.getElementById('in-overall-color').value,
-                bgType: document.getElementById('in-bg-type').value, ovrColor2: document.getElementById('in-overall-color2').value, bgDir: document.getElementById('in-bg-direction').value,
-                logoType: document.getElementById('in-logo-type').value, logoTopSrc: document.getElementById('out-logo-top').src, logoLineCheck: document.getElementById('in-logo-line-check').checked, logoLineColor: document.getElementById('in-logo-line-color').value,
-                logoTopW: document.getElementById('logo-top-w').value, logoTopH: document.getElementById('logo-top-h').value,
-                logoStampSrc: document.getElementById('out-logo-stamp').src, stampAlign: document.getElementById('stamp-align').value, stampW: document.getElementById('stamp-w').value, stampParaPos: document.getElementById('stamp-para-pos').value,
-                smt: document.getElementById('smt').value, smr: document.getElementById('smr').value, smb: document.getElementById('smb').value, sml: document.getElementById('sml').value,
-                subHl: document.getElementById('in-sub-headline').value, subFont: document.getElementById('in-sub-font').value, subColor: document.getElementById('in-sub-color').value, subSize: document.getElementById('in-sub-size').value, subLh: document.getElementById('in-sub-lh').value, subY: document.getElementById('in-sub-y').value,
-                mainHl: document.getElementById('in-main-headline').value, mainMode: document.getElementById('in-main-mode').value, mainFont: document.getElementById('in-main-font').value, mainColor: document.getElementById('in-main-color').value, mainBgCheck: document.getElementById('in-main-bg-check').checked, mainBgColor: document.getElementById('in-main-bg-color').value, mainStrokeCheck: document.getElementById('in-main-stroke-check').checked, mainStrokeColor: document.getElementById('in-main-stroke-color').value, mainStrokeW: document.getElementById('in-main-stroke-w').value, mainStyle: document.getElementById('in-special-style').value, mainSize: document.getElementById('in-main-size').value, mainLh: document.getElementById('in-main-lh').value, mainY: document.getElementById('in-main-y').value, mainBgShape: document.getElementById('in-main-bg-shape').value, specialColorCheck: document.getElementById('in-special-color-check').checked, specialColor: document.getElementById('in-special-color').value,
-                bullets: document.getElementById('in-bullets').value, bulletsAlign: document.getElementById('in-bullets-align').value, bulletsParaPos: document.getElementById('bullets-para-pos').value, bulletsBoxCheck: document.getElementById('in-bullets-box-check').checked, bulletsBgColor: document.getElementById('in-bullets-bg-color').value, bulletsSize: document.getElementById('in-bullets-size').value, bulletsY: document.getElementById('in-bullets-y').value,
-                img1Src: document.getElementById('out-image-1').src, imgFrame1: document.getElementById('img-frame-1').value, imgStrokeCheck1: document.getElementById('img-stroke-check-1').checked, imgStrokeColor1: document.getElementById('img-stroke-color-1').value, imgStrokeW1: document.getElementById('img-stroke-w-1').value, checkCap1: document.getElementById('check-cap-1').checked, caption1: document.getElementById('in-caption-1').value, imgAlign1: document.getElementById('img-align-1').value, imgPara1: document.getElementById('img-para-1').value, imgW1: document.getElementById('img-w-1').value, 
-                mt1: document.getElementById('mt-1').value, mr1: document.getElementById('mr-1').value, mb1: document.getElementById('mb-1').value, ml1: document.getElementById('ml-1').value,
-                img2Src: document.getElementById('out-image-2').src, imgFrame2: document.getElementById('img-frame-2').value, imgStrokeCheck2: document.getElementById('img-stroke-check-2').checked, imgStrokeColor2: document.getElementById('img-stroke-color-2').value, imgStrokeW2: document.getElementById('img-stroke-w-2').value, checkCap2: document.getElementById('check-cap-2').checked, caption2: document.getElementById('in-caption-2').value, imgAlign2: img2Dropdown ? img2Dropdown.value : 'right', imgPara2: document.getElementById('img-para-2').value, imgW2: document.getElementById('img-w-2').value,
-                mt2: document.getElementById('mt-2').value, mr2: document.getElementById('mr-2').value, mb2: document.getElementById('mb-2').value, ml2: document.getElementById('ml-2').value,
-                newsPrefix: document.getElementById('in-news-prefix').value, newsPrefixBold: document.getElementById('in-news-prefix-bold').checked, newsPrefixColor: document.getElementById('in-news-prefix-color').value, newsPrefixLayout: document.getElementById('in-news-prefix-layout').value,
-                columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
-            };
-            
-            // 1. లోకల్ స్టోరేజ్ బ్యాకప్
             try {
-                let localProjects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
-                localProjects[pName] = data;
-                localStorage.setItem('savedProjectsList', JSON.stringify(localProjects));
-            } catch (localErr) {
-                // సైలెంట్ ఎర్రర్ ఇగ్నోర్
+                let rawData = {
+                    wrapW: document.getElementById('in-wrap-w').value, ovrCheck: document.getElementById('in-overall-box-check').checked, ovrColor: document.getElementById('in-overall-color').value,
+                    bgType: document.getElementById('in-bg-type').value, ovrColor2: document.getElementById('in-overall-color2').value, bgDir: document.getElementById('in-bg-direction').value,
+                    logoType: document.getElementById('in-logo-type').value, logoTopSrc: document.getElementById('out-logo-top').src, logoLineCheck: document.getElementById('in-logo-line-check').checked, logoLineColor: document.getElementById('in-logo-line-color').value,
+                    logoTopW: document.getElementById('logo-top-w').value, logoTopH: document.getElementById('logo-top-h').value,
+                    logoStampSrc: document.getElementById('out-logo-stamp').src, stampAlign: document.getElementById('stamp-align').value, stampW: document.getElementById('stamp-w').value, stampParaPos: document.getElementById('stamp-para-pos').value,
+                    smt: document.getElementById('smt').value, smr: document.getElementById('smr').value, smb: document.getElementById('smb').value, sml: document.getElementById('sml').value,
+                    subHl: document.getElementById('in-sub-headline').value, subFont: document.getElementById('in-sub-font').value, subColor: document.getElementById('in-sub-color').value, subSize: document.getElementById('in-sub-size').value, subLh: document.getElementById('in-sub-lh').value, subY: document.getElementById('in-sub-y').value,
+                    mainHl: document.getElementById('in-main-headline').value, mainMode: document.getElementById('in-main-mode').value, mainFont: document.getElementById('in-main-font').value, mainColor: document.getElementById('in-main-color').value, mainBgCheck: document.getElementById('in-main-bg-check').checked, mainBgColor: document.getElementById('in-main-bg-color').value, mainStrokeCheck: document.getElementById('in-main-stroke-check').checked, mainStrokeColor: document.getElementById('in-main-stroke-color').value, mainStrokeW: document.getElementById('in-main-stroke-w').value, mainStyle: document.getElementById('in-special-style').value, mainSize: document.getElementById('in-main-size').value, mainLh: document.getElementById('in-main-lh').value, mainY: document.getElementById('in-main-y').value, mainBgShape: document.getElementById('in-main-bg-shape').value, specialColorCheck: document.getElementById('in-special-color-check').checked, specialColor: document.getElementById('in-special-color').value,
+                    bullets: document.getElementById('in-bullets').value, bulletsAlign: document.getElementById('in-bullets-align').value, bulletsParaPos: document.getElementById('bullets-para-pos').value, bulletsBoxCheck: document.getElementById('in-bullets-box-check').checked, bulletsBgColor: document.getElementById('in-bullets-bg-color').value, bulletsSize: document.getElementById('in-bullets-size').value, bulletsY: document.getElementById('in-bullets-y').value,
+                    img1Src: document.getElementById('out-image-1').src, imgFrame1: document.getElementById('img-frame-1').value, imgStrokeCheck1: document.getElementById('img-stroke-check-1').checked, imgStrokeColor1: document.getElementById('img-stroke-color-1').value, imgStrokeW1: document.getElementById('img-stroke-w-1').value, checkCap1: document.getElementById('check-cap-1').checked, caption1: document.getElementById('in-caption-1').value, imgAlign1: document.getElementById('img-align-1').value, imgPara1: document.getElementById('img-para-1').value, imgW1: document.getElementById('img-w-1').value, 
+                    mt1: document.getElementById('mt-1').value, mr1: document.getElementById('mr-1').value, mb1: document.getElementById('mb-1').value, ml1: document.getElementById('ml-1').value,
+                    img2Src: document.getElementById('out-image-2').src, imgFrame2: document.getElementById('img-frame-2').value, imgStrokeCheck2: document.getElementById('img-stroke-check-2').checked, imgStrokeColor2: document.getElementById('img-stroke-color-2').value, imgStrokeW2: document.getElementById('img-stroke-w-2').value, checkCap2: document.getElementById('check-cap-2').checked, caption2: document.getElementById('in-caption-2').value, imgAlign2: img2Dropdown ? img2Dropdown.value : 'right', imgPara2: document.getElementById('img-para-2').value, imgW2: document.getElementById('img-w-2').value,
+                    mt2: document.getElementById('mt-2').value, mr2: document.getElementById('mr-2').value, mb2: document.getElementById('mb-2').value, ml2: document.getElementById('ml-2').value,
+                    newsPrefix: document.getElementById('in-news-prefix').value, newsPrefixBold: document.getElementById('in-news-prefix-bold').checked, newsPrefixColor: document.getElementById('in-news-prefix-color').value, newsPrefixLayout: document.getElementById('in-news-prefix-layout').value,
+                    columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
+                };
+                
+                // కచ్చితంగా ఆన్‌లైన్‌లో సేవ్ అయ్యేలా 'డేటా ప్యూరిఫికేషన్'
+                let cleanData = JSON.parse(JSON.stringify(rawData));
+
+                if(window.saveProjectToFirebase) {
+                    let success = await window.saveProjectToFirebase(pName, cleanData);
+                    if(success) {
+                        alert("✅ ప్రాజెక్ట్ పర్ఫెక్ట్‌గా సేవ్ అయింది!");
+                    }
+                }
+            } catch (err) {
+                alert("ఎర్రర్: " + err.message);
+            } finally {
+                btn.innerText = oldBtnText;
+                if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
             }
-            
-            // 2. స్ప్లిట్-సెకండ్ బ్యాక్‌గ్రౌండ్ సేవింగ్ (ఫైర్‌బేస్). కనెక్షన్ లేకపోయినా UI కి అడ్డు రాదు.
-            if(window.saveProjectToFirebase) {
-                window.saveProjectToFirebase(pName, data);
-            }
-            
-            // 3. కనురెప్ప కొట్టేలోపు సక్సెస్ మెసేజ్ చూపిస్తుంది
-            alert("✅ ప్రాజెక్ట్ '" + pName + "' పర్ఫెక్ట్‌గా సేవ్ అయింది!");
-            
-            btn.innerText = oldBtnText;
-            if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
         }
 
         async function openProjectsModal() {
@@ -1337,7 +1349,7 @@ ${rawText}`;
                         if(confirm("ఈ ప్రాజెక్ట్‌ను డిలీట్ చేయాలనుకుంటున్నారా?")) {
                             loadBtn.innerText = '...'; delBtn.innerText = '...';
                             if (window.deleteProjectFromFirebase) {
-                                window.deleteProjectFromFirebase(pName);
+                                await window.deleteProjectFromFirebase(pName);
                             }
                             let localProjects = JSON.parse(localStorage.getItem('savedProjectsList')) || {};
                             delete localProjects[pName];
