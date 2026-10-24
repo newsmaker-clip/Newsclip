@@ -171,6 +171,29 @@
         .ai-chk-wrap { display: flex; align-items: center; gap: 10px; background: #2a2a2a; padding: 10px; border-radius: 5px; margin-top: 8px; border: 1px solid #444;}
         .ai-chk-wrap input[type="checkbox"] { width: 18px; height: 18px; margin: 0; accent-color: #00c6ff;}
         .ai-chk-wrap label { margin-top: 0; cursor: pointer; }
+
+        /* --- BATCH WIZARD & GENERATED CLIPPINGS GALLERY BAR --- */
+        .batch-wizard-box { background: #252525; border: 1px solid #00c6ff; border-radius: 6px; padding: 10px; margin-bottom: 12px; }
+        .batch-step-bar { display: flex; justify-content: space-between; align-items: center; background: #161616; padding: 8px 10px; border-radius: 5px; margin-top: 8px; border: 1px solid #333; gap: 6px; }
+        .batch-step-indicator { font-size: 13px; font-weight: bold; color: #ffeb3b; text-align: center; flex-grow: 1; }
+        .batch-nav-btn { background: #333; color: #fff; border: 1px solid #555; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold; transition: 0.2s; white-space: nowrap; }
+        .batch-nav-btn:hover:not(:disabled) { background: #00c6ff; color: #000; border-color: #00c6ff; }
+        .batch-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        .generated-clippings-bar { display: none; background: #1a1a1a; border: 1px solid #00c6ff; border-radius: 6px; padding: 10px 12px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.6); position: sticky; top: 0; z-index: 15; }
+        .gen-bar-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .gen-bar-title { font-size: 13px; font-weight: bold; color: #00c6ff; }
+        .gen-bar-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .gen-bar-btn { background: #28a745; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .gen-bar-btn:active { opacity: 0.8; }
+        .gen-cards-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+        .gen-cards-list::-webkit-scrollbar { height: 5px; }
+        .gen-cards-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .gen-clip-card { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; background: #2a2a2a; color: #ddd; border: 1px solid #444; padding: 6px 10px; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .gen-clip-card.active { background: #00c6ff; color: #000; border-color: #fff; box-shadow: 0 0 8px rgba(0, 198, 255, 0.5); }
+        .gen-clip-card .mini-dl-btn { background: rgba(0,0,0,0.25); color: inherit; border: none; border-radius: 3px; padding: 2px 5px; font-size: 11px; cursor: pointer; }
+        .gen-clip-card .mini-dl-btn:hover { background: rgba(0,0,0,0.5); color: #fff; }
+        .img-status-badge { display: inline-block; font-size: 11px; color: #4caf50; margin-left: 6px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -189,6 +212,18 @@
 
       <!-- WORKSPACE / PREVIEW PANEL -->
       <div class="preview-panel" id="preview-panel">
+        
+        <!-- DOCKED GENERATED CLIPPINGS BAR / GALLERY -->
+        <div class="generated-clippings-bar" id="generated-clippings-bar">
+            <div class="gen-bar-header">
+                <div class="gen-bar-title" id="gen-bar-title">🗂️ Generated Clippings (0)</div>
+                <div class="gen-bar-actions">
+                    <button type="button" class="gen-bar-btn" id="btn-download-all-clips" onclick="downloadAllClippingsSequentially()">⬇️ Download All Clippings (One by One)</button>
+                </div>
+            </div>
+            <div class="gen-cards-list" id="gen-cards-list"></div>
+        </div>
+
         <div class="scale-container" id="scale-container">
             <div class="newspaper-wrapper" id="capture-area">
               
@@ -267,6 +302,39 @@
                   <div id="ai-sub-gen" class="sub-section active">
                       <h4 style="color:#00c6ff; margin: 0 0 10px 0; font-size:16px;">🤖 జెమిని AI ఆటోమేషన్</h4>
                       
+                      <!-- 1. BATCH COUNT SELECTION & WIZARD NAVIGATION -->
+                      <div class="batch-wizard-box">
+                          <label for="ai-batch-count" style="color:#00c6ff; font-size:14px; margin-top:0;">ఎన్ని క్లిప్పింగ్స్ కావాలి? (Number of Clippings: 1 to 20)</label>
+                          <select id="ai-batch-count" onchange="onBatchCountChange(this.value)" style="border: 1px solid #00c6ff; background:#1e1e1e; color:#fff; font-weight:bold;">
+                              <option value="1" selected>1 Clipping</option>
+                              <option value="2">2 Clippings</option>
+                              <option value="3">3 Clippings</option>
+                              <option value="4">4 Clippings</option>
+                              <option value="5">5 Clippings</option>
+                              <option value="6">6 Clippings</option>
+                              <option value="7">7 Clippings</option>
+                              <option value="8">8 Clippings</option>
+                              <option value="9">9 Clippings</option>
+                              <option value="10">10 Clippings</option>
+                              <option value="11">11 Clippings</option>
+                              <option value="12">12 Clippings</option>
+                              <option value="13">13 Clippings</option>
+                              <option value="14">14 Clippings</option>
+                              <option value="15">15 Clippings</option>
+                              <option value="16">16 Clippings</option>
+                              <option value="17">17 Clippings</option>
+                              <option value="18">18 Clippings</option>
+                              <option value="19">19 Clippings</option>
+                              <option value="20">20 Clippings</option>
+                          </select>
+
+                          <div class="batch-step-bar">
+                              <button type="button" class="batch-nav-btn" id="btn-prev-clip" onclick="navigateBatchStep(-1)" disabled>⬅️ Previous Clipping</button>
+                              <span class="batch-step-indicator" id="ai-batch-step-indicator">📌 Clipping Setup: 1 / 1</span>
+                              <button type="button" class="batch-nav-btn" id="btn-next-clip" onclick="navigateBatchStep(1)" disabled>Next Clipping ➡️</button>
+                          </div>
+                      </div>
+
                       <label style="color:#00c6ff; font-size:14px; margin-top:10px;">🌟 సేవ్ చేసిన మోడల్ (Template):</label>
                       <select id="ai-template-select" style="border: 1px solid #00c6ff; background:#1e1e1e; color:#00c6ff; font-weight:bold;">
                           <option value="DEFAULT">-- సాధారణ డిజైన్ (Default) --</option>
@@ -289,7 +357,13 @@
                       
                       <div class="ai-chk-wrap">
                           <input type="checkbox" id="ai-chk-bgbox">
-                          <label for="ai-chk-bgbox">బ్యాక్‌గ్రౌండ్ కలర్ బాక్స్ కావాలి</label>
+                          <label for="ai-chk-bgbox">బ్యాక్గ్రౌండ్ కలర్ బాక్స్ కావాలి</label>
+                      </div>
+
+                      <!-- 2. NEW ONE-LINE SHORT HEADLINE CHECKBOX OPTION -->
+                      <div class="ai-chk-wrap">
+                          <input type="checkbox" id="ai-chk-shorthead">
+                          <label for="ai-chk-shorthead">సింగిల్ లైన్ హెడ్లైన్ కావాలి (One-Line Catchy Headline)</label>
                       </div>
 
                       <hr style="border-color:#444;">
@@ -301,7 +375,15 @@
                   </div>
 
                   <div id="ai-sub-assets" class="sub-section">
-                      <label style="color:#00c6ff;">లోగో సెటప్ (Logo):</label>
+                      <div style="background:#161616; padding:6px 10px; border-radius:4px; margin-bottom:10px; border:1px solid #333; display:flex; justify-content:space-between; align-items:center;">
+                          <span id="ai-assets-step-label" style="color:#ffeb3b; font-size:12px; font-weight:bold;">📌 Assets for Clipping: 1 / 1</span>
+                          <div style="display:flex; gap:5px;">
+                              <button type="button" class="batch-nav-btn" id="btn-prev-clip-assets" onclick="navigateBatchStep(-1)" style="padding:3px 8px; font-size:11px;" disabled>⬅️ Prev</button>
+                              <button type="button" class="batch-nav-btn" id="btn-next-clip-assets" onclick="navigateBatchStep(1)" style="padding:3px 8px; font-size:11px;" disabled>Next ➡️</button>
+                          </div>
+                      </div>
+
+                      <label style="color:#00c6ff;">లోగో సెటప్ (Logo): <span id="ai-logo-status" class="img-status-badge"></span></label>
                       <div class="flex-row">
                           <input type="file" id="ai-logo-file" accept="image/*">
                           <button class="top-btn" onclick="saveAILogo()" style="margin-top:0;">💾 Save</button>
@@ -324,13 +406,13 @@
                       </select>
                       
                       <div id="ai-img-inputs" style="display:none; margin-top:10px; background:#2a2a2a; padding:10px; border-radius:5px;">
-                          <label id="lbl-ai-img-1" style="margin-top:0; display:none;">Photo 1 అప్‌లోడ్ చేయండి:</label>
+                          <label id="lbl-ai-img-1" style="margin-top:0; display:none;">Photo 1 అప్లోడ్ చేయండి: <span id="status-ai-img-1" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-1" accept="image/*" style="display:none;">
-                          <label id="lbl-ai-img-2" style="margin-top:10px; display:none;">Photo 2 అప్‌లోడ్ చేయండి:</label>
+                          <label id="lbl-ai-img-2" style="margin-top:10px; display:none;">Photo 2 అప్లోడ్ చేయండి: <span id="status-ai-img-2" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-2" accept="image/*" style="display:none;">
-                          <label id="lbl-ai-img-3" style="margin-top:10px; display:none;">Photo 3 అప్‌లోడ్ చేయండి:</label>
+                          <label id="lbl-ai-img-3" style="margin-top:10px; display:none;">Photo 3 అప్లోడ్ చేయండి: <span id="status-ai-img-3" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-3" accept="image/*" style="display:none;">
-                          <label id="lbl-ai-img-4" style="margin-top:10px; display:none;">Photo 4 అప్‌లోడ్ చేయండి:</label>
+                          <label id="lbl-ai-img-4" style="margin-top:10px; display:none;">Photo 4 అప్లోడ్ చేయండి: <span id="status-ai-img-4" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-4" accept="image/*" style="display:none;">
                       </div>
                   </div>
@@ -361,7 +443,7 @@
                       <select id="in-bg-direction" style="display:none; margin-top:5px;">
                           <option value="to bottom">Top to Bottom (పైనుండి కిందకు)</option>
                           <option value="to right">Left to Right (ఎడమనుండి కుడికి)</option>
-                          <option value="135deg">Diagonal (క్రాస్‌గా)</option>
+                          <option value="135deg">Diagonal (క్రాస్గా)</option>
                       </select>
                   </div>
               </div>
@@ -922,6 +1004,7 @@
             if (type === 'main') updateMainHeadlineBox();
             else if (type === 'sub') document.getElementById('out-sub-headline').style.fontFamily = f.v;
             else if (type === 'body') { document.getElementById('out-news-body').style.fontFamily = f.v; rebuildNewsBody(); }
+            if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
         }
 
         function syncCarousels() {
@@ -947,6 +1030,8 @@
             });
             updateMainHeadlineBox();
             syncCarousels();
+            initBatchQueue();
+            attachManualEditSyncListeners();
         });
         
         function escapeHTML(str) {
@@ -1152,6 +1237,7 @@
                     el.style.display = 'block'; 
                     document.getElementById('out-logo-box').style.display = 'flex';
                     document.getElementById('logo-top-w').dispatchEvent(new Event('input')); 
+                    if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
                 };
                 reader.readAsDataURL(e.target.files[0]);
             }
@@ -1159,7 +1245,14 @@
         document.getElementById('in-logo-stamp').addEventListener('change', e => {
             if(e.target.files && e.target.files[0]) {
                 let reader = new FileReader();
-                reader.onload = event => { let el = document.getElementById('out-logo-stamp'); el.src = event.target.result; el.style.display = 'block'; stampUploaded = true; rebuildNewsBody(); };
+                reader.onload = event => { 
+                    let el = document.getElementById('out-logo-stamp'); 
+                    el.src = event.target.result; 
+                    el.style.display = 'block'; 
+                    stampUploaded = true; 
+                    rebuildNewsBody(); 
+                    if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
+                };
                 reader.readAsDataURL(e.target.files[0]);
             }
         });
@@ -1327,6 +1420,7 @@
                       applyImageFrameAndStroke(imgNum);
                       document.getElementById(`img-w-${imgNum}`).dispatchEvent(new Event('input'));
                       rebuildNewsBody();
+                      if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
                   };
                   reader.readAsDataURL(e.target.files[0]);
               } 
@@ -1387,6 +1481,7 @@
             clearTimeout(rebuildTimeout);
             rebuildTimeout = setTimeout(() => {
                 rebuildNewsBody();
+                if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
             }, 300);
         });
         
@@ -1545,6 +1640,7 @@
         
         window.refreshTemplateDropdown = async function() {
             let select = document.getElementById('ai-template-select');
+            let currentVal = select.value;
             select.innerHTML = '<option value="DEFAULT">-- సాధారణ డిజైన్ (Default) --</option>';
             
             let projects = null;
@@ -1562,13 +1658,16 @@
                 opt.innerText = pName;
                 select.appendChild(opt);
             }
+            if (currentVal && (currentVal === "DEFAULT" || projects[currentVal])) {
+                select.value = currentVal;
+            }
         };
 
         let aiSelectedLogoData = ""; 
 
         async function saveLogoToStorage(type) {
             let imgEl = document.getElementById(type === 'top' ? 'out-logo-top' : 'out-logo-stamp');
-            if(!imgEl.src || imgEl.src.length < 100) { alert("దయచేసి ముందుగా లోగో/స్టాంప్ అప్‌లోడ్ చేయండి!"); return; }
+            if(!imgEl.src || imgEl.src.length < 100) { alert("దయచేసి ముందుగా లోగో/స్టాంప్ అప్లోడ్ చేయండి!"); return; }
             let cData = await compressBase64(imgEl.src, true);
             saveBaseLogo(cData, type);
         }
@@ -1610,6 +1709,7 @@
                     mainImg.src = src; mainImg.style.display = 'block';
                     if(type === 'top') document.getElementById('out-logo-box').style.display = 'flex';
                     if(type==='stamp') { stampUploaded = true; rebuildNewsBody(); } 
+                    if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
                 }; 
                 let delBtn = document.createElement('button'); delBtn.className = 'logo-del-btn'; delBtn.innerHTML = '✖';
                 delBtn.onclick = () => { saved.splice(idx, 1); localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); renderSavedLogos(type); };
@@ -1618,11 +1718,16 @@
                 if (type === 'top' && aiContainer) {
                     let aiWrap = document.createElement('div'); aiWrap.className = 'logo-item-wrapper';
                     let aiImg = document.createElement('img'); aiImg.src = src; 
+                    if (aiSelectedLogoData && aiSelectedLogoData === src) {
+                        aiImg.style.borderColor = '#00c6ff'; aiImg.style.borderWidth = '2px';
+                    }
                     aiImg.onclick = () => { 
                         aiSelectedLogoData = src;
                         Array.from(aiContainer.children).forEach(c => c.querySelector('img').style.borderColor = '#555');
                         aiImg.style.borderColor = '#00c6ff'; aiImg.style.borderWidth = '2px';
                         document.getElementById('ai-chk-use-logo').checked = true;
+                        updateAiAssetBadges();
+                        saveCurrentStepToQueue();
                     }; 
                     let aiDelBtn = document.createElement('button'); aiDelBtn.className = 'logo-del-btn'; aiDelBtn.innerHTML = '✖';
                     aiDelBtn.onclick = () => { saved.splice(idx, 1); localStorage.setItem('savedLogos_' + type, JSON.stringify(saved)); renderSavedLogos(type); };
@@ -1649,33 +1754,43 @@
                     inp.style.display = i <= c ? 'block' : 'none';
                 }
             }
+            if (typeof saveCurrentStepToQueue === 'function') saveCurrentStepToQueue();
+        }
+
+        function updateAiAssetBadges() {
+            let logoBadge = document.getElementById('ai-logo-status');
+            if (logoBadge) logoBadge.innerText = aiSelectedLogoData ? "✔ Ready" : "";
+            let b1 = document.getElementById('status-ai-img-1'); if (b1) b1.innerText = aiImg1Data ? "✔ Photo 1 Loaded" : "";
+            let b2 = document.getElementById('status-ai-img-2'); if (b2) b2.innerText = aiImg2Data ? "✔ Photo 2 Loaded" : "";
+            let b3 = document.getElementById('status-ai-img-3'); if (b3) b3.innerText = aiImg3Data ? "✔ Photo 3 Loaded" : "";
+            let b4 = document.getElementById('status-ai-img-4'); if (b4) b4.innerText = aiImg4Data ? "✔ Photo 4 Loaded" : "";
         }
 
         document.getElementById('ai-img-file-1').addEventListener('change', e => {
             if(e.target.files[0]) { 
                 let reader = new FileReader(); 
-                reader.onload = ev => aiImg1Data = ev.target.result; 
+                reader.onload = ev => { aiImg1Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
             }
         });
         document.getElementById('ai-img-file-2').addEventListener('change', e => {
             if(e.target.files[0]) { 
                 let reader = new FileReader(); 
-                reader.onload = ev => aiImg2Data = ev.target.result; 
+                reader.onload = ev => { aiImg2Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
             }
         });
         document.getElementById('ai-img-file-3').addEventListener('change', e => {
             if(e.target.files[0]) { 
                 let reader = new FileReader(); 
-                reader.onload = ev => aiImg3Data = ev.target.result; 
+                reader.onload = ev => { aiImg3Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
             }
         });
         document.getElementById('ai-img-file-4').addEventListener('change', e => {
             if(e.target.files[0]) { 
                 let reader = new FileReader(); 
-                reader.onload = ev => aiImg4Data = ev.target.result; 
+                reader.onload = ev => { aiImg4Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
             }
         });
@@ -1683,80 +1798,422 @@
         document.getElementById('ai-logo-file').addEventListener('change', e => {
             if(e.target.files[0]) { 
                 let reader = new FileReader(); 
-                reader.onload = ev => aiSelectedLogoData = ev.target.result; 
+                reader.onload = ev => { aiSelectedLogoData = ev.target.result; document.getElementById('ai-chk-use-logo').checked = true; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
             }
         });
 
         // ==========================================
-        // THE MAIN AI GENERATION LOGIC
+        // 3. STEP-BY-STEP WIZARD SETUP & BATCH QUEUE
+        // ==========================================
+        let aiBatchQueue = [];
+        let currentBatchStep = 0; // 0-indexed (0 to totalBatchCount - 1)
+        let totalBatchCount = 1;
+        let defaultEditorSnapshot = null;
+
+        function createDefaultBatchItem() {
+            return {
+                template: "DEFAULT",
+                rawText: "",
+                wantsSubHead: true,
+                wantsBullets: true,
+                wantsBgBox: false,
+                wantsShortHead: false,
+                wantsNewLogo: false,
+                selectedLogoData: "",
+                imgCountMode: "0",
+                img1Data: "",
+                img2Data: "",
+                img3Data: "",
+                img4Data: ""
+            };
+        }
+
+        function initBatchQueue() {
+            totalBatchCount = parseInt(document.getElementById('ai-batch-count').value) || 1;
+            aiBatchQueue = [];
+            for (let i = 0; i < totalBatchCount; i++) {
+                aiBatchQueue.push(createDefaultBatchItem());
+            }
+            currentBatchStep = 0;
+            // Capture initial default editor state so "DEFAULT" template in batch resets cleanly
+            defaultEditorSnapshot = getCurrentEditorStateObject();
+            updateBatchWizardUI();
+            
+            // Bind auto-save on AI inputs so any change immediately updates current step in aiBatchQueue
+            ['ai-template-select', 'ai-raw-text', 'ai-chk-subhead', 'ai-chk-bullets', 'ai-chk-bgbox', 'ai-chk-shorthead', 'ai-chk-use-logo'].forEach(id => {
+                let el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', saveCurrentStepToQueue);
+                    el.addEventListener('change', saveCurrentStepToQueue);
+                }
+            });
+        }
+
+        function saveCurrentStepToQueue() {
+            if (!aiBatchQueue[currentBatchStep]) {
+                aiBatchQueue[currentBatchStep] = createDefaultBatchItem();
+            }
+            aiBatchQueue[currentBatchStep] = {
+                template: document.getElementById('ai-template-select').value || "DEFAULT",
+                rawText: document.getElementById('ai-raw-text').value,
+                wantsSubHead: document.getElementById('ai-chk-subhead').checked,
+                wantsBullets: document.getElementById('ai-chk-bullets').checked,
+                wantsBgBox: document.getElementById('ai-chk-bgbox').checked,
+                wantsShortHead: document.getElementById('ai-chk-shorthead').checked,
+                wantsNewLogo: document.getElementById('ai-chk-use-logo').checked,
+                selectedLogoData: aiSelectedLogoData,
+                imgCountMode: document.getElementById('ai-img-count').value,
+                img1Data: aiImg1Data,
+                img2Data: aiImg2Data,
+                img3Data: aiImg3Data,
+                img4Data: aiImg4Data
+            };
+        }
+
+        function loadStepFromQueue(stepIndex) {
+            let item = aiBatchQueue[stepIndex] || createDefaultBatchItem();
+            
+            let tplSelect = document.getElementById('ai-template-select');
+            if (Array.from(tplSelect.options).some(o => o.value === item.template)) {
+                tplSelect.value = item.template;
+            } else {
+                tplSelect.value = "DEFAULT";
+            }
+
+            document.getElementById('ai-raw-text').value = item.rawText || "";
+            document.getElementById('ai-chk-subhead').checked = item.wantsSubHead !== undefined ? item.wantsSubHead : true;
+            document.getElementById('ai-chk-bullets').checked = item.wantsBullets !== undefined ? item.wantsBullets : true;
+            document.getElementById('ai-chk-bgbox').checked = item.wantsBgBox || false;
+            document.getElementById('ai-chk-shorthead').checked = item.wantsShortHead || false;
+            document.getElementById('ai-chk-use-logo').checked = item.wantsNewLogo || false;
+
+            aiSelectedLogoData = item.selectedLogoData || "";
+            aiImg1Data = item.img1Data || "";
+            aiImg2Data = item.img2Data || "";
+            aiImg3Data = item.img3Data || "";
+            aiImg4Data = item.img4Data || "";
+
+            // Clear file input DOM values so user can upload fresh files for this step
+            ['ai-logo-file', 'ai-img-file-1', 'ai-img-file-2', 'ai-img-file-3', 'ai-img-file-4'].forEach(id => {
+                let fEl = document.getElementById(id);
+                if (fEl) fEl.value = "";
+            });
+
+            document.getElementById('ai-img-count').value = item.imgCountMode || "0";
+            toggleAiImgInputs(item.imgCountMode || "0");
+            renderSavedLogos('top');
+            updateAiAssetBadges();
+        }
+
+        function updateBatchWizardUI() {
+            let stepText = `📌 Clipping Setup: ${currentBatchStep + 1} / ${totalBatchCount}`;
+            document.getElementById('ai-batch-step-indicator').innerText = stepText;
+            let assetsLabel = document.getElementById('ai-assets-step-label');
+            if (assetsLabel) assetsLabel.innerText = `📌 Assets for Clipping: ${currentBatchStep + 1} / ${totalBatchCount}`;
+
+            let prevDisabled = (currentBatchStep <= 0);
+            let nextDisabled = (currentBatchStep >= totalBatchCount - 1);
+
+            document.getElementById('btn-prev-clip').disabled = prevDisabled;
+            document.getElementById('btn-next-clip').disabled = nextDisabled;
+            let prevAssets = document.getElementById('btn-prev-clip-assets');
+            let nextAssets = document.getElementById('btn-next-clip-assets');
+            if (prevAssets) prevAssets.disabled = prevDisabled;
+            if (nextAssets) nextAssets.disabled = nextDisabled;
+
+            let genBtn = document.getElementById('btn-ai-generate');
+            if (genBtn && !genBtn.disabled) {
+                if (totalBatchCount > 1) {
+                    genBtn.innerText = `✨ Proceed (${totalBatchCount} క్లిప్పింగ్స్ వరుసగా రెడీ చేయి)`;
+                } else {
+                    genBtn.innerText = `✨ Proceed (క్లిప్పింగ్ రెడీ చేయి)`;
+                }
+            }
+        }
+
+        function onBatchCountChange(val) {
+            saveCurrentStepToQueue();
+            let newCount = parseInt(val) || 1;
+            if (newCount < 1) newCount = 1;
+            if (newCount > 20) newCount = 20;
+
+            while (aiBatchQueue.length < newCount) {
+                aiBatchQueue.push(createDefaultBatchItem());
+            }
+            if (currentBatchStep >= newCount) {
+                currentBatchStep = newCount - 1;
+                loadStepFromQueue(currentBatchStep);
+            }
+            totalBatchCount = newCount;
+            updateBatchWizardUI();
+        }
+
+        function navigateBatchStep(dir) {
+            saveCurrentStepToQueue();
+            let targetStep = currentBatchStep + dir;
+            if (targetStep < 0 || targetStep >= totalBatchCount) return;
+            currentBatchStep = targetStep;
+            loadStepFromQueue(currentBatchStep);
+            updateBatchWizardUI();
+        }
+
+        // ==========================================
+        // STATE CAPTURE & RESTORE (MATCHES saveProjectData SCHEMA)
+        // ==========================================
+        let generatedClippingsList = [];
+        let activeGeneratedClipIndex = -1;
+        let isApplyingClipState = false;
+
+        function getCurrentEditorStateObject() {
+            let srcImg1 = imgState[1].uploaded ? document.getElementById('out-image-1').src : "";
+            let srcImg2 = imgState[2].uploaded ? document.getElementById('out-image-2').src : "";
+            let srcImg3 = imgState[3].uploaded ? document.getElementById('out-image-3').src : "";
+            let srcImg4 = imgState[4].uploaded ? document.getElementById('out-image-4').src : "";
+            let srcLogoTop = document.getElementById('out-logo-top').style.display !== 'none' ? document.getElementById('out-logo-top').src : "";
+            let srcLogoStamp = stampUploaded ? document.getElementById('out-logo-stamp').src : "";
+
+            return {
+                wrapW: document.getElementById('in-wrap-w').value, ovrCheck: document.getElementById('in-overall-box-check').checked, ovrColor: document.getElementById('in-overall-color').value,
+                bgType: document.getElementById('in-bg-type').value, ovrColor2: document.getElementById('in-overall-color2').value, bgDir: document.getElementById('in-bg-direction').value,
+                logoType: document.getElementById('in-logo-type').value, logoTopSrc: srcLogoTop, logoLineCheck: document.getElementById('in-logo-line-check').checked, logoLineColor: document.getElementById('in-logo-line-color').value,
+                logoTopW: document.getElementById('logo-top-w').value, logoTopH: document.getElementById('logo-top-h').value,
+                logoStampSrc: srcLogoStamp, stampAlign: document.getElementById('stamp-align').value, stampW: document.getElementById('stamp-w').value, stampParaPos: document.getElementById('stamp-para-pos').value,
+                smt: document.getElementById('smt').value, smr: document.getElementById('smr').value, smb: document.getElementById('smb').value, sml: document.getElementById('sml').value,
+                
+                subHl: document.getElementById('in-sub-headline').value, subFont: document.getElementById('in-sub-font').value, subColor: document.getElementById('in-sub-color').value, subSize: document.getElementById('in-sub-size').value, subLh: document.getElementById('in-sub-lh').value, subY: document.getElementById('in-sub-y').value,
+                subShadowX: document.getElementById('in-sub-shadow-x').value, subShadowY: document.getElementById('in-sub-shadow-y').value, subShadowBlur: document.getElementById('in-sub-shadow-blur').value, subShadowColor: document.getElementById('in-sub-shadow-color').value,
+                
+                mainHl: document.getElementById('in-main-headline').value, mainMode: document.getElementById('in-main-mode').value, mainFont: document.getElementById('in-main-font').value, mainColor: document.getElementById('in-main-color').value, mainBgCheck: document.getElementById('in-main-bg-check').checked, mainBgColor: document.getElementById('in-main-bg-color').value, mainStrokeCheck: document.getElementById('in-main-stroke-check').checked, mainStrokeColor: document.getElementById('in-main-stroke-color').value, mainStrokeW: document.getElementById('in-main-stroke-w').value, mainStyle: document.getElementById('in-special-style').value, mainSize: document.getElementById('in-main-size').value, mainLh: document.getElementById('in-main-lh').value, mainY: document.getElementById('in-main-y').value, mainBgShape: document.getElementById('in-main-bg-shape').value, specialColorCheck: document.getElementById('in-special-color-check').checked, specialColor: document.getElementById('in-special-color').value,
+                mainShadowX: document.getElementById('in-main-shadow-x').value, mainShadowY: document.getElementById('in-main-shadow-y').value, mainShadowBlur: document.getElementById('in-main-shadow-blur').value, mainShadowColor: document.getElementById('in-main-shadow-color').value,
+                
+                bullets: document.getElementById('in-bullets').value, bulletsAlign: document.getElementById('in-bullets-align').value, bulletsParaPos: document.getElementById('bullets-para-pos').value, bulletsBoxCheck: document.getElementById('in-bullets-box-check').checked, bulletsBgColor: document.getElementById('in-bullets-bg-color').value, bulletsSize: document.getElementById('in-bullets-size').value, bulletsLh: document.getElementById('in-bullets-lh').value, bulletsY: document.getElementById('in-bullets-y').value, bulletsX: document.getElementById('in-bullets-x').value, bulletsSymbol: document.getElementById('in-bullets-symbol').value, bulletsSymbolColor: document.getElementById('in-bullets-symbol-color').value,
+                
+                collageMode: document.getElementById('in-collage-mode').value, collageBgColor: document.getElementById('in-collage-bg-color').value, collageAlign: document.getElementById('collage-align').value, collagePara: document.getElementById('collage-para').value, collageW: document.getElementById('collage-w').value, collageGap: document.getElementById('collage-gap').value,
+                cmt: document.getElementById('cmt').value, cmr: document.getElementById('cmr').value, cmb: document.getElementById('cmb').value, cml: document.getElementById('cml').value,
+
+                img1Src: srcImg1, imgFrame1: document.getElementById('img-frame-1').value, imgStrokeCheck1: document.getElementById('img-stroke-check-1').checked, imgStrokeColor1: document.getElementById('img-stroke-color-1').value, imgStrokeW1: document.getElementById('img-stroke-w-1').value, checkCap1: document.getElementById('check-cap-1').checked, caption1: document.getElementById('in-caption-1').value, imgAlign1: document.getElementById('img-align-1').value, imgPara1: document.getElementById('img-para-1').value, imgW1: document.getElementById('img-w-1').value, 
+                mt1: document.getElementById('mt-1').value, mr1: document.getElementById('mr-1').value, mb1: document.getElementById('mb-1').value, ml1: document.getElementById('ml-1').value,
+                img2Src: srcImg2, imgFrame2: document.getElementById('img-frame-2').value, imgStrokeCheck2: document.getElementById('img-stroke-check-2').checked, imgStrokeColor2: document.getElementById('img-stroke-color-2').value, imgStrokeW2: document.getElementById('img-stroke-w-2').value, checkCap2: document.getElementById('check-cap-2').checked, caption2: document.getElementById('in-caption-2').value, imgAlign2: document.getElementById('img-align-2').value, imgPara2: document.getElementById('img-para-2').value, imgW2: document.getElementById('img-w-2').value,
+                mt2: document.getElementById('mt-2').value, mr2: document.getElementById('mr-2').value, mb2: document.getElementById('mb-2').value, ml2: document.getElementById('ml-2').value,
+                img3Src: srcImg3, imgFrame3: document.getElementById('img-frame-3').value, imgStrokeCheck3: document.getElementById('img-stroke-check-3').checked, imgStrokeColor3: document.getElementById('img-stroke-color-3').value, imgStrokeW3: document.getElementById('img-stroke-w-3').value, checkCap3: document.getElementById('check-cap-3').checked, caption3: document.getElementById('in-caption-3').value, imgAlign3: document.getElementById('img-align-3').value, imgPara3: document.getElementById('img-para-3').value, imgW3: document.getElementById('img-w-3').value,
+                mt3: document.getElementById('mt-3').value, mr3: document.getElementById('mr-3').value, mb3: document.getElementById('mb-3').value, ml3: document.getElementById('ml-3').value,
+                img4Src: srcImg4, imgFrame4: document.getElementById('img-frame-4').value, imgStrokeCheck4: document.getElementById('img-stroke-check-4').checked, imgStrokeColor4: document.getElementById('img-stroke-color-4').value, imgStrokeW4: document.getElementById('img-stroke-w-4').value, checkCap4: document.getElementById('check-cap-4').checked, caption4: document.getElementById('in-caption-4').value, imgAlign4: document.getElementById('img-align-4').value, imgPara4: document.getElementById('img-para-4').value, imgW4: document.getElementById('img-w-4').value,
+                mt4: document.getElementById('mt-4').value, mr4: document.getElementById('mr-4').value, mb4: document.getElementById('mb-4').value, ml4: document.getElementById('ml-4').value,
+
+                newsPrefix: document.getElementById('in-news-prefix').value, newsPrefixBold: document.getElementById('in-news-prefix-bold').checked, newsPrefixColor: document.getElementById('in-news-prefix-color').value, newsPrefixLayout: document.getElementById('in-news-prefix-layout').value,
+                columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
+            };
+        }
+
+        function applyEditorStateObject(data) {
+            if (!data) return;
+            isApplyingClipState = true;
+            try {
+                imgState[1].uploaded = false; document.getElementById('out-image-1').src = ""; document.getElementById('out-image-1').style.display = 'none';
+                imgState[2].uploaded = false; document.getElementById('out-image-2').src = ""; document.getElementById('out-image-2').style.display = 'none';
+                imgState[3].uploaded = false; document.getElementById('out-image-3').src = ""; document.getElementById('out-image-3').style.display = 'none';
+                imgState[4].uploaded = false; document.getElementById('out-image-4').src = ""; document.getElementById('out-image-4').style.display = 'none';
+                document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none'; document.getElementById('out-logo-box').style.display = 'none';
+                stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
+
+                document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
+                document.getElementById('in-bg-type').value = data.bgType || 'solid'; document.getElementById('in-overall-color2').value = data.ovrColor2 || '#e3f2fd'; document.getElementById('in-bg-direction').value = data.bgDir || 'to bottom';
+                document.getElementById('in-logo-type').value = data.logoType || 'top'; 
+                
+                document.getElementById('in-logo-line-check').checked = data.logoLineCheck !== undefined ? data.logoLineCheck : true; document.getElementById('in-logo-line-color').value = data.logoLineColor || '#000000';
+                document.getElementById('logo-top-w').value = data.logoTopW || 100; document.getElementById('logo-top-h').value = data.logoTopH || 120; document.getElementById('out-logo-box').style.width = (data.logoTopW || 100) + '%'; document.getElementById('out-logo-box').style.height = (data.logoTopH || 120) + 'px';
+                
+                document.getElementById('stamp-align').value = data.stampAlign || 'center'; document.getElementById('stamp-w').value = data.stampW || 30; document.getElementById('stamp-para-pos').value = data.stampParaPos || 50; 
+                document.getElementById('smt').value = data.smt !== undefined ? data.smt : 0; document.getElementById('smr').value = data.smr !== undefined ? data.smr : 15; document.getElementById('smb').value = data.smb !== undefined ? data.smb : 15; document.getElementById('sml').value = data.sml !== undefined ? data.sml : 15;
+
+                document.getElementById('in-sub-headline').value = data.subHl || ''; document.getElementById('in-sub-font').value = data.subFont || "'Mandali', sans-serif"; document.getElementById('in-sub-color').value = data.subColor || "#cc0000"; document.getElementById('in-sub-size').value = data.subSize || 18; document.getElementById('in-sub-lh').value = data.subLh || 1.3; document.getElementById('in-sub-y').value = data.subY || 0;
+                document.getElementById('in-sub-shadow-x').value = data.subShadowX || 0; document.getElementById('in-sub-shadow-y').value = data.subShadowY || 0; document.getElementById('in-sub-shadow-blur').value = data.subShadowBlur || 0; document.getElementById('in-sub-shadow-color').value = data.subShadowColor || '#000000';
+                
+                document.getElementById('in-main-headline').value = data.mainHl || ''; document.getElementById('in-main-mode').value = data.mainMode || 'normal'; document.getElementById('in-main-font').value = data.mainFont || "'Ramabhadra', sans-serif"; document.getElementById('in-main-color').value = data.mainColor || "#002b80"; document.getElementById('in-main-bg-check').checked = data.mainBgCheck || false; document.getElementById('in-main-bg-color').value = data.mainBgColor || "#002b80"; document.getElementById('in-main-stroke-check').checked = data.mainStrokeCheck || false; document.getElementById('in-main-stroke-color').value = data.mainStrokeColor || "#ffffff"; document.getElementById('in-main-stroke-w').value = data.mainStrokeW || 1; document.getElementById('in-special-style').value = data.mainStyle || 'style-1'; document.getElementById('in-main-size').value = data.mainSize || 36; document.getElementById('in-main-lh').value = data.mainLh || 1.3; document.getElementById('in-main-y').value = data.mainY || 0;
+                document.getElementById('in-main-bg-shape').value = data.mainBgShape || 'bg-shape-normal'; document.getElementById('in-special-color-check').checked = data.specialColorCheck || false; document.getElementById('in-special-color').value = data.specialColor || '#ffffff'; document.getElementById('special-color-wrap').style.display = (data.specialColorCheck || false) ? 'flex' : 'none';
+                document.getElementById('in-main-shadow-x').value = data.mainShadowX || 0; document.getElementById('in-main-shadow-y').value = data.mainShadowY || 0; document.getElementById('in-main-shadow-blur').value = data.mainShadowBlur || 0; document.getElementById('in-main-shadow-color').value = data.mainShadowColor || '#000000';
+                
+                document.getElementById('in-bullets').value = data.bullets || ''; document.getElementById('in-bullets-align').value = data.bulletsAlign || 'top'; document.getElementById('bullets-para-pos').value = data.bulletsParaPos || 0; document.getElementById('in-bullets-box-check').checked = data.bulletsBoxCheck || false; document.getElementById('in-bullets-bg-color').value = data.bulletsBgColor || '#e3f2fd'; document.getElementById('in-bullets-size').value = data.bulletsSize || 16; document.getElementById('in-bullets-lh').value = data.bulletsLh || 1.5; document.getElementById('in-bullets-y').value = data.bulletsY || 0; document.getElementById('in-bullets-x').value = data.bulletsX || 0; document.getElementById('in-bullets-symbol').value = data.bulletsSymbol || '•'; document.getElementById('in-bullets-symbol-color').value = data.bulletsSymbolColor || '#cc0000';
+                
+                document.getElementById('in-collage-mode').value = data.collageMode || 'single'; document.getElementById('in-collage-bg-color').value = data.collageBgColor || '#ffffff'; document.getElementById('collage-align').value = data.collageAlign || 'top'; document.getElementById('collage-para').value = data.collagePara || 0; document.getElementById('collage-w').value = data.collageW || 100; document.getElementById('collage-gap').value = data.collageGap !== undefined ? data.collageGap : 10;
+                document.getElementById('cmt').value = data.cmt !== undefined ? data.cmt : 0; document.getElementById('cmr').value = data.cmr !== undefined ? data.cmr : 15; document.getElementById('cmb').value = data.cmb !== undefined ? data.cmb : 15; document.getElementById('cml').value = data.cml !== undefined ? data.cml : 15;
+
+                document.getElementById('img-frame-1').value = data.imgFrame1 || 'none'; document.getElementById('img-stroke-check-1').checked = data.imgStrokeCheck1 || false; document.getElementById('img-stroke-color-1').value = data.imgStrokeColor1 || '#000000'; document.getElementById('img-stroke-w-1').value = data.imgStrokeW1 || 2; document.getElementById('check-cap-1').checked = data.checkCap1 !== undefined ? data.checkCap1 : true; document.getElementById('in-caption-1').value = data.caption1 || ''; document.getElementById('img-align-1').value = data.imgAlign1 || 'top'; document.getElementById('img-para-1').value = data.imgPara1 || 0; document.getElementById('img-w-1').value = data.imgW1 || 100; 
+                document.getElementById('mt-1').value = data.mt1 !== undefined ? data.mt1 : 0; document.getElementById('mr-1').value = data.mr1 !== undefined ? data.mr1 : 15; document.getElementById('mb-1').value = data.mb1 !== undefined ? data.mb1 : 15; document.getElementById('ml-1').value = data.ml1 !== undefined ? data.ml1 : 15;
+                
+                document.getElementById('img-frame-2').value = data.imgFrame2 || 'none'; document.getElementById('img-stroke-check-2').checked = data.imgStrokeCheck2 || false; document.getElementById('img-stroke-color-2').value = data.imgStrokeColor2 || '#000000'; document.getElementById('img-stroke-w-2').value = data.imgStrokeW2 || 2; document.getElementById('check-cap-2').checked = data.checkCap2 !== undefined ? data.checkCap2 : false; document.getElementById('in-caption-2').value = data.caption2 || ''; if(document.getElementById('img-align-2')) document.getElementById('img-align-2').value = data.imgAlign2 || 'right'; document.getElementById('img-para-2').value = data.imgPara2 || 50; document.getElementById('img-w-2').value = data.imgW2 || 50; 
+                document.getElementById('mt-2').value = data.mt2 !== undefined ? data.mt2 : 0; document.getElementById('mr-2').value = data.mr2 !== undefined ? data.mr2 : 15; document.getElementById('mb-2').value = data.mb2 !== undefined ? data.mb2 : 15; document.getElementById('ml-2').value = data.ml2 !== undefined ? data.ml2 : 15;
+                
+                document.getElementById('img-frame-3').value = data.imgFrame3 || 'none'; document.getElementById('img-stroke-check-3').checked = data.imgStrokeCheck3 || false; document.getElementById('img-stroke-color-3').value = data.imgStrokeColor3 || '#000000'; document.getElementById('img-stroke-w-3').value = data.imgStrokeW3 || 2; document.getElementById('check-cap-3').checked = data.checkCap3 !== undefined ? data.checkCap3 : false; document.getElementById('in-caption-3').value = data.caption3 || ''; if(document.getElementById('img-align-3')) document.getElementById('img-align-3').value = data.imgAlign3 || 'left'; document.getElementById('img-para-3').value = data.imgPara3 || 75; document.getElementById('img-w-3').value = data.imgW3 || 50; 
+                document.getElementById('mt-3').value = data.mt3 !== undefined ? data.mt3 : 0; document.getElementById('mr-3').value = data.mr3 !== undefined ? data.mr3 : 15; document.getElementById('mb-3').value = data.mb3 !== undefined ? data.mb3 : 15; document.getElementById('ml-3').value = data.ml3 !== undefined ? data.ml3 : 15;
+
+                document.getElementById('img-frame-4').value = data.imgFrame4 || 'none'; document.getElementById('img-stroke-check-4').checked = data.imgStrokeCheck4 || false; document.getElementById('img-stroke-color-4').value = data.imgStrokeColor4 || '#000000'; document.getElementById('img-stroke-w-4').value = data.imgStrokeW4 || 2; document.getElementById('check-cap-4').checked = data.checkCap4 !== undefined ? data.checkCap4 : false; document.getElementById('in-caption-4').value = data.caption4 || ''; if(document.getElementById('img-align-4')) document.getElementById('img-align-4').value = data.imgAlign4 || 'right'; document.getElementById('img-para-4').value = data.imgPara4 || 90; document.getElementById('img-w-4').value = data.imgW4 || 50; 
+                document.getElementById('mt-4').value = data.mt4 !== undefined ? data.mt4 : 0; document.getElementById('mr-4').value = data.mr4 !== undefined ? data.mr4 : 15; document.getElementById('mb-4').value = data.mb4 !== undefined ? data.mb4 : 15; document.getElementById('ml-4').value = data.ml4 !== undefined ? data.ml4 : 15;
+
+                document.getElementById('in-news-prefix').value = data.newsPrefix || ''; document.getElementById('in-news-prefix-bold').checked = data.newsPrefixBold !== undefined ? data.newsPrefixBold : true; document.getElementById('in-news-prefix-color').value = data.newsPrefixColor || '#d32f2f'; document.getElementById('in-news-prefix-layout').value = data.newsPrefixLayout || 'inline';
+                document.getElementById('in-columns').value = data.columns || 2; document.getElementById('in-body-font').value = data.bodyFont || "'Tiro Telugu', serif"; document.getElementById('in-body-size').value = data.bodySize || 17; document.getElementById('in-body-lh').value = data.bodyLh || 1.5; document.getElementById('in-news-body').value = data.newsBody || ''; rawNewsText = data.newsBody || '';
+
+                if(data.logoTopSrc && data.logoTopSrc.startsWith('data:image')) { 
+                    document.getElementById('out-logo-top').src = data.logoTopSrc; 
+                    document.getElementById('out-logo-top').style.display = 'block'; 
+                    document.getElementById('out-logo-box').style.display = 'flex';
+                }
+                if(data.logoStampSrc && data.logoStampSrc.startsWith('data:image')) { 
+                    document.getElementById('out-logo-stamp').src = data.logoStampSrc; 
+                    document.getElementById('out-logo-stamp').style.display = 'block'; 
+                    stampUploaded = true; 
+                }
+                if(data.img1Src && data.img1Src.startsWith('data:image')) { 
+                    document.getElementById('out-image-1').src = data.img1Src; 
+                    document.getElementById('out-image-1').style.display = 'block'; 
+                    imgState[1].uploaded = true; 
+                }
+                if(data.img2Src && data.img2Src.startsWith('data:image')) { 
+                    document.getElementById('out-image-2').src = data.img2Src; 
+                    document.getElementById('out-image-2').style.display = 'block'; 
+                    imgState[2].uploaded = true; 
+                }
+                if(data.img3Src && data.img3Src.startsWith('data:image')) { 
+                    document.getElementById('out-image-3').src = data.img3Src; 
+                    document.getElementById('out-image-3').style.display = 'block'; 
+                    imgState[3].uploaded = true; 
+                }
+                if(data.img4Src && data.img4Src.startsWith('data:image')) { 
+                    document.getElementById('out-image-4').src = data.img4Src; 
+                    document.getElementById('out-image-4').style.display = 'block'; 
+                    imgState[4].uploaded = true; 
+                }
+
+                // Trigger bound input events immediately
+                ['in-wrap-w', 'in-main-headline', 'in-sub-headline', 'in-sub-size', 'in-sub-lh', 'in-sub-y', 'in-main-y', 'in-sub-shadow-x', 'in-sub-shadow-y', 'in-sub-shadow-blur', 'in-main-size', 'in-main-lh', 'in-main-shadow-x', 'in-main-shadow-y', 'in-main-shadow-blur', 'in-bullets-size', 'in-bullets-lh', 'in-bullets-y', 'in-bullets-x', 'in-body-size', 'in-body-lh', 'stamp-w', 'img-w-1', 'img-w-2', 'img-w-3', 'img-w-4', 'logo-top-w', 'logo-top-h', 'mt-1', 'mr-1', 'mb-1', 'ml-1', 'mt-2', 'mr-2', 'mb-2', 'ml-2', 'mt-3', 'mr-3', 'mb-3', 'ml-3', 'mt-4', 'mr-4', 'mb-4', 'ml-4', 'smt', 'smr', 'smb', 'sml', 'cmt', 'cmr', 'cmb', 'cml', 'collage-w', 'collage-para', 'collage-gap', 'in-caption-1', 'in-caption-2', 'in-caption-3', 'in-caption-4'].forEach(id => { let el = document.getElementById(id); if(el) el.dispatchEvent(new Event('input')); });
+                
+                document.getElementById('out-sub-headline').style.fontFamily = data.subFont || "'Mandali', sans-serif";
+                document.getElementById('out-sub-headline').style.color = data.subColor || "#cc0000";
+                document.getElementById('out-news-body').style.fontFamily = data.bodyFont || "'Tiro Telugu', serif";
+
+                updateOverallBox(); document.getElementById('in-logo-type').dispatchEvent(new Event('change')); updateLogoLine(); document.getElementById('in-collage-mode').dispatchEvent(new Event('change')); document.getElementById('in-main-mode').dispatchEvent(new Event('change')); updateBullets(); applyImageFrameAndStroke(1); applyImageFrameAndStroke(2); applyImageFrameAndStroke(3); applyImageFrameAndStroke(4); document.getElementById(`check-cap-1`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-2`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-3`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-4`).dispatchEvent(new Event('change')); document.getElementById('in-columns').dispatchEvent(new Event('change')); rebuildNewsBody();
+                
+                syncCarousels();
+            } finally {
+                isApplyingClipState = false;
+            }
+        }
+
+        // 5. DISPLAYING ALL GENERATED CLIPPINGS & AUTO-SYNC MANUAL EDITS
+        function syncActiveGeneratedClipping() {
+            if (isApplyingClipState) return;
+            if (activeGeneratedClipIndex >= 0 && activeGeneratedClipIndex < generatedClippingsList.length) {
+                generatedClippingsList[activeGeneratedClipIndex] = getCurrentEditorStateObject();
+                updateGeneratedBarCardTitles();
+            }
+        }
+
+        function attachManualEditSyncListeners() {
+            const manualTabIds = ['tool-bg', 'tool-logo', 'tool-sub', 'tool-main', 'tool-bullets', 'tool-images', 'tool-body'];
+            manualTabIds.forEach(tabId => {
+                const tabEl = document.getElementById(tabId);
+                if (!tabEl) return;
+                tabEl.addEventListener('input', () => {
+                    syncActiveGeneratedClipping();
+                });
+                tabEl.addEventListener('change', () => {
+                    syncActiveGeneratedClipping();
+                });
+            });
+        }
+
+        function renderGeneratedClippingsBar() {
+            const bar = document.getElementById('generated-clippings-bar');
+            const listEl = document.getElementById('gen-cards-list');
+            const titleEl = document.getElementById('gen-bar-title');
+
+            if (!generatedClippingsList || generatedClippingsList.length === 0) {
+                bar.style.display = 'none';
+                return;
+            }
+
+            bar.style.display = 'block';
+            titleEl.innerText = `🗂️ Generated Clippings (${generatedClippingsList.length})`;
+            listEl.innerHTML = '';
+
+            generatedClippingsList.forEach((clipState, idx) => {
+                const card = document.createElement('div');
+                card.className = 'gen-clip-card' + (idx === activeGeneratedClipIndex ? ' active' : '');
+                
+                let shortTitle = (clipState.mainHl || `Clipping ${idx + 1}`).replace(/\n/g, ' ').trim();
+                if (shortTitle.length > 18) shortTitle = shortTitle.substring(0, 18) + '...';
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = 'gen-card-label';
+                labelSpan.innerText = `#${idx + 1}: ${shortTitle}`;
+                card.onclick = () => selectGeneratedClipping(idx);
+
+                const dlBtn = document.createElement('button');
+                dlBtn.type = 'button';
+                dlBtn.className = 'mini-dl-btn';
+                dlBtn.title = `Download Clipping #${idx + 1}`;
+                dlBtn.innerText = '⬇️';
+                dlBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    downloadSpecificGeneratedClipping(idx);
+                };
+
+                card.appendChild(labelSpan);
+                card.appendChild(dlBtn);
+                listEl.appendChild(card);
+            });
+        }
+
+        function updateGeneratedBarCardTitles() {
+            const listEl = document.getElementById('gen-cards-list');
+            if (!listEl) return;
+            const cards = listEl.querySelectorAll('.gen-clip-card');
+            cards.forEach((card, idx) => {
+                if (generatedClippingsList[idx]) {
+                    let shortTitle = (generatedClippingsList[idx].mainHl || `Clipping ${idx + 1}`).replace(/\n/g, ' ').trim();
+                    if (shortTitle.length > 18) shortTitle = shortTitle.substring(0, 18) + '...';
+                    const lbl = card.querySelector('.gen-card-label');
+                    if (lbl) lbl.innerText = `#${idx + 1}: ${shortTitle}`;
+                }
+            });
+        }
+
+        function selectGeneratedClipping(idx) {
+            if (idx < 0 || idx >= generatedClippingsList.length) return;
+            // Save edits on current active clipping before switching
+            if (activeGeneratedClipIndex >= 0 && activeGeneratedClipIndex < generatedClippingsList.length && !isApplyingClipState) {
+                generatedClippingsList[activeGeneratedClipIndex] = getCurrentEditorStateObject();
+            }
+            activeGeneratedClipIndex = idx;
+            applyEditorStateObject(generatedClippingsList[idx]);
+            renderGeneratedClippingsBar();
+        }
+
+        // ==========================================
+        // 4. SEQUENTIAL AI GENERATION & ONE-LINE HEADLINE PROMPT LOGIC
         // ==========================================
         document.getElementById('btn-ai-generate').addEventListener('click', async () => {
-            const rawText = document.getElementById('ai-raw-text').value.trim();
+            saveCurrentStepToQueue();
             const apiKey = document.getElementById('ai-api-key').value.trim();
 
-            if(!rawText) { alert("దయచేసి ముడి వార్తను ఎంటర్ చేయండి!"); return; }
             if(!apiKey) { alert("దయచేసి Gemini API Key ఎంటర్ చేయండి!"); return; }
 
-            const selectedTemplate = document.getElementById('ai-template-select').value;
-            if (selectedTemplate !== "DEFAULT") {
-                loadProjectByName(selectedTemplate, true);
+            // Validate inputs across all N configured clippings in aiBatchQueue
+            const batchItemsToRun = aiBatchQueue.slice(0, totalBatchCount);
+            for (let idx = 0; idx < batchItemsToRun.length; idx++) {
+                if (!batchItemsToRun[idx].rawText || batchItemsToRun[idx].rawText.trim() === '') {
+                    if (totalBatchCount === 1) {
+                        alert("దయచేసి ముడి వార్తను ఎంటర్ చేయండి!");
+                    } else {
+                        alert(`దయచేసి క్లిప్పింగ్ #${idx + 1} కోసం ముడి వార్తను (Raw Matter) ఎంటర్ చేయండి!`);
+                        currentBatchStep = idx;
+                        loadStepFromQueue(currentBatchStep);
+                        updateBatchWizardUI();
+                    }
+                    return;
+                }
             }
-
-            const wantsSubHead = document.getElementById('ai-chk-subhead').checked;
-            const wantsBullets = document.getElementById('ai-chk-bullets').checked;
-            const wantsBgBox = document.getElementById('ai-chk-bgbox').checked;
-            const wantsNewLogo = document.getElementById('ai-chk-use-logo').checked;
-            const aiImgVal = document.getElementById('ai-img-count').value;
-
-            document.getElementById('in-overall-box-check').checked = wantsBgBox;
-            document.getElementById('in-overall-box-check').dispatchEvent(new Event('change'));
-
-            if (wantsNewLogo) {
-                if (aiSelectedLogoData) {
-                    document.getElementById('out-logo-top').src = aiSelectedLogoData;
-                    document.getElementById('out-logo-top').style.display = 'block';
-                    document.getElementById('out-logo-box').style.display = 'flex';
-                } else {
-                    document.getElementById('out-logo-top').style.display = 'none';
-                    document.getElementById('out-logo-box').style.display = 'none';
-                }
-            } 
-
-            // Apply collage/image settings to the main layout engine
-            for(let i=1; i<=4; i++) {
-               imgState[i].uploaded = false;
-               document.getElementById(`out-image-${i}`).src = "";
-               document.getElementById(`out-image-${i}`).style.display = 'none';
-            }
-
-            if (aiImgVal !== '0') {
-                if (aiImgVal === 'single1' || aiImgVal === 'single2') {
-                    document.getElementById('in-collage-mode').value = 'single';
-                } else if (aiImgVal === 'collage2') {
-                    document.getElementById('in-collage-mode').value = 'collage2';
-                } else if (aiImgVal === 'collage4') {
-                    document.getElementById('in-collage-mode').value = 'collage4';
-                }
-                
-                if(aiImg1Data) { document.getElementById('out-image-1').src = aiImg1Data; imgState[1].uploaded = true; document.getElementById('out-image-1').style.display = 'block'; }
-                
-                if(['single2', 'collage2', 'collage4'].includes(aiImgVal)) {
-                    if(aiImg2Data) { document.getElementById('out-image-2').src = aiImg2Data; imgState[2].uploaded = true; document.getElementById('out-image-2').style.display = 'block'; }
-                }
-                
-                if(aiImgVal === 'collage4') {
-                    if(aiImg3Data) { document.getElementById('out-image-3').src = aiImg3Data; imgState[3].uploaded = true; document.getElementById('out-image-3').style.display = 'block'; }
-                    if(aiImg4Data) { document.getElementById('out-image-4').src = aiImg4Data; imgState[4].uploaded = true; document.getElementById('out-image-4').style.display = 'block'; }
-                }
-                
-                document.getElementById('in-collage-mode').dispatchEvent(new Event('change'));
-            } else {
-                document.getElementById('in-collage-mode').value = 'single';
-                document.getElementById('in-collage-mode').dispatchEvent(new Event('change'));
-            }
-            
-            rebuildNewsBody();
 
             const btn = document.getElementById('btn-ai-generate');
             const oldText = btn.innerText;
@@ -1788,10 +2245,88 @@
                 alert("API కీ ఎర్రర్: " + e.message + "\n\nదయచేసి మీ API కీ కరెక్ట్ గా ఉందో లేదో సరిచూసుకోండి.");
                 btn.innerText = oldText;
                 btn.disabled = false;
+                updateBatchWizardUI();
                 return;
             }
 
-            const prompt = `Act as a veteran, senior Telugu investigative journalist and newspaper editor.
+            generatedClippingsList = [];
+            activeGeneratedClipIndex = -1;
+
+            try {
+                for (let cIdx = 0; cIdx < batchItemsToRun.length; cIdx++) {
+                    const clipCfg = batchItemsToRun[cIdx];
+                    btn.innerText = `⏳ Generating Clipping ${cIdx + 1} / ${batchItemsToRun.length}... దయచేసి ఆగండి`;
+
+                    // 1. Load its chosen template silently
+                    if (clipCfg.template && clipCfg.template !== "DEFAULT") {
+                        loadProjectByName(clipCfg.template, true);
+                    } else if (defaultEditorSnapshot) {
+                        applyEditorStateObject(defaultEditorSnapshot);
+                    }
+
+                    // 2. Apply its specific checkboxes and layout settings
+                    const wantsSubHead = clipCfg.wantsSubHead;
+                    const wantsBullets = clipCfg.wantsBullets;
+                    const wantsBgBox = clipCfg.wantsBgBox;
+                    const wantsShortHead = clipCfg.wantsShortHead;
+                    const wantsNewLogo = clipCfg.wantsNewLogo;
+                    const aiImgVal = clipCfg.imgCountMode || '0';
+
+                    document.getElementById('in-overall-box-check').checked = wantsBgBox;
+                    document.getElementById('in-overall-box-check').dispatchEvent(new Event('change'));
+
+                    if (wantsNewLogo) {
+                        if (clipCfg.selectedLogoData) {
+                            document.getElementById('out-logo-top').src = clipCfg.selectedLogoData;
+                            document.getElementById('out-logo-top').style.display = 'block';
+                            document.getElementById('out-logo-box').style.display = 'flex';
+                        } else {
+                            document.getElementById('out-logo-top').style.display = 'none';
+                            document.getElementById('out-logo-box').style.display = 'none';
+                        }
+                    }
+
+                    // Apply collage/image settings to the main layout engine
+                    for(let i=1; i<=4; i++) {
+                        imgState[i].uploaded = false;
+                        document.getElementById(`out-image-${i}`).src = "";
+                        document.getElementById(`out-image-${i}`).style.display = 'none';
+                    }
+
+                    if (aiImgVal !== '0') {
+                        if (aiImgVal === 'single1' || aiImgVal === 'single2') {
+                            document.getElementById('in-collage-mode').value = 'single';
+                        } else if (aiImgVal === 'collage2') {
+                            document.getElementById('in-collage-mode').value = 'collage2';
+                        } else if (aiImgVal === 'collage4') {
+                            document.getElementById('in-collage-mode').value = 'collage4';
+                        }
+                        
+                        if(clipCfg.img1Data) { document.getElementById('out-image-1').src = clipCfg.img1Data; imgState[1].uploaded = true; document.getElementById('out-image-1').style.display = 'block'; }
+                        
+                        if(['single2', 'collage2', 'collage4'].includes(aiImgVal)) {
+                            if(clipCfg.img2Data) { document.getElementById('out-image-2').src = clipCfg.img2Data; imgState[2].uploaded = true; document.getElementById('out-image-2').style.display = 'block'; }
+                        }
+                        
+                        if(aiImgVal === 'collage4') {
+                            if(clipCfg.img3Data) { document.getElementById('out-image-3').src = clipCfg.img3Data; imgState[3].uploaded = true; document.getElementById('out-image-3').style.display = 'block'; }
+                            if(clipCfg.img4Data) { document.getElementById('out-image-4').src = clipCfg.img4Data; imgState[4].uploaded = true; document.getElementById('out-image-4').style.display = 'block'; }
+                        }
+                        
+                        document.getElementById('in-collage-mode').dispatchEvent(new Event('change'));
+                    } else {
+                        document.getElementById('in-collage-mode').value = 'single';
+                        document.getElementById('in-collage-mode').dispatchEvent(new Event('change'));
+                    }
+                    
+                    rebuildNewsBody();
+
+                    // 3. Build Gemini AI Prompt with wantsShortHead rule
+                    const headlineRuleText = wantsShortHead
+                        ? `ONE-LINE CATCHY HEADLINE MODE: The 'Headline' MUST be punchy, dramatic, and highly catchy, strictly constrained to fit on ONE SINGLE SHORT LINE (do not make it a lengthy two-line heading). It should perfectly suit the core essence of the news report, without colons (:).`
+                        : `The "Headline" MUST be a single continuous sentence/phrase. Do NOT use colons (:) to divide the headline into two parts (e.g., Do NOT write "విషయం: ఇంకో విషయం").`;
+
+                    const prompt = `Act as a veteran, senior Telugu investigative journalist and newspaper editor.
 Read the raw, unorganized input text below and rewrite it into a professional Telugu news report.
 
 STRICT RULES (MUST FOLLOW):
@@ -1800,7 +2335,7 @@ STRICT RULES (MUST FOLLOW):
 3. CONDITIONAL SUBHEAD: Only generate "Subheading" if this flag is true: ${wantsSubHead}. If false, leave it empty ("").
 4. CONDITIONAL BULLETS: Only extract "Bullets" if this flag is true: ${wantsBullets}. If false, leave it as an empty array [].
 5. STRICT JSON FORMAT: Output ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json. Start directly with { and end with }.
-6. HEADLINE FORMAT: The "Headline" MUST be a single continuous sentence/phrase. Do NOT use colons (:) to divide the headline into two parts (e.g., Do NOT write "విషయం: ఇంకో విషయం").
+6. HEADLINE FORMAT: ${headlineRuleText}
 
 JSON Format:
 {
@@ -1811,84 +2346,100 @@ JSON Format:
 }
 
 Input Text:
-${rawText}`;
+${clipCfg.rawText.trim()}`;
 
-            let success = false;
-            let aiText = "";
-            let lastErrorMsg = "";
+                    let success = false;
+                    let aiText = "";
+                    let lastErrorMsg = "";
 
-            for (let i = 0; i < modelsToTry.length; i++) {
-                let activeModel = modelsToTry[i];
-                console.log("Trying Model:", activeModel);
-                
-                try {
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: { temperature: 0.7 } 
-                        })
-                    });
+                    for (let i = 0; i < modelsToTry.length; i++) {
+                        let activeModel = modelsToTry[i];
+                        console.log("Trying Model:", activeModel);
+                        
+                        try {
+                            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
+                            const response = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    contents: [{ parts: [{ text: prompt }] }],
+                                    generationConfig: { temperature: 0.7 } 
+                                })
+                            });
 
-                    if (!response.ok) {
-                        const errData = await response.json();
-                        lastErrorMsg = errData.error ? errData.error.message : 'API Request Failed';
-                        continue; 
+                            if (!response.ok) {
+                                const errData = await response.json();
+                                lastErrorMsg = errData.error ? errData.error.message : 'API Request Failed';
+                                continue; 
+                            }
+                            
+                            const data = await response.json();
+                            
+                            if(!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
+                                lastErrorMsg = "Google Safety Filter మీ వార్తను (Crime/Political) బ్లాక్ చేసింది.";
+                                continue; 
+                            }
+
+                            aiText = data.candidates[0].content.parts[0].text;
+                            success = true; 
+                            break;
+
+                        } catch (error) {
+                            lastErrorMsg = error.message;
+                            continue; 
+                        }
                     }
-                    
-                    const data = await response.json();
-                    
-                    if(!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
-                        lastErrorMsg = "Google Safety Filter మీ వార్తను (Crime/Political) బ్లాక్ చేసింది.";
-                        continue; 
+
+                    if (!success) {
+                        alert(`క్లిప్పింగ్ #${cIdx + 1} వార్త జెనరేట్ చేయడంలో ఎర్రర్: ` + lastErrorMsg + "\n\n(అందుబాటులో ఉన్న అన్ని మోడల్స్ ఫెయిల్ అయ్యాయి. దయచేసి API కీ చెక్ చేయండి లేదా కాసేపు ఆగి ట్రై చేయండి.)");
+                        btn.innerText = oldText;
+                        btn.disabled = false;
+                        updateBatchWizardUI();
+                        return;
                     }
 
-                    aiText = data.candidates[0].content.parts[0].text;
-                    success = true; 
-                    break;
+                    // 4. Populate the generated JSON into the editor and run rebuildNewsBody()
+                    aiText = aiText.trim();
+                    const firstBrace = aiText.indexOf('{');
+                    const lastBrace = aiText.lastIndexOf('}');
+                    if (firstBrace !== -1 && lastBrace !== -1) { aiText = aiText.substring(firstBrace, lastBrace + 1); }
+                    
+                    aiText = aiText.replace(/[\u0000-\u001F]+/g, " ");
 
-                } catch (error) {
-                    lastErrorMsg = error.message;
-                    continue; 
+                    const newsData = JSON.parse(aiText);
+
+                    document.getElementById('in-main-headline').value = newsData.Headline || "";
+                    document.getElementById('in-main-headline').dispatchEvent(new Event('input'));
+
+                    if (wantsSubHead && newsData.Subheading) {
+                        document.getElementById('in-sub-headline').value = newsData.Subheading;
+                    } else { document.getElementById('in-sub-headline').value = ""; }
+                    document.getElementById('in-sub-headline').dispatchEvent(new Event('input'));
+
+                    rawNewsText = (newsData.BodyMatter || "").replace(/\\n/g, '\n');
+                    document.getElementById('in-news-body').value = rawNewsText;
+
+                    if (wantsBullets && newsData.Bullets && Array.isArray(newsData.Bullets) && newsData.Bullets.length > 0) {
+                        document.getElementById('in-bullets').value = newsData.Bullets.join("\n");
+                    } else { document.getElementById('in-bullets').value = ""; }
+                    updateBullets();
+                    rebuildNewsBody();
+
+                    // 5. Capture and save the COMPLETE state of this generated clipping into generatedClippingsList
+                    const completeClipState = getCurrentEditorStateObject();
+                    generatedClippingsList.push(completeClipState);
                 }
-            }
 
-            if (!success) {
-                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: " + lastErrorMsg + "\n\n(అందుబాటులో ఉన్న అన్ని మోడల్స్ ఫెయిల్ అయ్యాయి. దయచేసి API కీ చెక్ చేయండి లేదా కాసేపు ఆగి ట్రై చేయండి.)");
-                btn.innerText = oldText;
-                btn.disabled = false;
-                return;
-            }
+                // After all clippings are generated, display the gallery bar and select the first clipping (or only clipping)
+                activeGeneratedClipIndex = 0;
+                applyEditorStateObject(generatedClippingsList[0]);
+                renderGeneratedClippingsBar();
 
-            try {
-                aiText = aiText.trim();
-                const firstBrace = aiText.indexOf('{');
-                const lastBrace = aiText.lastIndexOf('}');
-                if (firstBrace !== -1 && lastBrace !== -1) { aiText = aiText.substring(firstBrace, lastBrace + 1); }
-                
-                aiText = aiText.replace(/[\u0000-\u001F]+/g, " ");
-
-                const newsData = JSON.parse(aiText);
-
-                document.getElementById('in-main-headline').value = newsData.Headline || "";
-                document.getElementById('in-main-headline').dispatchEvent(new Event('input'));
-
-                if (wantsSubHead && newsData.Subheading) {
-                    document.getElementById('in-sub-headline').value = newsData.Subheading;
-                } else { document.getElementById('in-sub-headline').value = ""; }
-                document.getElementById('in-sub-headline').dispatchEvent(new Event('input'));
-
-                document.getElementById('in-news-body').value = (newsData.BodyMatter || "").replace(/\\n/g, '\n');
-                document.getElementById('in-news-body').dispatchEvent(new Event('input'));
-
-                if (wantsBullets && newsData.Bullets && Array.isArray(newsData.Bullets) && newsData.Bullets.length > 0) {
-                    document.getElementById('in-bullets').value = newsData.Bullets.join("\n");
-                } else { document.getElementById('in-bullets').value = ""; }
-                document.getElementById('in-bullets').dispatchEvent(new Event('input'));
-
-                alert("✅ మోడల్ & వార్త రెండు విజయవంతంగా జనరేట్ అయ్యాయి!");
+                if (generatedClippingsList.length > 1) {
+                    alert(`✅ మొత్తం ${generatedClippingsList.length} వార్తా క్లిప్పింగ్స్ విజయవంతంగా జనరేట్ అయ్యాయి! పైన ఉన్న గ్యాలరీ బార్ ద్వారా ఏ క్లిప్పింగ్ అయినా సెలెక్ట్ చేసి ఎడిట్ లేదా డౌన్‌లోడ్ చేసుకోవచ్చు.`);
+                } else {
+                    alert("✅ మోడల్ & వార్త రెండు విజయవంతంగా జనరేట్ అయ్యాయి!");
+                }
 
             } catch (error) {
                 console.error("Generation Error:", error);
@@ -1896,6 +2447,7 @@ ${rawText}`;
             } finally {
                 btn.innerText = oldText;
                 btn.disabled = false;
+                updateBatchWizardUI();
             }
         });
 
@@ -1970,7 +2522,7 @@ ${rawText}`;
                 window.saveProjectToFirebase(pName, cleanData);
             }
             
-            alert("✅ ప్రాజెక్ట్ '" + pName + "' స్ప్లిట్ సెకండ్‌లో పర్ఫెక్ట్‌గా సేవ్ అయింది!");
+            alert("✅ ప్రాజెక్ట్ '" + pName + "' స్ప్లిట్ సెకండ్లో పర్ఫెక్ట్గా సేవ్ అయింది!");
             
             btn.innerText = oldBtnText;
             if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
@@ -2006,7 +2558,7 @@ ${rawText}`;
                     
                     let delBtn = document.createElement('button'); delBtn.className = 'btn-del'; delBtn.innerText = 'Delete';
                     delBtn.onclick = async () => { 
-                        if(confirm("ఈ ప్రాజెక్ట్‌ను డిలీట్ చేయాలనుకుంటున్నారా?")) {
+                        if(confirm("ఈ ప్రాజెక్ట్ను డిలీట్ చేయాలనుకుంటున్నారా?")) {
                             loadBtn.innerText = '...'; delBtn.innerText = '...';
                             if (window.deleteProjectFromFirebase) {
                                 window.deleteProjectFromFirebase(pName);
@@ -2031,99 +2583,118 @@ ${rawText}`;
             let projects = window.loadedFirebaseProjects || JSON.parse(localStorage.getItem('savedProjectsList')) || {};
             let data = projects[pName]; if(!data) return;
             
-            imgState[1].uploaded = false; document.getElementById('out-image-1').src = ""; document.getElementById('out-image-1').style.display = 'none';
-            imgState[2].uploaded = false; document.getElementById('out-image-2').src = ""; document.getElementById('out-image-2').style.display = 'none';
-            imgState[3].uploaded = false; document.getElementById('out-image-3').src = ""; document.getElementById('out-image-3').style.display = 'none';
-            imgState[4].uploaded = false; document.getElementById('out-image-4').src = ""; document.getElementById('out-image-4').style.display = 'none';
-            document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none'; document.getElementById('out-logo-box').style.display = 'none';
-            stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
-
-            document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
-            document.getElementById('in-bg-type').value = data.bgType || 'solid'; document.getElementById('in-overall-color2').value = data.ovrColor2 || '#e3f2fd'; document.getElementById('in-bg-direction').value = data.bgDir || 'to bottom';
-            document.getElementById('in-logo-type').value = data.logoType || 'top'; 
-            
-            document.getElementById('in-logo-line-check').checked = data.logoLineCheck !== undefined ? data.logoLineCheck : true; document.getElementById('in-logo-line-color').value = data.logoLineColor || '#000000';
-            document.getElementById('logo-top-w').value = data.logoTopW || 100; document.getElementById('logo-top-h').value = data.logoTopH || 120; document.getElementById('out-logo-box').style.width = (data.logoTopW || 100) + '%'; document.getElementById('out-logo-box').style.height = (data.logoTopH || 120) + 'px';
-            
-            document.getElementById('stamp-align').value = data.stampAlign || 'center'; document.getElementById('stamp-w').value = data.stampW || 30; document.getElementById('stamp-para-pos').value = data.stampParaPos || 50; 
-            document.getElementById('smt').value = data.smt !== undefined ? data.smt : 0; document.getElementById('smr').value = data.smr !== undefined ? data.smr : 15; document.getElementById('smb').value = data.smb !== undefined ? data.smb : 15; document.getElementById('sml').value = data.sml !== undefined ? data.sml : 15;
-
-            document.getElementById('in-sub-headline').value = data.subHl || ''; document.getElementById('in-sub-font').value = data.subFont || "'Mandali', sans-serif"; document.getElementById('in-sub-color').value = data.subColor || "#cc0000"; document.getElementById('in-sub-size').value = data.subSize || 18; document.getElementById('in-sub-lh').value = data.subLh || 1.3; document.getElementById('in-sub-y').value = data.subY || 0;
-            document.getElementById('in-sub-shadow-x').value = data.subShadowX || 0; document.getElementById('in-sub-shadow-y').value = data.subShadowY || 0; document.getElementById('in-sub-shadow-blur').value = data.subShadowBlur || 0; document.getElementById('in-sub-shadow-color').value = data.subShadowColor || '#000000';
-            
-            document.getElementById('in-main-headline').value = data.mainHl || ''; document.getElementById('in-main-mode').value = data.mainMode || 'normal'; document.getElementById('in-main-font').value = data.mainFont || "'Ramabhadra', sans-serif"; document.getElementById('in-main-color').value = data.mainColor || "#002b80"; document.getElementById('in-main-bg-check').checked = data.mainBgCheck || false; document.getElementById('in-main-bg-color').value = data.mainBgColor || "#002b80"; document.getElementById('in-main-stroke-check').checked = data.mainStrokeCheck || false; document.getElementById('in-main-stroke-color').value = data.mainStrokeColor || "#ffffff"; document.getElementById('in-main-stroke-w').value = data.mainStrokeW || 1; document.getElementById('in-special-style').value = data.mainStyle || 'style-1'; document.getElementById('in-main-size').value = data.mainSize || 36; document.getElementById('in-main-lh').value = data.mainLh || 1.3; document.getElementById('in-main-y').value = data.mainY || 0;
-            document.getElementById('in-main-bg-shape').value = data.mainBgShape || 'bg-shape-normal'; document.getElementById('in-special-color-check').checked = data.specialColorCheck || false; document.getElementById('in-special-color').value = data.specialColor || '#ffffff'; document.getElementById('special-color-wrap').style.display = (data.specialColorCheck || false) ? 'flex' : 'none';
-            document.getElementById('in-main-shadow-x').value = data.mainShadowX || 0; document.getElementById('in-main-shadow-y').value = data.mainShadowY || 0; document.getElementById('in-main-shadow-blur').value = data.mainShadowBlur || 0; document.getElementById('in-main-shadow-color').value = data.mainShadowColor || '#000000';
-            
-            document.getElementById('in-bullets').value = data.bullets || ''; document.getElementById('in-bullets-align').value = data.bulletsAlign || 'top'; document.getElementById('bullets-para-pos').value = data.bulletsParaPos || 0; document.getElementById('in-bullets-box-check').checked = data.bulletsBoxCheck || false; document.getElementById('in-bullets-bg-color').value = data.bulletsBgColor || '#e3f2fd'; document.getElementById('in-bullets-size').value = data.bulletsSize || 16; document.getElementById('in-bullets-lh').value = data.bulletsLh || 1.5; document.getElementById('in-bullets-y').value = data.bulletsY || 0; document.getElementById('in-bullets-x').value = data.bulletsX || 0; document.getElementById('in-bullets-symbol').value = data.bulletsSymbol || '•'; document.getElementById('in-bullets-symbol-color').value = data.bulletsSymbolColor || '#cc0000';
-            
-            document.getElementById('in-collage-mode').value = data.collageMode || 'single'; document.getElementById('in-collage-bg-color').value = data.collageBgColor || '#ffffff'; document.getElementById('collage-align').value = data.collageAlign || 'top'; document.getElementById('collage-para').value = data.collagePara || 0; document.getElementById('collage-w').value = data.collageW || 100; document.getElementById('collage-gap').value = data.collageGap !== undefined ? data.collageGap : 10;
-            document.getElementById('cmt').value = data.cmt !== undefined ? data.cmt : 0; document.getElementById('cmr').value = data.cmr !== undefined ? data.cmr : 15; document.getElementById('cmb').value = data.cmb !== undefined ? data.cmb : 15; document.getElementById('cml').value = data.cml !== undefined ? data.cml : 15;
-
-            document.getElementById('img-frame-1').value = data.imgFrame1 || 'none'; document.getElementById('img-stroke-check-1').checked = data.imgStrokeCheck1 || false; document.getElementById('img-stroke-color-1').value = data.imgStrokeColor1 || '#000000'; document.getElementById('img-stroke-w-1').value = data.imgStrokeW1 || 2; document.getElementById('check-cap-1').checked = data.checkCap1 !== undefined ? data.checkCap1 : true; document.getElementById('in-caption-1').value = data.caption1 || ''; document.getElementById('img-align-1').value = data.imgAlign1 || 'top'; document.getElementById('img-para-1').value = data.imgPara1 || 0; document.getElementById('img-w-1').value = data.imgW1 || 100; 
-            document.getElementById('mt-1').value = data.mt1 !== undefined ? data.mt1 : 0; document.getElementById('mr-1').value = data.mr1 !== undefined ? data.mr1 : 15; document.getElementById('mb-1').value = data.mb1 !== undefined ? data.mb1 : 15; document.getElementById('ml-1').value = data.ml1 !== undefined ? data.ml1 : 15;
-            
-            document.getElementById('img-frame-2').value = data.imgFrame2 || 'none'; document.getElementById('img-stroke-check-2').checked = data.imgStrokeCheck2 || false; document.getElementById('img-stroke-color-2').value = data.imgStrokeColor2 || '#000000'; document.getElementById('img-stroke-w-2').value = data.imgStrokeW2 || 2; document.getElementById('check-cap-2').checked = data.checkCap2 !== undefined ? data.checkCap2 : false; document.getElementById('in-caption-2').value = data.caption2 || ''; if(document.getElementById('img-align-2')) document.getElementById('img-align-2').value = data.imgAlign2 || 'right'; document.getElementById('img-para-2').value = data.imgPara2 || 50; document.getElementById('img-w-2').value = data.imgW2 || 50; 
-            document.getElementById('mt-2').value = data.mt2 !== undefined ? data.mt2 : 0; document.getElementById('mr-2').value = data.mr2 !== undefined ? data.mr2 : 15; document.getElementById('mb-2').value = data.mb2 !== undefined ? data.mb2 : 15; document.getElementById('ml-2').value = data.ml2 !== undefined ? data.ml2 : 15;
-            
-            document.getElementById('img-frame-3').value = data.imgFrame3 || 'none'; document.getElementById('img-stroke-check-3').checked = data.imgStrokeCheck3 || false; document.getElementById('img-stroke-color-3').value = data.imgStrokeColor3 || '#000000'; document.getElementById('img-stroke-w-3').value = data.imgStrokeW3 || 2; document.getElementById('check-cap-3').checked = data.checkCap3 !== undefined ? data.checkCap3 : false; document.getElementById('in-caption-3').value = data.caption3 || ''; if(document.getElementById('img-align-3')) document.getElementById('img-align-3').value = data.imgAlign3 || 'left'; document.getElementById('img-para-3').value = data.imgPara3 || 75; document.getElementById('img-w-3').value = data.imgW3 || 50; 
-            document.getElementById('mt-3').value = data.mt3 !== undefined ? data.mt3 : 0; document.getElementById('mr-3').value = data.mr3 !== undefined ? data.mr3 : 15; document.getElementById('mb-3').value = data.mb3 !== undefined ? data.mb3 : 15; document.getElementById('ml-3').value = data.ml3 !== undefined ? data.ml3 : 15;
-
-            document.getElementById('img-frame-4').value = data.imgFrame4 || 'none'; document.getElementById('img-stroke-check-4').checked = data.imgStrokeCheck4 || false; document.getElementById('img-stroke-color-4').value = data.imgStrokeColor4 || '#000000'; document.getElementById('img-stroke-w-4').value = data.imgStrokeW4 || 2; document.getElementById('check-cap-4').checked = data.checkCap4 !== undefined ? data.checkCap4 : false; document.getElementById('in-caption-4').value = data.caption4 || ''; if(document.getElementById('img-align-4')) document.getElementById('img-align-4').value = data.imgAlign4 || 'right'; document.getElementById('img-para-4').value = data.imgPara4 || 90; document.getElementById('img-w-4').value = data.imgW4 || 50; 
-            document.getElementById('mt-4').value = data.mt4 !== undefined ? data.mt4 : 0; document.getElementById('mr-4').value = data.mr4 !== undefined ? data.mr4 : 15; document.getElementById('mb-4').value = data.mb4 !== undefined ? data.mb4 : 15; document.getElementById('ml-4').value = data.ml4 !== undefined ? data.ml4 : 15;
-
-            document.getElementById('in-news-prefix').value = data.newsPrefix || ''; document.getElementById('in-news-prefix-bold').checked = data.newsPrefixBold !== undefined ? data.newsPrefixBold : true; document.getElementById('in-news-prefix-color').value = data.newsPrefixColor || '#d32f2f'; document.getElementById('in-news-prefix-layout').value = data.newsPrefixLayout || 'inline';
-            document.getElementById('in-columns').value = data.columns || 2; document.getElementById('in-body-font').value = data.bodyFont || "'Tiro Telugu', serif"; document.getElementById('in-body-size').value = data.bodySize || 17; document.getElementById('in-body-lh').value = data.bodyLh || 1.5; document.getElementById('in-news-body').value = data.newsBody || ''; rawNewsText = data.newsBody || '';
-
-            if(data.logoTopSrc && data.logoTopSrc.startsWith('data:image')) { 
-                document.getElementById('out-logo-top').src = data.logoTopSrc; 
-                document.getElementById('out-logo-top').style.display = 'block'; 
-                document.getElementById('out-logo-box').style.display = 'flex';
-            }
-            if(data.logoStampSrc && data.logoStampSrc.startsWith('data:image')) { 
-                document.getElementById('out-logo-stamp').src = data.logoStampSrc; 
-                document.getElementById('out-logo-stamp').style.display = 'block'; 
-                stampUploaded = true; 
-            }
-            if(data.img1Src && data.img1Src.startsWith('data:image')) { 
-                document.getElementById('out-image-1').src = data.img1Src; 
-                document.getElementById('out-image-1').style.display = 'block'; 
-                imgState[1].uploaded = true; 
-            }
-            if(data.img2Src && data.img2Src.startsWith('data:image')) { 
-                document.getElementById('out-image-2').src = data.img2Src; 
-                document.getElementById('out-image-2').style.display = 'block'; 
-                imgState[2].uploaded = true; 
-            }
-            if(data.img3Src && data.img3Src.startsWith('data:image')) { 
-                document.getElementById('out-image-3').src = data.img3Src; 
-                document.getElementById('out-image-3').style.display = 'block'; 
-                imgState[3].uploaded = true; 
-            }
-            if(data.img4Src && data.img4Src.startsWith('data:image')) { 
-                document.getElementById('out-image-4').src = data.img4Src; 
-                document.getElementById('out-image-4').style.display = 'block'; 
-                imgState[4].uploaded = true; 
-            }
-
-            // TASK 1 Fix: Ensure main-headline & sub-headline trigger their bound input events immediately
-            ['in-wrap-w', 'in-main-headline', 'in-sub-headline', 'in-sub-size', 'in-sub-lh', 'in-sub-y', 'in-main-y', 'in-sub-shadow-x', 'in-sub-shadow-y', 'in-sub-shadow-blur', 'in-main-size', 'in-main-lh', 'in-main-shadow-x', 'in-main-shadow-y', 'in-main-shadow-blur', 'in-bullets-size', 'in-bullets-lh', 'in-bullets-y', 'in-bullets-x', 'in-body-size', 'in-body-lh', 'stamp-w', 'img-w-1', 'img-w-2', 'img-w-3', 'img-w-4', 'logo-top-w', 'logo-top-h', 'mt-1', 'mr-1', 'mb-1', 'ml-1', 'mt-2', 'mr-2', 'mb-2', 'ml-2', 'mt-3', 'mr-3', 'mb-3', 'ml-3', 'mt-4', 'mr-4', 'mb-4', 'ml-4', 'smt', 'smr', 'smb', 'sml', 'cmt', 'cmr', 'cmb', 'cml', 'collage-w', 'collage-para', 'collage-gap'].forEach(id => { let el = document.getElementById(id); if(el) el.dispatchEvent(new Event('input')); });
-            
-            updateOverallBox(); document.getElementById('in-logo-type').dispatchEvent(new Event('change')); updateLogoLine(); document.getElementById('in-collage-mode').dispatchEvent(new Event('change')); document.getElementById('in-main-mode').dispatchEvent(new Event('change')); updateBullets(); applyImageFrameAndStroke(1); applyImageFrameAndStroke(2); applyImageFrameAndStroke(3); applyImageFrameAndStroke(4); document.getElementById(`check-cap-1`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-2`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-3`).dispatchEvent(new Event('change')); document.getElementById(`check-cap-4`).dispatchEvent(new Event('change')); document.getElementById('in-columns').dispatchEvent(new Event('change')); rebuildNewsBody();
-            
-            syncCarousels(); // Sync fonts visually
+            applyEditorStateObject(data);
 
             if(!isSilent) {
+                syncActiveGeneratedClipping();
                 document.getElementById('projects-modal').style.display = 'none';
-                alert("✅ ప్రాజెక్ట్ పర్ఫెక్ట్‌గా లోడ్ అయింది!");
+                alert("✅ ప్రాజెక్ట్ పర్ఫెక్ట్గా లోడ్ అయింది!");
             }
         }
 
         // ==========================================
-        // EXPORT / DOWNLOAD LOGIC
+        // 6. EXPORT / DOWNLOAD LOGIC (SINGLE & BATCH)
         // ==========================================
+        async function renderCurrentCaptureToDataUrl() {
+            await document.fonts.ready;
+            await new Promise(r => setTimeout(r, 200));
+            window.scrollTo(0, 0);
+            const element = document.getElementById('capture-area');
+            const scaleContainer = document.getElementById('scale-container');
+            const oldScale = scaleContainer.style.transform;
+            scaleContainer.style.transform = 'none';
+
+            try {
+                const wrapWidth = parseInt(document.getElementById('in-wrap-w').value) || 800;
+                let safeScale = wrapWidth > 1200 ? 2 : 3;
+                if (wrapWidth > 1800) safeScale = 1.5;
+
+                const canvas = await html2canvas(element, { scale: safeScale, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false, imageTimeout: 0 });
+                return canvas.toDataURL('image/jpeg', 1.0);
+            } finally {
+                scaleContainer.style.transform = oldScale;
+            }
+        }
+
+        function triggerDataUrlDownload(dataUrl, fileName) {
+            return new Promise((resolve) => {
+                try {
+                    fetch(dataUrl).then(res => res.blob()).then(blob => {
+                        const blobUrl = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.style.display = 'none';
+                        link.href = blobUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        setTimeout(() => {
+                            window.URL.revokeObjectURL(blobUrl);
+                            document.body.removeChild(link);
+                            resolve();
+                        }, 600);
+                    }).catch(() => {
+                        const link = document.createElement('a');
+                        link.href = dataUrl;
+                        link.download = fileName;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(resolve, 600);
+                    });
+                } catch(e) {
+                    resolve();
+                }
+            });
+        }
+
+        async function downloadSpecificGeneratedClipping(idx) {
+            selectGeneratedClipping(idx);
+            await downloadClipping();
+        }
+
+        async function downloadAllClippingsSequentially() {
+            if (!navigator.onLine) { alert("⚠️ ఎక్స్పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
+            if (!generatedClippingsList || generatedClippingsList.length === 0) return;
+
+            // Ensure current manual edits are persisted first
+            syncActiveGeneratedClipping();
+            const previousActiveIdx = activeGeneratedClipIndex >= 0 ? activeGeneratedClipIndex : 0;
+
+            const dlAllBtn = document.getElementById('btn-download-all-clips');
+            const origBtnText = dlAllBtn.innerText;
+            dlAllBtn.disabled = true;
+
+            try {
+                for (let i = 0; i < generatedClippingsList.length; i++) {
+                    dlAllBtn.innerText = `⏳ Downloading ${i + 1} / ${generatedClippingsList.length}...`;
+                    activeGeneratedClipIndex = i;
+                    applyEditorStateObject(generatedClippingsList[i]);
+                    renderGeneratedClippingsBar();
+
+                    const dataUrl = await renderCurrentCaptureToDataUrl();
+                    currentImageDataUrl = dataUrl;
+                    const fileName = `News_Clipping_${i + 1}_Full_HD_${new Date().getTime()}.jpg`;
+                    await triggerDataUrlDownload(dataUrl, fileName);
+                }
+                alert(`✅ మొత్తం ${generatedClippingsList.length} క్లిప్పింగ్స్ వరుసగా డౌన్‌లోడ్ అయ్యాయి!`);
+            } catch (err) {
+                console.error(err);
+                alert("బ్యాచ్ డౌన్‌లోడ్‌లో సాంకేతిక లోపం వచ్చింది.");
+            } finally {
+                if (previousActiveIdx >= 0 && previousActiveIdx < generatedClippingsList.length) {
+                    activeGeneratedClipIndex = previousActiveIdx;
+                    applyEditorStateObject(generatedClippingsList[previousActiveIdx]);
+                    renderGeneratedClippingsBar();
+                }
+                dlAllBtn.innerText = origBtnText;
+                dlAllBtn.disabled = false;
+            }
+        }
+
         async function downloadClipping() {
-          if (!navigator.onLine) { alert("⚠️ ఎక్స్‌పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
+          if (!navigator.onLine) { alert("⚠️ ఎక్స్పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
+          syncActiveGeneratedClipping();
+
           const btn = document.getElementById('main-download-btn'); 
           const originalText = btn.innerText;
           
@@ -2186,7 +2757,7 @@ ${rawText}`;
                 const response = await fetch(currentImageDataUrl); const blob = await response.blob();
                 const file = new File([blob], 'NewsClipping_Full_HD.jpg', { type: 'image/jpeg' });
                 if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'News Clipping' }); } 
-                else { alert("మీ యాప్‌లో డైరెక్ట్ షేర్ పనిచేయట్లేదు. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); }
+                else { alert("మీ యాప్లో డైరెక్ట్ షేర్ పనిచేయట్లేదు. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); }
             } catch (error) { 
                 if (error.name === "AbortError") return; 
                 alert("షేర్ చేయడంలో ఎర్రర్. ఫోటో పైన గట్టిగా నొక్కి పట్టి 'Share Image' చేసుకోండి."); 
@@ -2195,4 +2766,4 @@ ${rawText}`;
 
     </script>
 </body>
-</html>
+    </html>
