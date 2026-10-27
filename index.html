@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -126,12 +127,12 @@
         .style-16 { color: #b71c1c; font-weight: 900; -webkit-text-stroke: 2px #fff; text-shadow: 3px 3px 0 #000; letter-spacing: 1px; }
         
         /* BULLETS OVERLAP FIX & TIGHT BG FIX */
-        #out-bullets-wrap { display: block; width: fit-content; max-width: 100%; box-sizing: border-box; margin-bottom: 10px;}
-        #out-bullets-container { display: inline-block; text-align: left; max-width: 100%; }
+        #out-bullets-wrap { display: block; width: auto; max-width: 100%; box-sizing: border-box; margin-bottom: 10px; text-indent: 0;}
+        #out-bullets-container { position: relative; display: inline-block; text-align: left; max-width: 100%; box-sizing: border-box; font-size: 16px; font-family: 'Mandali', sans-serif; line-height: 1.5; color: #222; text-indent: 0; paint-order: stroke fill; }
         .bullets-box { padding: 10px 15px; border-radius: 5px; margin: 5px 0; }
         .bullets-none { padding: 5px 15px; background: transparent; }
-        .bullets-list { margin: 0; padding-left: 0; font-size: 16px; font-family: 'Mandali', sans-serif; line-height: 1.5; color: #222; }
-        .bullets-list li { margin-bottom: 5px; list-style: none; display: table; width: 100%; }
+        .bullets-list { margin: 0; padding: 0; font-size: inherit; font-family: inherit; line-height: inherit; color: #222; text-indent: 0; display: block; }
+        .bullets-list li { margin-bottom: 5px; list-style: none; display: block; text-indent: 0; }
         
         .image-container { text-align: center; display: block; box-sizing: border-box; margin-bottom:10px; }
         .image-container img { width: 100%; height: auto; display: block; object-fit: cover; } 
@@ -235,11 +236,11 @@
               </div>
               
               <div id="out-overall-wrap" class="overall-wrap-none">
-                <div id="out-sub-wrap">
-                    <div class="sub-headline" id="out-sub-headline"></div>
-                </div>
                 <div id="out-main-wrap" style="text-align: center;"> <!-- Centering wrap -->
                     <div class="main-headline-box" id="out-main-headline"></div>
+                </div>
+                <div id="out-sub-wrap">
+                    <div class="sub-headline" id="out-sub-headline"></div>
                 </div>
                 
                 <div id="top-bullets-dock"></div>
@@ -272,7 +273,7 @@
                    </div>
                    <div id="out-bullets-wrap">
                        <div id="out-bullets-container" class="bullets-none">
-                           <ul class="bullets-list" id="out-bullets-list"></ul>
+                           <div class="bullets-list" id="out-bullets-list"></div>
                        </div>
                    </div>
                 </div>
@@ -1371,23 +1372,168 @@
 
             if(text.trim() === '') { wrap.style.display = 'none'; list.innerHTML = ''; } 
             else {
-                wrap.style.display = 'block'; let points = text.split('\n').filter(p => p.trim() !== ''); list.innerHTML = '';
-                points.forEach(pt => { 
-                    let li = document.createElement('li'); 
-                    li.style.listStyle = 'none';
-                    li.style.display = 'table';
-                    li.style.width = '100%';
-                    li.style.marginBottom = '5px';
-                    li.innerHTML = `<div style="display: table-cell; vertical-align: top; color: ${symColor}; padding-right: 8px; width: 1%; white-space: nowrap;">${symbol}</div><div style="display: table-cell; vertical-align: top;">${escapeHTML(pt)}</div>`; 
-                    list.appendChild(li); 
-                });
+                wrap.style.display = 'block'; let points = text.split('\n').filter(p => p.trim() !== '');
+                let fontSizeVal = document.getElementById('in-bullets-size').value + 'px';
+                let lineHeightVal = document.getElementById('in-bullets-lh').value;
+                container.style.fontSize = fontSizeVal;
+                container.style.lineHeight = lineHeightVal;
+                list.style.fontSize = fontSizeVal;
+                list.style.lineHeight = lineHeightVal;
+                list.style.paddingLeft = '0';
+                list.innerHTML = points.map((pt, idx) => {
+                    let mb = (idx < points.length - 1) ? '6px' : '0px';
+                    return `<div class="bullet-row-item" style="display: flex; align-items: flex-start; margin: 0 0 ${mb} 0; padding: 0; text-indent: 0; text-align: left; color: #222; font-family: 'Mandali', sans-serif; font-size: ${fontSizeVal}; line-height: ${lineHeightVal};"><span class="bullet-sym-span" style="color: ${symColor}; font-weight: bold; margin-right: 8px; flex-shrink: 0;">${symbol}</span><span class="bullet-txt-span" style="flex: 1; text-align: left;">${escapeHTML(pt)}</span></div>`;
+                }).join('');
                 if(document.getElementById('in-bullets-box-check').checked) { container.className = 'bullets-box'; container.style.backgroundColor = document.getElementById('in-bullets-bg-color').value; } 
                 else { container.className = 'bullets-none'; container.style.backgroundColor = 'transparent'; }
-                list.style.fontSize = document.getElementById('in-bullets-size').value + 'px';
-                list.style.lineHeight = document.getElementById('in-bullets-lh').value;
-                list.style.paddingLeft = '0';
             }
             rebuildNewsBody();
+        }
+
+        // Rasterize bullet points container onto a high-DPI 2D canvas image right before html2canvas capture
+        // Uses exact DOM Range line-break measurement so the exported image matches the live editor 100% identically
+        function rasterizeBulletsForExport(scaleFactor) {
+            const wrap = document.getElementById('out-bullets-wrap');
+            const container = document.getElementById('out-bullets-container');
+            const text = document.getElementById('in-bullets').value;
+            if (!wrap || !container || text.trim() === '' || wrap.style.display === 'none') return null;
+
+            const containerRect = container.getBoundingClientRect();
+            if (!containerRect || containerRect.width < 2 || containerRect.height < 2) return null;
+
+            const rowEls = container.querySelectorAll('.bullet-row-item');
+            if (!rowEls || rowEls.length === 0) return null;
+
+            const symbol = document.getElementById('in-bullets-symbol').value || '•';
+            const symColor = document.getElementById('in-bullets-symbol-color').value || '#cc0000';
+            const isBox = document.getElementById('in-bullets-box-check').checked;
+            const bgColor = isBox ? (document.getElementById('in-bullets-bg-color').value || '#e3f2fd') : 'transparent';
+            const fontSize = parseFloat(document.getElementById('in-bullets-size').value) || 16;
+
+            const boxW = Math.round(containerRect.width);
+            const boxH = Math.round(containerRect.height);
+
+            const dpr = Math.max(scaleFactor || 3, 3);
+            const canvas = document.createElement('canvas');
+            canvas.width = boxW * dpr;
+            canvas.height = boxH * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            if (isBox) {
+                const r = 5;
+                ctx.fillStyle = bgColor;
+                ctx.beginPath();
+                ctx.moveTo(r, 0);
+                ctx.lineTo(boxW - r, 0);
+                ctx.quadraticCurveTo(boxW, 0, boxW, r);
+                ctx.lineTo(boxW, boxH - r);
+                ctx.quadraticCurveTo(boxW, boxH, boxW - r, boxH);
+                ctx.lineTo(r, boxH);
+                ctx.quadraticCurveTo(0, boxH, 0, boxH - r);
+                ctx.lineTo(0, r);
+                ctx.quadraticCurveTo(0, 0, r, 0);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            const fontStr = `normal ${fontSize}px "Mandali", "Noto Sans Telugu", sans-serif`;
+            const symFontStr = `bold ${fontSize}px "Mandali", "Noto Sans Telugu", sans-serif`;
+            ctx.textBaseline = 'middle';
+
+            rowEls.forEach(rowEl => {
+                const symSpan = rowEl.querySelector('.bullet-sym-span') || rowEl.querySelector('span');
+                if (symSpan) {
+                    const symRect = symSpan.getBoundingClientRect();
+                    const symX = symRect.left - containerRect.left;
+                    const symCenterY = (symRect.top - containerRect.top) + (symRect.height / 2);
+                    ctx.font = symFontStr;
+                    ctx.fillStyle = symColor;
+                    ctx.fillText(symbol, symX, symCenterY);
+                }
+
+                // Find the text node inside .bullet-txt-span (or fallback to direct text node)
+                const txtSpan = rowEl.querySelector('.bullet-txt-span');
+                let textNode = txtSpan ? txtSpan.firstChild : null;
+                if (!textNode) {
+                    for (let n = rowEl.firstChild; n; n = n.nextSibling) {
+                        if (n.nodeType === Node.TEXT_NODE && n.nodeValue && n.nodeValue.trim() !== '') {
+                            textNode = n;
+                            break;
+                        }
+                    }
+                }
+                if (!textNode || !textNode.nodeValue) return;
+
+                const fullText = textNode.nodeValue;
+                const wordRegex = /\S+/g;
+                let match;
+                const lines = [];
+                const range = document.createRange();
+
+                while ((match = wordRegex.exec(fullText)) !== null) {
+                    const wStart = match.index;
+                    const wEnd = wStart + match[0].length;
+                    range.setStart(textNode, wStart);
+                    range.setEnd(textNode, wEnd);
+                    const wRect = range.getBoundingClientRect();
+                    if (!wRect || wRect.width === 0) continue;
+
+                    const wTop = wRect.top - containerRect.top;
+                    const wLeft = wRect.left - containerRect.left;
+                    const wHeight = wRect.height;
+
+                    if (lines.length === 0 || Math.abs(wTop - lines[lines.length - 1].top) > (fontSize * 0.45)) {
+                        lines.push({
+                            startIdx: wStart,
+                            endIdx: wEnd,
+                            left: wLeft,
+                            top: wTop,
+                            height: wHeight
+                        });
+                    } else {
+                        lines[lines.length - 1].endIdx = wEnd;
+                    }
+                }
+
+                ctx.font = fontStr;
+                ctx.fillStyle = '#222222';
+                lines.forEach(line => {
+                    const lineStr = fullText.substring(line.startIdx, line.endIdx);
+                    const lineCenterY = line.top + (line.height / 2);
+                    ctx.fillText(lineStr, line.left, lineCenterY);
+                });
+            });
+
+            const origHTML = container.innerHTML;
+            const origClassName = container.className;
+            const origBg = container.style.backgroundColor;
+            const origPadding = container.style.padding;
+
+            const img = document.createElement('img');
+            img.src = canvas.toDataURL('image/png');
+            img.style.display = 'block';
+            img.style.width = boxW + 'px';
+            img.style.height = boxH + 'px';
+            img.style.maxWidth = '100%';
+            img.style.margin = '0';
+            img.style.padding = '0';
+            img.style.border = 'none';
+
+            container.innerHTML = '';
+            container.style.backgroundColor = 'transparent';
+            container.style.padding = '0';
+            container.appendChild(img);
+
+            return {
+                img: img,
+                restore: function restoreBulletsDOM() {
+                    container.innerHTML = origHTML;
+                    container.className = origClassName;
+                    container.style.backgroundColor = origBg;
+                    container.style.padding = origPadding;
+                }
+            };
         }
         document.getElementById('in-bullets').addEventListener('input', updateBullets); 
         document.getElementById('in-bullets-box-check').addEventListener('change', updateBullets); 
@@ -1537,8 +1683,11 @@
             }
             if(align === 'top' && elId === 'out-bullets-wrap') { 
                 el.classList.add('img-block'); 
+                el.style.textAlign = 'center';
                 el.style.marginTop = '0px'; el.style.marginRight = 'auto'; el.style.marginBottom = '15px'; el.style.marginLeft = 'auto';
                 topBulletsDock.appendChild(el); return null;
+            } else if(elId === 'out-bullets-wrap') {
+                el.style.textAlign = 'left';
             }
 
             if(align === 'left') { el.classList.add('img-float-left'); } 
@@ -2609,7 +2758,16 @@ ${clipCfg.rawText.trim()}`;
                 let safeScale = wrapWidth > 1200 ? 2 : 3;
                 if (wrapWidth > 1800) safeScale = 1.5;
 
-                const canvas = await html2canvas(element, { scale: safeScale, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false, imageTimeout: 0 });
+                const bulletRaster = rasterizeBulletsForExport(safeScale);
+                let canvas;
+                try {
+                    if (bulletRaster && bulletRaster.img && !bulletRaster.img.complete) {
+                        await new Promise(res => { bulletRaster.img.onload = res; bulletRaster.img.onerror = res; });
+                    }
+                    canvas = await html2canvas(element, { scale: safeScale, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false, imageTimeout: 0, windowWidth: Math.max(window.innerWidth, wrapWidth + 100) });
+                } finally {
+                    if (bulletRaster && bulletRaster.restore) bulletRaster.restore();
+                }
                 return canvas.toDataURL('image/jpeg', 1.0);
             } finally {
                 scaleContainer.style.transform = oldScale;
@@ -2720,7 +2878,16 @@ ${clipCfg.rawText.trim()}`;
               let safeScale = wrapWidth > 1200 ? 2 : 3; 
               if (wrapWidth > 1800) safeScale = 1.5;
 
-              const canvas = await html2canvas(element, { scale: safeScale, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false, imageTimeout: 0 });
+              const bulletRaster = rasterizeBulletsForExport(safeScale);
+              let canvas;
+              try {
+                  if (bulletRaster && bulletRaster.img && !bulletRaster.img.complete) {
+                      await new Promise(res => { bulletRaster.img.onload = res; bulletRaster.img.onerror = res; });
+                  }
+                  canvas = await html2canvas(element, { scale: safeScale, useCORS: true, allowTaint: true, backgroundColor: "#ffffff", logging: false, imageTimeout: 0, windowWidth: Math.max(window.innerWidth, wrapWidth + 100) });
+              } finally {
+                  if (bulletRaster && bulletRaster.restore) bulletRaster.restore();
+              }
               currentImageDataUrl = canvas.toDataURL('image/jpeg', 1.0); 
               
               document.getElementById('download-preview-img').src = currentImageDataUrl;
@@ -2766,4 +2933,5 @@ ${clipCfg.rawText.trim()}`;
 
     </script>
 </body>
-    </html>
+</html>
+```
