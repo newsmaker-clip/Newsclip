@@ -92,18 +92,18 @@
         .overall-wrap-active { padding: 15px; border: 1px solid #999; border-radius: 4px; }
         
         #out-sub-wrap, #out-main-wrap, #out-bullets-wrap { position: relative; display: block; height: auto;}
-        #out-sub-wrap { display: none; }
-        #out-main-wrap { display: none; margin-bottom: 10px;}
-        .sub-headline { text-align: center; color: #cc0000; font-size: 18px; margin-bottom: 5px; line-height: 1.3; paint-order: stroke fill;}
+        #out-sub-wrap { display: none; margin-bottom: 6px; }
+        #out-main-wrap { display: none; margin-bottom: 6px; }
+        .sub-headline { text-align: center; color: #cc0000; font-size: 18px; margin-bottom: 0; line-height: 1.3; padding-bottom: 0.18em; paint-order: stroke fill;}
         
         /* MAIN HEADLINE BOX CSS & SHAPES */
-        .main-headline-box { background-color: #002b80; color: #ffffff; text-align: center; line-height: 1.3; padding: 8px 10px; margin: 0 auto; border: 1px solid #000; paint-order: stroke fill; display: inline-block; max-width: 100%; box-sizing: border-box;}
-        .main-headline-text { background-color: transparent; color: #002b80; text-align: center; line-height: 1.3; padding: 8px 0; margin: 0 auto; border: none; paint-order: stroke fill; display: inline-block; max-width: 100%; box-sizing: border-box;}
+        .main-headline-box { background-color: #002b80; color: #ffffff; text-align: center; line-height: 1.3; padding: 8px 14px 0.32em 14px; margin: 0 auto; border: 1px solid #000; paint-order: stroke fill; display: inline-block; max-width: 100%; box-sizing: border-box;}
+        .main-headline-text { background-color: transparent; color: #002b80; text-align: center; line-height: 1.3; padding: 4px 0 0.18em 0; margin: 0 auto; border: none; paint-order: stroke fill; display: inline-block; max-width: 100%; box-sizing: border-box;}
         
         .bg-shape-normal { }
         .bg-shape-brush1 { border: none !important; border-radius: 3px 20px 3px 20px; clip-path: polygon(1% 5%, 98% 0%, 100% 96%, 0% 100%); }
         .bg-shape-brush2 { border: none !important; border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; }
-        .bg-shape-ribbon { border: none !important; clip-path: polygon(15px 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 15px 100%, 0% 50%); padding: 8px 30px !important; }
+        .bg-shape-ribbon { border: none !important; clip-path: polygon(15px 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 15px 100%, 0% 50%); padding: 10px 30px 0.38em 30px !important; }
         .bg-shape-torn   { border: none !important; clip-path: polygon(0% 0%, 100% 0%, 98% 20%, 100% 40%, 98% 60%, 100% 80%, 98% 100%, 0% 100%, 2% 80%, 0% 60%, 2% 40%, 0% 20%); }
         .bg-shape-round  { border-radius: 30px; }
 
@@ -174,14 +174,14 @@
 
         
         /* BULLETS OVERLAP FIX & TIGHT BG FIX */
-        #out-bullets-wrap { display: block; width: auto; max-width: 100%; box-sizing: border-box; margin-bottom: 10px; text-indent: 0;}
+        #out-bullets-wrap { display: block; width: auto; max-width: 100%; box-sizing: border-box; margin-bottom: 6px; text-indent: 0;}
         #out-bullets-container { position: relative; display: inline-block; text-align: left; max-width: 100%; box-sizing: border-box; font-size: 16px; font-family: 'Mandali', sans-serif; line-height: 1.5; color: #222; text-indent: 0; paint-order: stroke fill; }
-        .bullets-box { padding: 10px 15px; border-radius: 5px; margin: 5px 0; }
-        .bullets-none { padding: 5px 15px; background: transparent; }
+        .bullets-box { padding: 8px 15px; border-radius: 5px; margin: 2px 0; }
+        .bullets-none { padding: 2px 15px; background: transparent; }
         .bullets-list { margin: 0; padding: 0; font-size: inherit; font-family: inherit; line-height: inherit; color: #222; text-indent: 0; display: block; }
         .bullets-list li { margin-bottom: 5px; list-style: none; display: block; text-indent: 0; }
         
-        .image-container { text-align: center; display: block; box-sizing: border-box; margin-bottom:10px; }
+        .image-container { text-align: center; display: block; box-sizing: border-box; margin-bottom: 10px; }
         .image-container img { width: 100%; height: auto; display: block; object-fit: cover; } 
         .caption { font-size: 12px; font-weight: bold; margin-top: 3px; color: #222; text-align: center; }
         
@@ -198,8 +198,8 @@
         #collage-inner-grid .image-container { margin: 0 !important; width: 100% !important; height: 100%; display: flex; flex-direction: column; }
         #collage-inner-grid .image-container img { flex-grow: 1; }
         
-        #out-prefix-center { text-align: center; margin-bottom: 10px; width: 100%; }
-        .news-body { column-count: 2; column-gap: 20px; column-rule: 1px solid #bbb; text-align: justify; font-size: 17px; line-height: 1.5; font-family: 'Tiro Telugu', serif; color: #111; margin-top: 10px; }
+        #out-prefix-center { text-align: center; margin-bottom: 4px; width: 100%; }
+        .news-body { column-count: 2; column-gap: 20px; column-rule: 1px solid #bbb; text-align: justify; font-size: 17px; line-height: 1.5; font-family: 'Tiro Telugu', serif; color: #111; margin-top: 6px; }
         .news-body p { margin: 0 0 10px 0; text-indent: 25px; }
         .news-body p::after { content: ""; display: table; clear: none; }
 
@@ -1466,7 +1466,7 @@
        <div id="modal-buttons" style="display:none; gap:15px; margin-top:20px; flex-wrap: wrap; justify-content: center;">
            <button id="direct-download-btn" onclick="directDownload()" style="padding:12px 20px; background:#007bff; color:white; border:none; border-radius:5px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3);">💾 Download</button>
            <button id="share-btn" onclick="shareImage()" style="padding:12px 20px; background:#28a745; color:white; border:none; border-radius:5px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3);">📤 Share</button>
-           <button onclick="document.getElementById('download-modal').style.display='none'" style="padding:12px 20px; background:#d32f2f; color:white; border:none; border-radius:5px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3);">❌ Close</button>
+           <button onclick="closeDownloadModal()" style="padding:12px 20px; background:#d32f2f; color:white; border:none; border-radius:5px; font-size:16px; font-weight:bold; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3);">❌ Close</button>
        </div>
     </div>
 
@@ -1475,7 +1475,7 @@
     <!-- ============================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+        import { initializeFirestore, getFirestore, doc, setDoc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyC1sJzozMuSQIhPZACIQ4Qw6O_rczVaoGk",
@@ -1487,39 +1487,103 @@
         };
         
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        let db;
+        try {
+            db = initializeFirestore(app, { experimentalAutoDetectLongPolling: true });
+        } catch (err) {
+            db = getFirestore(app);
+        }
         
-        window.saveProjectToFirebase = function(pName, data) {
-            setDoc(doc(db, "newsProjects", pName), data)
-                .catch(e => console.error("Firebase sync error:", e));
+        window.saveProjectToFirebase = async function(pName, data) {
+            let timeoutId;
+            try {
+                const timeoutPromise = new Promise((resolve) => {
+                    timeoutId = setTimeout(() => resolve(false), 12000);
+                });
+                const sdkSaved = await Promise.race([
+                    setDoc(doc(db, "newsProjects", pName), data).then(() => true),
+                    timeoutPromise
+                ]);
+                if (sdkSaved) return true;
+                if (typeof window.saveProjectViaFirestoreREST === 'function') {
+                    return await window.saveProjectViaFirestoreREST(pName, data);
+                }
+                return false;
+            } catch(e) {
+                console.error("Firebase SDK save error, trying REST fallback:", e);
+                if (typeof window.saveProjectViaFirestoreREST === 'function') {
+                    return await window.saveProjectViaFirestoreREST(pName, data);
+                }
+                return false;
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId);
+            }
         };
 
         window.getProjectsFromFirebase = async function() {
             let timeoutId;
             try {
                 const timeoutPromise = new Promise((_, reject) => {
-                    timeoutId = setTimeout(() => reject(new Error("Timeout")), 3000);
+                    timeoutId = setTimeout(() => reject(new Error("Timeout")), 12000);
                 });
                 const querySnapshot = await Promise.race([ getDocs(collection(db, "newsProjects")), timeoutPromise ]);
                 let projects = {};
-                querySnapshot.forEach((docSnap) => { projects[docSnap.id] = docSnap.data(); });
+                querySnapshot.forEach((docSnap) => {
+                    if (!window._deletedProjectNames || !window._deletedProjectNames.has(docSnap.id)) {
+                        projects[docSnap.id] = docSnap.data();
+                    }
+                });
                 return projects;
             } catch(e) {
+                console.warn("Firebase SDK getDocs fallback to REST:", e);
+                if (typeof window.fetchProjectsViaFirestoreREST === 'function') {
+                    return await window.fetchProjectsViaFirestoreREST();
+                }
                 return null;
             } finally {
-                clearTimeout(timeoutId);
+                if (timeoutId) clearTimeout(timeoutId);
             }
         };
 
-        window.deleteProjectFromFirebase = function(pName) {
-            deleteDoc(doc(db, "newsProjects", pName)).catch(e => console.error("Delete Error:", e));
-        };
-        
-        window.addEventListener('load', () => {
-            if (typeof window.refreshTemplateDropdown === 'function') {
-                window.refreshTemplateDropdown();
+        window.deleteProjectFromFirebase = async function(pName) {
+            let timeoutId;
+            try {
+                const timeoutPromise = new Promise((resolve) => {
+                    timeoutId = setTimeout(() => resolve(false), 10000);
+                });
+                const sdkDel = await Promise.race([
+                    deleteDoc(doc(db, "newsProjects", pName)).then(() => true),
+                    timeoutPromise
+                ]);
+                if (sdkDel) return true;
+                if (typeof window.deleteProjectViaFirestoreREST === 'function') {
+                    return await window.deleteProjectViaFirestoreREST(pName);
+                }
+                return false;
+            } catch(e) {
+                console.error("Delete Error, trying REST fallback:", e);
+                if (typeof window.deleteProjectViaFirestoreREST === 'function') {
+                    return await window.deleteProjectViaFirestoreREST(pName);
+                }
+                return false;
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId);
             }
-        });
+        };
+
+        window._firebaseModuleReady = true;
+        if (typeof window._resolveFirebaseReady === 'function') {
+            window._resolveFirebaseReady(true);
+        }
+        if (typeof window.refreshTemplateDropdown === 'function') {
+            window.refreshTemplateDropdown();
+        } else {
+            window.addEventListener('load', () => {
+                if (typeof window.refreshTemplateDropdown === 'function') {
+                    window.refreshTemplateDropdown();
+                }
+            });
+        }
     </script>
 
     <!-- ============================================== -->
@@ -1594,6 +1658,9 @@
             syncCarousels();
             initBatchQueue();
             attachManualEditSyncListeners();
+            if (typeof window.refreshTemplateDropdown === 'function') {
+                window.refreshTemplateDropdown();
+            }
         });
         
         function escapeHTML(str) {
@@ -1609,32 +1676,37 @@
                 if (!base64Str || !base64Str.startsWith('data:image')) { resolve(""); return; }
                 let img = new Image();
                 img.onload = function() {
+                    img.onload = null; img.onerror = null;
                     let canvas = document.createElement('canvas');
                     let MAX_WIDTH = isLogo ? 300 : 500;
                     let MAX_HEIGHT = isLogo ? 300 : 500;
-                    let width = img.width; let height = img.height;
+                    let width = img.width || 1; let height = img.height || 1;
                     
                     if (width > MAX_WIDTH || height > MAX_HEIGHT) {
                         if (width > height) {
-                            height = Math.round(height * (MAX_WIDTH / width));
+                            height = Math.max(1, Math.round(height * (MAX_WIDTH / width)));
                             width = MAX_WIDTH;
                         } else {
-                            width = Math.round(width * (MAX_HEIGHT / height));
+                            width = Math.max(1, Math.round(width * (MAX_HEIGHT / height)));
                             height = MAX_HEIGHT;
                         }
                     }
                     
                     canvas.width = width; canvas.height = height;
                     let ctx = canvas.getContext('2d');
+                    if (!isLogo) {
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, width, height);
+                    }
                     ctx.drawImage(img, 0, 0, width, height);
-                    let isTransparent = base64Str.startsWith('data:image/png') || base64Str.startsWith('data:image/webp');
-                    let mimeType = (isLogo || isTransparent) ? 'image/webp' : 'image/jpeg';
+                    let mimeType = isLogo ? 'image/webp' : 'image/jpeg';
                     let quality = isLogo ? 0.8 : 0.6; 
                     let dataUrl = canvas.toDataURL(mimeType, quality);
-                    if((isLogo || isTransparent) && dataUrl.indexOf('data:image/webp') === -1) { dataUrl = canvas.toDataURL('image/png'); }
+                    if(isLogo && dataUrl.indexOf('data:image/webp') === -1) { dataUrl = canvas.toDataURL('image/png'); }
+                    canvas.width = 0; canvas.height = 0;
                     resolve(dataUrl);
                 };
-                img.onerror = () => resolve(""); 
+                img.onerror = () => { img.onload = null; img.onerror = null; resolve(""); }; 
                 img.src = base64Str;
             });
         }
@@ -1887,13 +1959,20 @@
         document.getElementById('in-sub-color').addEventListener('input', e => document.getElementById('out-sub-headline').style.color = e.target.value); 
         document.getElementById('in-sub-size').addEventListener('input', function() { document.getElementById('val-sub-size').innerText = this.value; document.getElementById('out-sub-headline').style.fontSize = this.value + 'px'; }); 
         document.getElementById('in-sub-lh').addEventListener('input', function() { document.getElementById('out-sub-headline').style.lineHeight = this.value; }); 
+        function applySubHeadlinePosition() {
+            const subWrap = document.getElementById('out-sub-wrap');
+            if (!subWrap) return;
+            const val = parseInt(document.getElementById('in-sub-y').value) || 0;
+            subWrap.style.top = '0px';
+            subWrap.style.transform = 'none';
+            subWrap.style.marginTop = val + 'px';
+            subWrap.style.marginBottom = '6px';
+        }
         document.getElementById('in-sub-y').addEventListener('input', function() { 
-            let val = parseInt(this.value) || 0;
             if (document.getElementById('in-hl-on-image-check') && document.getElementById('in-hl-on-image-check').checked) {
                 updateHeadlineOverImageDocking();
             } else {
-                document.getElementById('out-sub-wrap').style.marginTop = val + 'px'; 
-                document.getElementById('out-sub-wrap').style.marginBottom = (-val) + 'px'; 
+                applySubHeadlinePosition();
             }
         });
 
@@ -1944,7 +2023,10 @@
               let hlBgEffVal = document.getElementById('in-hl-bg-effect') ? document.getElementById('in-hl-bg-effect').value : 'sync-photo';
               let hasBehindHlFade = hlOverImg && ((hlBgEffVal !== 'photo-only' && hlBgEffVal !== 'sync-photo') || (targetEffVal !== 'none'));
 
-              if (isBox) { 
+              let fSizeNum = parseFloat(document.getElementById('in-main-size').value) || 36;
+              let lhNum = parseFloat(document.getElementById('in-main-lh').value) || 1.3;
+              let tightLhExtra = lhNum < 1.25 ? Math.round((1.25 - lhNum) * 0.50 * fSizeNum) : 0;
+              if (isBox) {
                   document.getElementById('main-bg-style-container').style.display = 'block';
                   let shapeClass = document.getElementById('in-main-bg-shape').value;
                   if (hlOverImg && blendBox && hasBehindHlFade && shapeClass === 'bg-shape-normal') {
@@ -1952,13 +2034,22 @@
                       hl.style.backgroundColor = 'transparent';
                       hl.style.border = 'none';
                       hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor;
+                      hl.style.paddingBottom = (Math.max(6, Math.round(fSizeNum * 0.18)) + tightLhExtra) + 'px';
                   } else {
-                      hl.classList.add('main-headline-box', shapeClass); 
-                      hl.style.backgroundColor = bgColor; 
-                      hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor; 
+                      hl.classList.add('main-headline-box', shapeClass);
+                      hl.style.backgroundColor = bgColor;
+                      hl.style.color = bgColor === '#002b80' ? '#ffffff' : txtColor;
+                      let topPad = Math.max(8, Math.round(fSizeNum * 0.16)) + Math.round(tightLhExtra * 0.45);
+                      let botPad = Math.max(12, Math.round(fSizeNum * 0.32)) + tightLhExtra;
+                      let sidePad = shapeClass === 'bg-shape-ribbon' ? 30 : 14;
+                      hl.style.setProperty('padding', `${topPad}px ${sidePad}px ${botPad}px ${sidePad}px`, 'important');
                   }
-              } 
-              else { hl.classList.add('main-headline-text'); hl.style.color = txtColor; }
+              }
+              else {
+                  hl.classList.add('main-headline-text');
+                  hl.style.color = txtColor;
+                  hl.style.paddingBottom = (Math.max(6, Math.round(fSizeNum * 0.18)) + tightLhExtra) + 'px';
+              }
               if(document.getElementById('in-main-stroke-check').checked) { hl.style.webkitTextStroke = `${document.getElementById('in-main-stroke-w').value}px ${document.getElementById('in-main-stroke-color').value}`; } 
               else { hl.style.webkitTextStroke = 'none'; }
               
@@ -2004,16 +2095,23 @@
         });
         ['in-main-color','in-main-bg-color','in-main-bg-check','in-main-stroke-check','in-main-stroke-color','in-main-stroke-w','in-special-style','in-main-lh', 'in-main-shadow-x', 'in-main-shadow-y', 'in-main-shadow-blur', 'in-main-shadow-color'].forEach(id => document.getElementById(id).addEventListener('change', () => { updateMainHeadlineBox(); if(typeof refreshActiveHeadlineTargetEffects === 'function') refreshActiveHeadlineTargetEffects(); }));
         ['in-main-color','in-main-bg-color','in-main-stroke-color','in-main-stroke-w','in-main-lh', 'in-main-shadow-x', 'in-main-shadow-y', 'in-main-shadow-blur', 'in-main-shadow-color'].forEach(id => document.getElementById(id).addEventListener('input', updateMainHeadlineBox));
-        document.getElementById('in-main-size').addEventListener('input', function() { document.getElementById('val-main-size').innerText = this.value; document.getElementById('out-main-headline').style.fontSize = this.value + 'px'; });
+        document.getElementById('in-main-size').addEventListener('input', function() { document.getElementById('val-main-size').innerText = this.value; updateMainHeadlineBox(); });
         
-        // TASK 1: Main Headline Y-Position Fix
+        // TASK 1: Main Headline Y-Position Reflow Fix (No Empty Space Below)
+        function applyMainHeadlinePosition() {
+            const mainWrap = document.getElementById('out-main-wrap');
+            if (!mainWrap) return;
+            const val = parseInt(document.getElementById('in-main-y').value) || 0;
+            mainWrap.style.top = '0px';
+            mainWrap.style.transform = 'none';
+            mainWrap.style.marginTop = val + 'px';
+            mainWrap.style.marginBottom = '6px';
+        }
         document.getElementById('in-main-y').addEventListener('input', function() { 
-            let val = parseInt(this.value) || 0;
             if (document.getElementById('in-hl-on-image-check') && document.getElementById('in-hl-on-image-check').checked) {
                 updateHeadlineOverImageDocking();
             } else {
-                document.getElementById('out-main-wrap').style.marginTop = val + 'px'; 
-                document.getElementById('out-main-wrap').style.marginBottom = (10 - val) + 'px'; 
+                applyMainHeadlinePosition();
             }
         });
 
@@ -2171,6 +2269,7 @@
 
             const img = document.createElement('img');
             img.src = canvas.toDataURL('image/png');
+            canvas.width = 0; canvas.height = 0;
             img.style.display = 'block';
             img.style.width = boxW + 'px';
             img.style.height = boxH + 'px';
@@ -2199,8 +2298,18 @@
         document.getElementById('in-bullets-bg-color').addEventListener('input', updateBullets); 
         document.getElementById('in-bullets-size').addEventListener('input', updateBullets); 
         document.getElementById('in-bullets-lh').addEventListener('input', updateBullets); 
-        document.getElementById('in-bullets-y').addEventListener('input', function() { document.getElementById('out-bullets-wrap').style.top = this.value + 'px'; }); 
-        document.getElementById('in-bullets-x').addEventListener('input', function() { document.getElementById('out-bullets-wrap').style.left = this.value + 'px'; }); 
+        function applyBulletsPosition() {
+            const wrap = document.getElementById('out-bullets-wrap');
+            if (!wrap) return;
+            const xVal = parseInt(document.getElementById('in-bullets-x').value) || 0;
+            const yVal = parseInt(document.getElementById('in-bullets-y').value) || 0;
+            wrap.style.left = xVal + 'px';
+            wrap.style.top = '0px';
+            wrap.style.marginTop = yVal + 'px';
+            wrap.style.marginBottom = '6px';
+        }
+        document.getElementById('in-bullets-y').addEventListener('input', applyBulletsPosition); 
+        document.getElementById('in-bullets-x').addEventListener('input', applyBulletsPosition); 
         document.getElementById('bullets-para-pos').addEventListener('input', rebuildNewsBody);
         document.getElementById('in-bullets-symbol').addEventListener('change', updateBullets);
         document.getElementById('in-bullets-symbol-color').addEventListener('input', updateBullets);
@@ -2624,7 +2733,9 @@
                 drawSideFadeOnCanvas(ctx, W, H, targetBand, hlDepthRatio, hlRgb.r, hlRgb.g, hlRgb.b, isHlFeather);
             }
 
-            return canvas.toDataURL('image/png');
+            const outDataUrl = canvas.toDataURL('image/png');
+            canvas.width = 0; canvas.height = 0;
+            return outDataUrl;
         }
 
         function updateImageEffectLive(imgNum) {
@@ -2635,18 +2746,25 @@
                 imgEl.src = renderProcessedImageDataUrl(imgNum);
                 imgEl.style.display = 'block';
             } else {
+                const mySeq = (imgState[imgNum].loadSeq || 0);
                 const temp = new Image();
                 temp.onload = () => {
+                    temp.onload = null; temp.onerror = null;
+                    if ((imgState[imgNum].loadSeq || 0) !== mySeq) return;
                     imgState[imgNum].cachedImg = temp;
                     imgEl.src = renderProcessedImageDataUrl(imgNum);
                     imgEl.style.display = 'block';
                 };
+                temp.onerror = () => { temp.onload = null; temp.onerror = null; };
                 temp.src = imgState[imgNum].rawSrc;
             }
         }
 
         function setRawImageSource(imgNum, dataUrl, onDone) {
             const imgEl = document.getElementById(`out-image-${imgNum}`);
+            imgState[imgNum].loadSeq = (imgState[imgNum].loadSeq || 0) + 1;
+            const mySeq = imgState[imgNum].loadSeq;
+
             if (!dataUrl || !dataUrl.startsWith('data:image')) {
                 imgState[imgNum].uploaded = false;
                 imgState[imgNum].rawSrc = "";
@@ -2664,16 +2782,30 @@
             applyImageFrameAndStroke(imgNum);
             const temp = new Image();
             temp.onload = () => {
+                temp.onload = null; temp.onerror = null;
+                if (imgState[imgNum].loadSeq !== mySeq) {
+                    if (onDone) onDone();
+                    return;
+                }
                 imgState[imgNum].cachedImg = temp;
                 if (imgEl) {
                     imgEl.src = renderProcessedImageDataUrl(imgNum);
                     imgEl.style.display = 'block';
                 }
                 applyImageFrameAndStroke(imgNum);
-                if (typeof updateHeadlineOverImageDocking === 'function') updateHeadlineOverImageDocking();
+                if (document.getElementById('in-collage-mode') && document.getElementById('in-collage-mode').value !== 'single') {
+                    rebuildNewsBody();
+                } else if (typeof updateHeadlineOverImageDocking === 'function') {
+                    updateHeadlineOverImageDocking();
+                }
                 if (onDone) onDone();
             };
             temp.onerror = () => {
+                temp.onload = null; temp.onerror = null;
+                if (imgState[imgNum].loadSeq !== mySeq) {
+                    if (onDone) onDone();
+                    return;
+                }
                 if (imgEl) { imgEl.src = dataUrl; imgEl.style.display = 'block'; }
                 if (onDone) onDone();
             };
@@ -2688,8 +2820,8 @@
                         setRawImageSource(i, imgState[i].rawSrc, () => {
                             const imgEl = document.getElementById(`out-image-${i}`);
                             if (imgEl && !imgEl.complete) {
-                                imgEl.onload = resolve;
-                                imgEl.onerror = resolve;
+                                imgEl.onload = () => { imgEl.onload = null; imgEl.onerror = null; resolve(); };
+                                imgEl.onerror = () => { imgEl.onload = null; imgEl.onerror = null; resolve(); };
                             } else {
                                 resolve();
                             }
@@ -2708,6 +2840,7 @@
             const collageMode = document.getElementById('in-collage-mode') ? document.getElementById('in-collage-mode').value : 'single';
             if (!hlOnImg || collageMode === 'single') {
                 bgImg.style.display = 'none';
+                bgImg.src = "";
                 return;
             }
             const eff1 = document.getElementById('img-effect-type-1') ? document.getElementById('img-effect-type-1').value : 'none';
@@ -2715,6 +2848,7 @@
             let activeEff = (hlBgEff === 'sync-photo') ? eff1 : (hlBgEff === 'photo-only' ? 'none' : hlBgEff);
             if (activeEff === 'none') {
                 bgImg.style.display = 'none';
+                bgImg.src = "";
                 return;
             }
             let hex = (hlBgEff === 'sync-photo')
@@ -2738,6 +2872,7 @@
                 ctx.fillStyle = g0; ctx.fillRect(0, 0, 400, 240);
             }
             bgImg.src = c.toDataURL('image/png');
+            c.width = 0; c.height = 0;
             bgImg.style.display = 'block';
         }
 
@@ -2765,14 +2900,8 @@
                 }
                 topHeadlinesDock.appendChild(mainWrap);
                 topHeadlinesDock.appendChild(subWrap);
-                const mainY = parseInt(document.getElementById('in-main-y').value) || 0;
-                mainWrap.style.marginTop = mainY + 'px';
-                mainWrap.style.marginBottom = (10 - mainY) + 'px';
-                mainWrap.style.transform = 'none';
-                const subY = parseInt(document.getElementById('in-sub-y').value) || 0;
-                subWrap.style.marginTop = subY + 'px';
-                subWrap.style.marginBottom = (-subY) + 'px';
-                subWrap.style.transform = 'none';
+                applyMainHeadlinePosition();
+                applySubHeadlinePosition();
                 return;
             }
 
@@ -2790,12 +2919,16 @@
             if (!targetSlot) {
                 topHeadlinesDock.appendChild(mainWrap);
                 topHeadlinesDock.appendChild(subWrap);
+                applyMainHeadlinePosition();
+                applySubHeadlinePosition();
                 return;
             }
 
             const pos = document.getElementById('in-hl-on-image-pos') ? document.getElementById('in-hl-on-image-pos').value : 'bottom';
             const pad = parseInt(document.getElementById('in-hl-on-image-pad') ? document.getElementById('in-hl-on-image-pad').value : 10) || 0;
             const includeSub = document.getElementById('in-sub-on-image-check') ? document.getElementById('in-sub-on-image-check').checked : true;
+            const mainY = parseInt(document.getElementById('in-main-y').value) || 0;
+            const subY = parseInt(document.getElementById('in-sub-y').value) || 0;
 
             targetSlot.style.display = 'flex';
             targetSlot.style.left = '0';
@@ -2807,39 +2940,40 @@
                 targetSlot.style.top = '0';
                 targetSlot.style.bottom = 'auto';
                 targetSlot.style.transform = 'none';
-                targetSlot.style.paddingTop = pad + 'px';
+                targetSlot.style.paddingTop = Math.max(0, pad + mainY) + 'px';
                 targetSlot.style.paddingBottom = '10px';
                 targetSlot.style.justifyContent = 'flex-start';
+                mainWrap.style.marginTop = (pad + mainY < 0 ? (pad + mainY) : 0) + 'px';
             } else if (pos === 'center') {
                 targetSlot.style.top = '50%';
                 targetSlot.style.bottom = 'auto';
-                targetSlot.style.transform = `translateY(calc(-50% + ${pad}px))`;
+                targetSlot.style.transform = `translateY(calc(-50% + ${pad + mainY}px))`;
                 targetSlot.style.paddingTop = '10px';
                 targetSlot.style.paddingBottom = '10px';
                 targetSlot.style.justifyContent = 'center';
+                mainWrap.style.marginTop = '0px';
             } else {
                 targetSlot.style.top = 'auto';
                 targetSlot.style.bottom = '0';
                 targetSlot.style.transform = 'none';
                 targetSlot.style.paddingTop = '12px';
-                targetSlot.style.paddingBottom = pad + 'px';
+                targetSlot.style.paddingBottom = Math.max(0, pad - mainY) + 'px';
                 targetSlot.style.justifyContent = 'flex-end';
+                mainWrap.style.marginTop = '0px';
             }
 
-            const mainY = parseInt(document.getElementById('in-main-y').value) || 0;
-            mainWrap.style.marginTop = '0px';
-            mainWrap.style.marginBottom = '4px';
-            mainWrap.style.transform = mainY !== 0 ? `translateY(${mainY}px)` : 'none';
+            mainWrap.style.marginBottom = '3px';
+            mainWrap.style.transform = 'none';
             targetSlot.appendChild(mainWrap);
 
             if (includeSub) {
-                const subY = parseInt(document.getElementById('in-sub-y').value) || 0;
-                subWrap.style.marginTop = '2px';
+                subWrap.style.marginTop = subY + 'px';
                 subWrap.style.marginBottom = '0px';
-                subWrap.style.transform = subY !== 0 ? `translateY(${subY}px)` : 'none';
+                subWrap.style.transform = 'none';
                 targetSlot.appendChild(subWrap);
             } else {
                 topHeadlinesDock.appendChild(subWrap);
+                applySubHeadlinePosition();
             }
 
             updateCollageHeadlineBackdrop();
@@ -3000,10 +3134,12 @@
             if(align === 'top' && elId === 'out-bullets-wrap') { 
                 el.classList.add('img-block'); 
                 el.style.textAlign = 'center';
-                el.style.marginTop = '0px'; el.style.marginRight = 'auto'; el.style.marginBottom = '15px'; el.style.marginLeft = 'auto';
+                el.style.marginRight = 'auto'; el.style.marginLeft = 'auto';
+                applyBulletsPosition();
                 topBulletsDock.appendChild(el); return null;
             } else if(elId === 'out-bullets-wrap') {
                 el.style.textAlign = 'left';
+                applyBulletsPosition();
             }
 
             if(align === 'left') { el.classList.add('img-float-left'); } 
@@ -3104,20 +3240,160 @@
         // UI & TEMPLATE LOGIC
         // ==========================================
         
+        window._deletedProjectNames = window._deletedProjectNames || new Set();
+        if (!window._firebaseReadyPromise) {
+            window._firebaseReadyPromise = new Promise((resolve) => {
+                window._resolveFirebaseReady = resolve;
+                if (window._firebaseModuleReady) resolve(true);
+            });
+        }
+
+        const FIRESTORE_REST_BASE_URL = "https://firestore.googleapis.com/v1/projects/news-cliping/databases/(default)/documents/newsProjects";
+        const FIRESTORE_WEB_API_KEY = "AIzaSyC1sJzozMuSQIhPZACIQ4Qw6O_rczVaoGk";
+
+        function fromFirestoreRestValue(valObj) {
+            if (!valObj || typeof valObj !== 'object') return null;
+            if ('stringValue' in valObj) return valObj.stringValue;
+            if ('booleanValue' in valObj) return Boolean(valObj.booleanValue);
+            if ('integerValue' in valObj) return Number(valObj.integerValue);
+            if ('doubleValue' in valObj) return Number(valObj.doubleValue);
+            if ('nullValue' in valObj) return null;
+            if ('arrayValue' in valObj) return ((valObj.arrayValue && valObj.arrayValue.values) || []).map(fromFirestoreRestValue);
+            if ('mapValue' in valObj) return fromFirestoreRestFields((valObj.mapValue && valObj.mapValue.fields) || {});
+            return null;
+        }
+
+        function fromFirestoreRestFields(fieldsObj) {
+            const out = {};
+            if (!fieldsObj) return out;
+            for (const key in fieldsObj) {
+                out[key] = fromFirestoreRestValue(fieldsObj[key]);
+            }
+            return out;
+        }
+
+        function toFirestoreRestValue(val) {
+            if (val === null || val === undefined) return { nullValue: null };
+            if (typeof val === 'boolean') return { booleanValue: val };
+            if (typeof val === 'number') {
+                if (!Number.isFinite(val)) return { integerValue: "0" };
+                return Number.isInteger(val) ? { integerValue: String(val) } : { doubleValue: val };
+            }
+            if (typeof val === 'string') return { stringValue: val };
+            if (Array.isArray(val)) return { arrayValue: { values: val.map(toFirestoreRestValue) } };
+            if (typeof val === 'object') return { mapValue: { fields: toFirestoreRestFields(val) } };
+            return { stringValue: String(val) };
+        }
+
+        function toFirestoreRestFields(obj) {
+            const fields = {};
+            if (!obj || typeof obj !== 'object') return fields;
+            for (const key in obj) {
+                if (obj[key] !== undefined) {
+                    fields[key] = toFirestoreRestValue(obj[key]);
+                }
+            }
+            return fields;
+        }
+
+        window.fetchProjectsViaFirestoreREST = async function() {
+            try {
+                let allProjects = {};
+                let pageToken = "";
+                for (let page = 0; page < 5; page++) {
+                    const url = `${FIRESTORE_REST_BASE_URL}?pageSize=100&key=${FIRESTORE_WEB_API_KEY}` + (pageToken ? `&pageToken=${encodeURIComponent(pageToken)}` : "");
+                    const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+                    if (!res.ok) break;
+                    const data = await res.json();
+                    if (data && Array.isArray(data.documents)) {
+                        data.documents.forEach(docItem => {
+                            if (!docItem || !docItem.name) return;
+                            const rawId = docItem.name.substring(docItem.name.lastIndexOf('/') + 1);
+                            let docId = rawId;
+                            try { docId = decodeURIComponent(rawId); } catch(e) {}
+                            if (!window._deletedProjectNames || !window._deletedProjectNames.has(docId)) {
+                                allProjects[docId] = fromFirestoreRestFields(docItem.fields || {});
+                            }
+                        });
+                    }
+                    if (data && data.nextPageToken) {
+                        pageToken = data.nextPageToken;
+                    } else {
+                        break;
+                    }
+                }
+                return allProjects;
+            } catch (err) {
+                console.warn("Firestore REST fetch error:", err);
+                return null;
+            }
+        };
+
+        window.saveProjectViaFirestoreREST = async function(pName, data) {
+            try {
+                const url = `${FIRESTORE_REST_BASE_URL}/${encodeURIComponent(pName)}?key=${FIRESTORE_WEB_API_KEY}`;
+                const res = await fetch(url, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fields: toFirestoreRestFields(data) })
+                });
+                return res.ok;
+            } catch (err) {
+                console.warn("Firestore REST save error:", err);
+                return false;
+            }
+        };
+
+        window.deleteProjectViaFirestoreREST = async function(pName) {
+            try {
+                const url = `${FIRESTORE_REST_BASE_URL}/${encodeURIComponent(pName)}?key=${FIRESTORE_WEB_API_KEY}`;
+                const res = await fetch(url, { method: 'DELETE' });
+                return res.ok;
+            } catch (err) {
+                console.warn("Firestore REST delete error:", err);
+                return false;
+            }
+        };
+
+        async function getMergedSavedProjects() {
+            let localProjects = {};
+            try {
+                localProjects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
+            } catch(e) { localProjects = {}; }
+
+            if (!window.getProjectsFromFirebase) {
+                await Promise.race([
+                    window._firebaseReadyPromise,
+                    new Promise(r => setTimeout(r, 2500))
+                ]);
+            }
+
+            let fbProjects = null;
+            if (window.getProjectsFromFirebase) {
+                fbProjects = await window.getProjectsFromFirebase();
+            }
+            if (!fbProjects || Object.keys(fbProjects).length === 0) {
+                const restProjects = await window.fetchProjectsViaFirestoreREST();
+                if (restProjects && Object.keys(restProjects).length > 0) {
+                    fbProjects = restProjects;
+                }
+            }
+
+            let merged = Object.assign({}, localProjects, window.loadedFirebaseProjects || {}, fbProjects || {});
+            if (window._deletedProjectNames && window._deletedProjectNames.size > 0) {
+                window._deletedProjectNames.forEach(delName => { delete merged[delName]; });
+            }
+            window.loadedFirebaseProjects = merged;
+            return merged;
+        }
+
         window.refreshTemplateDropdown = async function() {
             let select = document.getElementById('ai-template-select');
+            if (!select) return;
             let currentVal = select.value;
+            let projects = await getMergedSavedProjects();
+            
             select.innerHTML = '<option value="DEFAULT">-- సాధారణ డిజైన్ (Default) --</option>';
-            
-            let projects = null;
-            if(window.getProjectsFromFirebase) {
-                projects = await window.getProjectsFromFirebase();
-            }
-            if(!projects) {
-                projects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
-            }
-            
-            window.loadedFirebaseProjects = projects;
             for(let pName in projects) {
                 let opt = document.createElement('option');
                 opt.value = pName;
@@ -3586,12 +3862,6 @@
                 mt3: document.getElementById('mt-3').value, mr3: document.getElementById('mr-3').value, mb3: document.getElementById('mb-3').value, ml3: document.getElementById('ml-3').value,
                 img4Src: srcImg4, imgFrame4: document.getElementById('img-frame-4').value, imgStrokeCheck4: document.getElementById('img-stroke-check-4').checked, imgStrokeColor4: document.getElementById('img-stroke-color-4').value, imgStrokeW4: document.getElementById('img-stroke-w-4').value, checkCap4: document.getElementById('check-cap-4').checked, caption4: document.getElementById('in-caption-4').value, imgAlign4: document.getElementById('img-align-4').value, imgPara4: document.getElementById('img-para-4').value, imgW4: document.getElementById('img-w-4').value,
                 mt4: document.getElementById('mt-4').value, mr4: document.getElementById('mr-4').value, mb4: document.getElementById('mb-4').value, ml4: document.getElementById('ml-4').value,
-
-                imgEffectType1: document.getElementById('img-effect-type-1').value, imgEffectSides1: document.getElementById('img-effect-sides-1').value, imgFadeB1: document.getElementById('img-fade-b-1').checked, imgFadeT1: document.getElementById('img-fade-t-1').checked, imgFadeL1: document.getElementById('img-fade-l-1').checked, imgFadeR1: document.getElementById('img-fade-r-1').checked, imgEffectDepth1: document.getElementById('img-effect-depth-1').value, imgEffectColor1: document.getElementById('img-effect-color-1').value,
-                imgEffectType2: document.getElementById('img-effect-type-2').value, imgEffectSides2: document.getElementById('img-effect-sides-2').value, imgFadeB2: document.getElementById('img-fade-b-2').checked, imgFadeT2: document.getElementById('img-fade-t-2').checked, imgFadeL2: document.getElementById('img-fade-l-2').checked, imgFadeR2: document.getElementById('img-fade-r-2').checked, imgEffectDepth2: document.getElementById('img-effect-depth-2').value, imgEffectColor2: document.getElementById('img-effect-color-2').value,
-                imgEffectType3: document.getElementById('img-effect-type-3').value, imgEffectSides3: document.getElementById('img-effect-sides-3').value, imgFadeB3: document.getElementById('img-fade-b-3').checked, imgFadeT3: document.getElementById('img-fade-t-3').checked, imgFadeL3: document.getElementById('img-fade-l-3').checked, imgFadeR3: document.getElementById('img-fade-r-3').checked, imgEffectDepth3: document.getElementById('img-effect-depth-3').value, imgEffectColor3: document.getElementById('img-effect-color-3').value,
-                imgEffectType4: document.getElementById('img-effect-type-4').value, imgEffectSides4: document.getElementById('img-effect-sides-4').value, imgFadeB4: document.getElementById('img-fade-b-4').checked, imgFadeT4: document.getElementById('img-fade-t-4').checked, imgFadeL4: document.getElementById('img-fade-l-4').checked, imgFadeR4: document.getElementById('img-fade-r-4').checked, imgEffectDepth4: document.getElementById('img-effect-depth-4').value, imgEffectColor4: document.getElementById('img-effect-color-4').value,
-                hlOnImageCheck: document.getElementById('in-hl-on-image-check').checked, hlOnImagePos: document.getElementById('in-hl-on-image-pos').value, hlTargetImg: document.getElementById('in-hl-target-img').value, subOnImageCheck: document.getElementById('in-sub-on-image-check').checked, hlBgEffect: document.getElementById('in-hl-bg-effect').value, hlBgFadeDepth: document.getElementById('in-hl-bg-fade-depth').value, hlBgFadeColor: document.getElementById('in-hl-bg-fade-color').value, hlBlendBoxCheck: document.getElementById('in-hl-blend-box-check').checked, hlOnImagePad: document.getElementById('in-hl-on-image-pad').value,
 
                 imgEffectType1: document.getElementById('img-effect-type-1').value, imgEffectSides1: document.getElementById('img-effect-sides-1').value, imgFadeB1: document.getElementById('img-fade-b-1').checked, imgFadeT1: document.getElementById('img-fade-t-1').checked, imgFadeL1: document.getElementById('img-fade-l-1').checked, imgFadeR1: document.getElementById('img-fade-r-1').checked, imgEffectDepth1: document.getElementById('img-effect-depth-1').value, imgEffectColor1: document.getElementById('img-effect-color-1').value,
                 imgEffectType2: document.getElementById('img-effect-type-2').value, imgEffectSides2: document.getElementById('img-effect-sides-2').value, imgFadeB2: document.getElementById('img-fade-b-2').checked, imgFadeT2: document.getElementById('img-fade-t-2').checked, imgFadeL2: document.getElementById('img-fade-l-2').checked, imgFadeR2: document.getElementById('img-fade-r-2').checked, imgEffectDepth2: document.getElementById('img-effect-depth-2').value, imgEffectColor2: document.getElementById('img-effect-color-2').value,
@@ -4125,27 +4395,55 @@ ${clipCfg.rawText.trim()}`;
                 img4Src: cImg4, imgFrame4: document.getElementById('img-frame-4').value, imgStrokeCheck4: document.getElementById('img-stroke-check-4').checked, imgStrokeColor4: document.getElementById('img-stroke-color-4').value, imgStrokeW4: document.getElementById('img-stroke-w-4').value, checkCap4: document.getElementById('check-cap-4').checked, caption4: document.getElementById('in-caption-4').value, imgAlign4: document.getElementById('img-align-4').value, imgPara4: document.getElementById('img-para-4').value, imgW4: document.getElementById('img-w-4').value,
                 mt4: document.getElementById('mt-4').value, mr4: document.getElementById('mr-4').value, mb4: document.getElementById('mb-4').value, ml4: document.getElementById('ml-4').value,
 
+                imgEffectType1: document.getElementById('img-effect-type-1').value, imgEffectSides1: document.getElementById('img-effect-sides-1').value, imgFadeB1: document.getElementById('img-fade-b-1').checked, imgFadeT1: document.getElementById('img-fade-t-1').checked, imgFadeL1: document.getElementById('img-fade-l-1').checked, imgFadeR1: document.getElementById('img-fade-r-1').checked, imgEffectDepth1: document.getElementById('img-effect-depth-1').value, imgEffectColor1: document.getElementById('img-effect-color-1').value,
+                imgEffectType2: document.getElementById('img-effect-type-2').value, imgEffectSides2: document.getElementById('img-effect-sides-2').value, imgFadeB2: document.getElementById('img-fade-b-2').checked, imgFadeT2: document.getElementById('img-fade-t-2').checked, imgFadeL2: document.getElementById('img-fade-l-2').checked, imgFadeR2: document.getElementById('img-fade-r-2').checked, imgEffectDepth2: document.getElementById('img-effect-depth-2').value, imgEffectColor2: document.getElementById('img-effect-color-2').value,
+                imgEffectType3: document.getElementById('img-effect-type-3').value, imgEffectSides3: document.getElementById('img-effect-sides-3').value, imgFadeB3: document.getElementById('img-fade-b-3').checked, imgFadeT3: document.getElementById('img-fade-t-3').checked, imgFadeL3: document.getElementById('img-fade-l-3').checked, imgFadeR3: document.getElementById('img-fade-r-3').checked, imgEffectDepth3: document.getElementById('img-effect-depth-3').value, imgEffectColor3: document.getElementById('img-effect-color-3').value,
+                imgEffectType4: document.getElementById('img-effect-type-4').value, imgEffectSides4: document.getElementById('img-effect-sides-4').value, imgFadeB4: document.getElementById('img-fade-b-4').checked, imgFadeT4: document.getElementById('img-fade-t-4').checked, imgFadeL4: document.getElementById('img-fade-l-4').checked, imgFadeR4: document.getElementById('img-fade-r-4').checked, imgEffectDepth4: document.getElementById('img-effect-depth-4').value, imgEffectColor4: document.getElementById('img-effect-color-4').value,
+                hlOnImageCheck: document.getElementById('in-hl-on-image-check').checked, hlOnImagePos: document.getElementById('in-hl-on-image-pos').value, hlTargetImg: document.getElementById('in-hl-target-img').value, subOnImageCheck: document.getElementById('in-sub-on-image-check').checked, hlBgEffect: document.getElementById('in-hl-bg-effect').value, hlBgFadeDepth: document.getElementById('in-hl-bg-fade-depth').value, hlBgFadeColor: document.getElementById('in-hl-bg-fade-color').value, hlBlendBoxCheck: document.getElementById('in-hl-blend-box-check').checked, hlOnImagePad: document.getElementById('in-hl-on-image-pad').value,
+
                 newsPrefix: document.getElementById('in-news-prefix').value, newsPrefixBold: document.getElementById('in-news-prefix-bold').checked, newsPrefixColor: document.getElementById('in-news-prefix-color').value, newsPrefixLayout: document.getElementById('in-news-prefix-layout').value,
                 columns: document.getElementById('in-columns').value, bodyFont: document.getElementById('in-body-font').value, bodySize: document.getElementById('in-body-size').value, bodyLh: document.getElementById('in-body-lh').value, newsBody: document.getElementById('in-news-body').value
             };
             
             let cleanData = JSON.parse(JSON.stringify(rawData));
+            if (window._deletedProjectNames) window._deletedProjectNames.delete(pName);
+            window.loadedFirebaseProjects = window.loadedFirebaseProjects || {};
+            window.loadedFirebaseProjects[pName] = cleanData;
 
             try {
                 let localProjects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
                 localProjects[pName] = cleanData;
-                safeSetLocalStorage('savedProjectsList', JSON.stringify(localProjects));
+                if (window.localStorage) {
+                    localStorage.setItem('savedProjectsList', JSON.stringify(localProjects));
+                }
             } catch (localErr) {
-                // లోకల్ ఫుల్ అయితే సైలెంట్
+                try {
+                    if (window.localStorage) {
+                        let slimProjects = {};
+                        slimProjects[pName] = cleanData;
+                        localStorage.setItem('savedProjectsList', JSON.stringify(slimProjects));
+                    }
+                } catch (e2) {}
             }
             
-            if(window.saveProjectToFirebase) {
-                window.saveProjectToFirebase(pName, cleanData);
+            try {
+                if (!window.saveProjectToFirebase) {
+                    await Promise.race([
+                        window._firebaseReadyPromise,
+                        new Promise(r => setTimeout(r, 2000))
+                    ]);
+                }
+                if (window.saveProjectToFirebase) {
+                    await window.saveProjectToFirebase(pName, cleanData);
+                } else if (window.saveProjectViaFirestoreREST) {
+                    await window.saveProjectViaFirestoreREST(pName, cleanData);
+                }
+            } catch (fbErr) {
+                console.warn("Project cloud save warning:", fbErr);
             }
-            
-            alert("✅ ప్రాజెక్ట్ '" + pName + "' స్ప్లిట్ సెకండ్లో పర్ఫెక్ట్గా సేవ్ అయింది!");
             
             btn.innerText = oldBtnText;
+            alert("✅ ప్రాజెక్ట్ '" + pName + "' స్ప్లిట్ సెకండ్లో పర్ఫెక్ట్గా సేవ్ అయింది!");
             if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
         }
 
@@ -4154,16 +4452,7 @@ ${clipCfg.rawText.trim()}`;
             document.getElementById('projects-modal').style.display = 'flex';
             container.innerHTML = '<p style="color:#00c6ff; font-weight:bold; text-align:center;">ప్రాజెక్ట్స్ లోడింగ్ అవుతున్నాయి... ఆగండి</p>';
             
-            let projects = null;
-            if(window.getProjectsFromFirebase) {
-                projects = await window.getProjectsFromFirebase();
-            } 
-            
-            if(!projects) {
-                projects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
-            }
-            
-            window.loadedFirebaseProjects = projects || {};
+            let projects = await getMergedSavedProjects();
             container.innerHTML = '';
             
             if(!projects || Object.keys(projects).length === 0) {
@@ -4181,13 +4470,16 @@ ${clipCfg.rawText.trim()}`;
                     delBtn.onclick = async () => { 
                         if(confirm("ఈ ప్రాజెక్ట్ను డిలీట్ చేయాలనుకుంటున్నారా?")) {
                             loadBtn.innerText = '...'; delBtn.innerText = '...';
+                            if (window._deletedProjectNames) window._deletedProjectNames.add(pName);
+                            if (window.loadedFirebaseProjects) delete window.loadedFirebaseProjects[pName];
+                            try {
+                                let localProjects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
+                                delete localProjects[pName];
+                                safeSetLocalStorage('savedProjectsList', JSON.stringify(localProjects));
+                            } catch(e) {}
                             if (window.deleteProjectFromFirebase) {
-                                window.deleteProjectFromFirebase(pName);
+                                await window.deleteProjectFromFirebase(pName);
                             }
-                            let localProjects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
-                            delete localProjects[pName];
-                            safeSetLocalStorage('savedProjectsList', JSON.stringify(localProjects));
-                            
                             openProjectsModal(); 
                             if(typeof window.refreshTemplateDropdown === 'function') window.refreshTemplateDropdown();
                         }
@@ -4201,8 +4493,10 @@ ${clipCfg.rawText.trim()}`;
         }
 
         function loadProjectByName(pName, isSilent = false) {
-            let projects = window.loadedFirebaseProjects || JSON.parse(safeGetLocalStorage('savedProjectsList')) || {};
-            let data = projects[pName]; if(!data) return;
+            let localProjects = {};
+            try { localProjects = JSON.parse(safeGetLocalStorage('savedProjectsList')) || {}; } catch(e) {}
+            let data = (window.loadedFirebaseProjects && window.loadedFirebaseProjects[pName]) || localProjects[pName];
+            if(!data) return;
             
             applyEditorStateObject(data);
 
@@ -4241,7 +4535,9 @@ ${clipCfg.rawText.trim()}`;
                 } finally {
                     if (bulletRaster && bulletRaster.restore) bulletRaster.restore();
                 }
-                return canvas.toDataURL('image/jpeg', 1.0);
+                const outJpg = canvas.toDataURL('image/jpeg', 1.0);
+                canvas.width = 0; canvas.height = 0;
+                return outJpg;
             } finally {
                 scaleContainer.style.transform = oldScale;
             }
@@ -4363,6 +4659,7 @@ ${clipCfg.rawText.trim()}`;
                   if (bulletRaster && bulletRaster.restore) bulletRaster.restore();
               }
               currentImageDataUrl = canvas.toDataURL('image/jpeg', 1.0); 
+              canvas.width = 0; canvas.height = 0;
               
               document.getElementById('download-preview-img').src = currentImageDataUrl;
               document.getElementById('download-preview-img').style.display = 'block';
@@ -4381,6 +4678,12 @@ ${clipCfg.rawText.trim()}`;
               btn.style.opacity = '1';
               btn.style.pointerEvents = 'auto';
           }
+        }
+
+        function closeDownloadModal() {
+            document.getElementById('download-modal').style.display = 'none';
+            const prevImg = document.getElementById('download-preview-img');
+            if (prevImg) { prevImg.src = ''; prevImg.style.display = 'none'; }
         }
 
         function directDownload() {
