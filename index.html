@@ -613,15 +613,19 @@
                           <label id="lbl-ai-img-1" style="margin-top:0; display:none;">Photo 1 అప్లోడ్ చేయండి: <span id="status-ai-img-1" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-1" accept="image/*" style="display:none;">
                           <button type="button" class="action-btn" id="btn-crop-ai-img-1" onclick="openImageCropModal('ai', 1)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 1</button>
+                          <button type="button" class="action-btn" id="btn-del-ai-img-1" onclick="deleteUploadedImage('ai', 1)" style="display:none; margin-top:5px; margin-left:6px; padding:5px 10px; font-size:11px; background:#dc3545; color:#fff;">🗑️ Delete Photo 1</button>
                           <label id="lbl-ai-img-2" style="margin-top:10px; display:none;">Photo 2 అప్లోడ్ చేయండి: <span id="status-ai-img-2" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-2" accept="image/*" style="display:none;">
                           <button type="button" class="action-btn" id="btn-crop-ai-img-2" onclick="openImageCropModal('ai', 2)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 2</button>
+                          <button type="button" class="action-btn" id="btn-del-ai-img-2" onclick="deleteUploadedImage('ai', 2)" style="display:none; margin-top:5px; margin-left:6px; padding:5px 10px; font-size:11px; background:#dc3545; color:#fff;">🗑️ Delete Photo 2</button>
                           <label id="lbl-ai-img-3" style="margin-top:10px; display:none;">Photo 3 అప్లోడ్ చేయండి: <span id="status-ai-img-3" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-3" accept="image/*" style="display:none;">
                           <button type="button" class="action-btn" id="btn-crop-ai-img-3" onclick="openImageCropModal('ai', 3)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 3</button>
+                          <button type="button" class="action-btn" id="btn-del-ai-img-3" onclick="deleteUploadedImage('ai', 3)" style="display:none; margin-top:5px; margin-left:6px; padding:5px 10px; font-size:11px; background:#dc3545; color:#fff;">🗑️ Delete Photo 3</button>
                           <label id="lbl-ai-img-4" style="margin-top:10px; display:none;">Photo 4 అప్లోడ్ చేయండి: <span id="status-ai-img-4" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-4" accept="image/*" style="display:none;">
                           <button type="button" class="action-btn" id="btn-crop-ai-img-4" onclick="openImageCropModal('ai', 4)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 4</button>
+                          <button type="button" class="action-btn" id="btn-del-ai-img-4" onclick="deleteUploadedImage('ai', 4)" style="display:none; margin-top:5px; margin-left:6px; padding:5px 10px; font-size:11px; background:#dc3545; color:#fff;">🗑️ Delete Photo 4</button>
                       </div>
                   </div>
               </div>
@@ -1001,6 +1005,7 @@
                       <label style="color:#00c6ff;"><b>Image 1 Upload:</b></label>
                       <input type="file" id="in-image-1" accept="image/*">
                       <button type="button" class="action-btn" id="btn-crop-img-1" onclick="openImageCropModal('editor', 1)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 1</button>
+                      <button type="button" class="action-btn" id="btn-del-img-1" onclick="deleteUploadedImage('editor', 1)" style="display:none; margin-top:6px; margin-left:6px; padding:6px 12px; font-size:12px; background:#dc3545; color:#fff;">🗑️ Delete Image 1</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-1"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-1" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1144,6 +1149,7 @@
                       <label style="color:#00c6ff;"><b>Image 2 Upload:</b></label>
                       <input type="file" id="in-image-2" accept="image/*">
                       <button type="button" class="action-btn" id="btn-crop-img-2" onclick="openImageCropModal('editor', 2)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 2</button>
+                      <button type="button" class="action-btn" id="btn-del-img-2" onclick="deleteUploadedImage('editor', 2)" style="display:none; margin-top:6px; margin-left:6px; padding:6px 12px; font-size:12px; background:#dc3545; color:#fff;">🗑️ Delete Image 2</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-2"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-2" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1235,6 +1241,7 @@
                       <label style="color:#00c6ff;"><b>Image 3 Upload:</b></label>
                       <input type="file" id="in-image-3" accept="image/*">
                       <button type="button" class="action-btn" id="btn-crop-img-3" onclick="openImageCropModal('editor', 3)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 3</button>
+                      <button type="button" class="action-btn" id="btn-del-img-3" onclick="deleteUploadedImage('editor', 3)" style="display:none; margin-top:6px; margin-left:6px; padding:6px 12px; font-size:12px; background:#dc3545; color:#fff;">🗑️ Delete Image 3</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-3"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-3" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1326,6 +1333,7 @@
                       <label style="color:#00c6ff;"><b>Image 4 Upload:</b></label>
                       <input type="file" id="in-image-4" accept="image/*">
                       <button type="button" class="action-btn" id="btn-crop-img-4" onclick="openImageCropModal('editor', 4)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 4</button>
+                      <button type="button" class="action-btn" id="btn-del-img-4" onclick="deleteUploadedImage('editor', 4)" style="display:none; margin-top:6px; margin-left:6px; padding:6px 12px; font-size:12px; background:#dc3545; color:#fff;">🗑️ Delete Image 4</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-4"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-4" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -2838,16 +2846,19 @@
             const mySeq = imgState[imgNum].loadSeq;
 
             const cropBtnEl = document.getElementById(`btn-crop-img-${imgNum}`);
+            const delBtnEl = document.getElementById(`btn-del-img-${imgNum}`);
             if (!dataUrl || !dataUrl.startsWith('data:image')) {
                 imgState[imgNum].uploaded = false;
                 imgState[imgNum].rawSrc = "";
                 imgState[imgNum].cachedImg = null;
                 if (imgEl) { imgEl.src = ""; imgEl.style.display = 'none'; }
                 if (cropBtnEl) cropBtnEl.style.display = 'none';
+                if (delBtnEl) delBtnEl.style.display = 'none';
                 if (onDone) onDone();
                 return;
             }
             if (cropBtnEl) cropBtnEl.style.display = 'inline-block';
+            if (delBtnEl) delBtnEl.style.display = 'inline-block';
             imgState[imgNum].uploaded = true;
             imgState[imgNum].rawSrc = dataUrl;
             if (imgEl) {
@@ -3637,11 +3648,12 @@
                 let bEl = document.getElementById(`status-ai-img-${i}`);
                 if (bEl) bEl.innerText = aiDataArr[i] ? `✔ Photo ${i} Loaded` : "";
                 let cBtn = document.getElementById(`btn-crop-ai-img-${i}`);
+                let dBtn = document.getElementById(`btn-del-ai-img-${i}`);
                 let inpEl = document.getElementById(`ai-img-file-${i}`);
-                if (cBtn) {
-                    const inpVisible = inpEl && inpEl.style.display !== 'none';
-                    cBtn.style.display = (aiDataArr[i] && inpVisible) ? 'inline-block' : 'none';
-                }
+                const inpVisible = inpEl && inpEl.style.display !== 'none';
+                const showBtns = (aiDataArr[i] && inpVisible) ? 'inline-block' : 'none';
+                if (cBtn) cBtn.style.display = showBtns;
+                if (dBtn) dBtn.style.display = showBtns;
             }
         }
 
@@ -4005,6 +4017,8 @@
                     document.getElementById(`out-image-${k}`).src = ""; document.getElementById(`out-image-${k}`).style.display = 'none';
                     const cropBtn = document.getElementById(`btn-crop-img-${k}`);
                     if (cropBtn) cropBtn.style.display = 'none';
+                    const delBtn = document.getElementById(`btn-del-img-${k}`);
+                    if (delBtn) delBtn.style.display = 'none';
                 }
                 document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none'; document.getElementById('out-logo-box').style.display = 'none';
                 stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
@@ -4293,6 +4307,8 @@
                         document.getElementById(`out-image-${i}`).style.display = 'none';
                         const cropBtn = document.getElementById(`btn-crop-img-${i}`);
                         if (cropBtn) cropBtn.style.display = 'none';
+                        const delBtn = document.getElementById(`btn-del-img-${i}`);
+                        if (delBtn) delBtn.style.display = 'none';
                     }
 
                     if (aiImgVal !== '0') {
@@ -5216,6 +5232,27 @@ ${rawSource}`;
             startY: 0,
             startBox: null
         };
+
+        function deleteUploadedImage(sourceType, imgNum) {
+            if (sourceType === 'editor') {
+                setRawImageSource(imgNum, "", () => {
+                    const inp = document.getElementById(`in-image-${imgNum}`);
+                    if (inp) inp.value = '';
+                    if (typeof rebuildNewsBody === 'function') rebuildNewsBody();
+                    if (typeof updateHeadlinePlacement === 'function') updateHeadlinePlacement();
+                    if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
+                });
+            } else if (sourceType === 'ai') {
+                if (imgNum === 1) aiImg1Data = "";
+                else if (imgNum === 2) aiImg2Data = "";
+                else if (imgNum === 3) aiImg3Data = "";
+                else if (imgNum === 4) aiImg4Data = "";
+                const inp = document.getElementById(`ai-img-file-${imgNum}`);
+                if (inp) inp.value = '';
+                if (typeof updateAiAssetBadges === 'function') updateAiAssetBadges();
+                if (typeof saveCurrentStepToQueue === 'function') saveCurrentStepToQueue();
+            }
+        }
 
         function openImageCropModal(sourceType, imgNum) {
             let srcData = "";
