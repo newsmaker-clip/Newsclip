@@ -195,8 +195,21 @@
         .img-float-right { float: right; }
 
         /* Collage Rules */
-        #collage-inner-grid .image-container { margin: 0 !important; width: 100% !important; height: 100%; display: flex; flex-direction: column; }
-        #collage-inner-grid .image-container img { flex-grow: 1; }
+        #collage-inner-grid .image-container { margin: 0 !important; width: 100% !important; height: auto; display: flex; flex-direction: column; }
+        #collage-inner-grid .image-container .img-media-box { width: 100%; overflow: hidden; flex-shrink: 0; }
+        #collage-inner-grid .image-container .img-media-box > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+        /* Equal-Width Bullets Rule */
+        .bullets-list { width: 100%; }
+        .bullet-row-item { width: 100%; box-sizing: border-box; }
+
+        /* Image Cropper Modal Styles */
+        .crop-modal-inner { background: #1e1e1e; padding: 14px; border-radius: 8px; width: 94%; max-width: 520px; max-height: 92vh; overflow-y: auto; border: 1px solid #00c6ff; display: flex; flex-direction: column; align-items: center; }
+        .crop-stage-wrap { position: relative; display: inline-block; margin: 10px auto; touch-action: none; user-select: none; -webkit-user-select: none; background: #000; border: 1px solid #444; }
+        #crop-canvas { display: block; max-width: 100%; touch-action: none; }
+        .crop-aspect-bar { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+        .crop-aspect-btn { background: #2c2c2c; color: #ddd; border: 1px solid #555; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer; }
+        .crop-aspect-btn.active { background: #00c6ff; color: #000; border-color: #fff; }
         
         #out-prefix-center { text-align: center; margin-bottom: 4px; width: 100%; }
         .news-body { column-count: 2; column-gap: 20px; column-rule: 1px solid #bbb; text-align: justify; font-size: 17px; line-height: 1.5; font-family: 'Tiro Telugu', serif; color: #111; margin-top: 6px; }
@@ -355,6 +368,14 @@
             <div class="gen-bar-header">
                 <div class="gen-bar-title" id="gen-bar-title">🗂️ Generated Clippings (0)</div>
                 <div class="gen-bar-actions">
+                    <select id="regen-part-select" style="width:auto; margin:0; padding:5px 8px; font-size:12px; background:#2a2a2a; color:#ffeb3b; border:1px solid #ff9800; border-radius:4px; font-weight:bold;">
+                        <option value="all">🔄 మొత్తం క్లిప్పింగ్ (All Parts)</option>
+                        <option value="Headline">📰 హెడ్‌లైన్ మాత్రమే (Headline)</option>
+                        <option value="Subheading">📝 సబ్-హెడ్‌లైన్ మాత్రమే (Subhead)</option>
+                        <option value="Bullets">📌 బుల్లెట్స్ మాత్రమే (Bullets)</option>
+                        <option value="BodyMatter">✍️ బాడీ మేటర్ మాత్రమే (Body)</option>
+                    </select>
+                    <button type="button" class="gen-bar-btn" id="btn-regen-single-clip" onclick="regenerateActiveClipping()" style="background:#ff9800; color:#000;">🔄 Re-generate</button>
                     <button type="button" class="gen-bar-btn" id="btn-download-all-clips" onclick="downloadAllClippingsSequentially()">⬇️ Download All Clippings (One by One)</button>
                 </div>
             </div>
@@ -591,12 +612,16 @@
                       <div id="ai-img-inputs" style="display:none; margin-top:10px; background:#2a2a2a; padding:10px; border-radius:5px;">
                           <label id="lbl-ai-img-1" style="margin-top:0; display:none;">Photo 1 అప్లోడ్ చేయండి: <span id="status-ai-img-1" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-1" accept="image/*" style="display:none;">
+                          <button type="button" class="action-btn" id="btn-crop-ai-img-1" onclick="openImageCropModal('ai', 1)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 1</button>
                           <label id="lbl-ai-img-2" style="margin-top:10px; display:none;">Photo 2 అప్లోడ్ చేయండి: <span id="status-ai-img-2" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-2" accept="image/*" style="display:none;">
+                          <button type="button" class="action-btn" id="btn-crop-ai-img-2" onclick="openImageCropModal('ai', 2)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 2</button>
                           <label id="lbl-ai-img-3" style="margin-top:10px; display:none;">Photo 3 అప్లోడ్ చేయండి: <span id="status-ai-img-3" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-3" accept="image/*" style="display:none;">
+                          <button type="button" class="action-btn" id="btn-crop-ai-img-3" onclick="openImageCropModal('ai', 3)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 3</button>
                           <label id="lbl-ai-img-4" style="margin-top:10px; display:none;">Photo 4 అప్లోడ్ చేయండి: <span id="status-ai-img-4" class="img-status-badge"></span></label>
                           <input type="file" id="ai-img-file-4" accept="image/*" style="display:none;">
+                          <button type="button" class="action-btn" id="btn-crop-ai-img-4" onclick="openImageCropModal('ai', 4)" style="display:none; margin-top:5px; padding:5px 10px; font-size:11px; background:#ff9800; color:#000;">✂️ Crop Photo 4</button>
                       </div>
                   </div>
               </div>
@@ -975,6 +1000,7 @@
                   <div id="img-sub-1" class="sub-section">
                       <label style="color:#00c6ff;"><b>Image 1 Upload:</b></label>
                       <input type="file" id="in-image-1" accept="image/*">
+                      <button type="button" class="action-btn" id="btn-crop-img-1" onclick="openImageCropModal('editor', 1)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 1</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-1"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-1" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1117,6 +1143,7 @@
                   <div id="img-sub-2" class="sub-section">
                       <label style="color:#00c6ff;"><b>Image 2 Upload:</b></label>
                       <input type="file" id="in-image-2" accept="image/*">
+                      <button type="button" class="action-btn" id="btn-crop-img-2" onclick="openImageCropModal('editor', 2)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 2</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-2"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-2" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1207,6 +1234,7 @@
                   <div id="img-sub-3" class="sub-section">
                       <label style="color:#00c6ff;"><b>Image 3 Upload:</b></label>
                       <input type="file" id="in-image-3" accept="image/*">
+                      <button type="button" class="action-btn" id="btn-crop-img-3" onclick="openImageCropModal('editor', 3)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 3</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-3"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-3" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1297,6 +1325,7 @@
                   <div id="img-sub-4" class="sub-section">
                       <label style="color:#00c6ff;"><b>Image 4 Upload:</b></label>
                       <input type="file" id="in-image-4" accept="image/*">
+                      <button type="button" class="action-btn" id="btn-crop-img-4" onclick="openImageCropModal('editor', 4)" style="display:none; margin-top:6px; padding:6px 12px; font-size:12px; background:#ff9800; color:#000;">✂️ Crop Image 4</button>
                       <label>Frame Shape:</label>
                       <select id="img-frame-4"><option value="none">Normal (Rectangle)</option><option value="rounded">Slightly Rounded</option><option value="circle">Full Circle</option><option value="leaf">Leaf Shape</option><option value="arch">Arch Shape</option></select>
                       <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="img-stroke-check-4" style="width:auto; margin:0;"> Enable Frame Border?</label>
@@ -1452,6 +1481,27 @@
             <h3 style="color:#00c6ff; margin-top:0;">📁 My Projects</h3>
             <div id="projects-list-container" style="max-height: 50vh; overflow-y:auto; margin-bottom:15px;"></div>
             <button onclick="document.getElementById('projects-modal').style.display='none'" style="padding:10px 20px; background:#444; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">Close</button>
+        </div>
+    </div>
+
+    <!-- IMAGE CROP MODAL -->
+    <div id="crop-modal" class="custom-modal">
+        <div class="crop-modal-inner">
+            <h3 style="color:#00c6ff; margin:0 0 6px 0; font-size:16px;">✂️ Crop Image (ఫోటో క్రాప్ చేయండి)</h3>
+            <div class="crop-aspect-bar" id="crop-aspect-bar">
+                <button type="button" class="crop-aspect-btn active" onclick="setCropAspectRatio('free', this)">Free</button>
+                <button type="button" class="crop-aspect-btn" onclick="setCropAspectRatio('1:1', this)">1:1 (Square)</button>
+                <button type="button" class="crop-aspect-btn" onclick="setCropAspectRatio('4:3', this)">4:3 (News)</button>
+                <button type="button" class="crop-aspect-btn" onclick="setCropAspectRatio('16:9', this)">16:9 (Wide)</button>
+                <button type="button" class="crop-aspect-btn" onclick="setCropAspectRatio('3:4', this)">3:4 (Portrait)</button>
+            </div>
+            <div class="crop-stage-wrap">
+                <canvas id="crop-canvas"></canvas>
+            </div>
+            <div style="display:flex; gap:12px; margin-top:10px; justify-content:center; flex-wrap:wrap;">
+                <button type="button" class="action-btn" onclick="applyImageCrop()" style="margin-top:0; background:#28a745; color:#fff;">✅ Apply Crop</button>
+                <button type="button" class="action-btn" onclick="closeImageCropModal()" style="margin-top:0; background:#d32f2f; color:#fff;">❌ Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -1645,6 +1695,14 @@
 
         function safeGetLocalStorage(k) { try { return window.localStorage ? localStorage.getItem(k) : null; } catch(e) { return null; } }
         function safeSetLocalStorage(k, v) { try { if (window.localStorage) localStorage.setItem(k, v); } catch(e) {} }
+        function safeGetLocalStorageJSON(k, fallback) {
+            try {
+                const raw = safeGetLocalStorage(k);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+                return (parsed !== null && parsed !== undefined) ? parsed : fallback;
+            } catch(e) { return fallback; }
+        }
 
         window.addEventListener('load', () => {
             let savedApiKey = safeGetLocalStorage('gemini_api_key');
@@ -1723,7 +1781,8 @@
         function savePrefix() {
             let val = document.getElementById('in-news-prefix').value.trim();
             if(!val) { alert("ముందుగా రిపోర్టర్ పేరు / ప్రిఫిక్స్ టైప్ చేయండి!"); return; }
-            let saved = JSON.parse(safeGetLocalStorage('savedPrefixes')) || [];
+            let saved = safeGetLocalStorageJSON('savedPrefixes', []);
+            if (!Array.isArray(saved)) saved = [];
             if(!saved.includes(val)) {
                 saved.push(val);
                 try {
@@ -1739,7 +1798,8 @@
         function saveAIPrefix() {
             let val = document.getElementById('ai-prefix-text').value.trim();
             if(!val) { alert("ముందుగా పేపర్ పేరు / ప్రిఫిక్స్ టైప్ చేయండి!"); return; }
-            let saved = JSON.parse(safeGetLocalStorage('savedPrefixes')) || [];
+            let saved = safeGetLocalStorageJSON('savedPrefixes', []);
+            if (!Array.isArray(saved)) saved = [];
             if(!saved.includes(val)) {
                 saved.push(val);
                 try {
@@ -1753,7 +1813,8 @@
         }
 
         function renderPrefixes() {
-            let saved = JSON.parse(safeGetLocalStorage('savedPrefixes')) || [];
+            let saved = safeGetLocalStorageJSON('savedPrefixes', []);
+            if (!Array.isArray(saved)) saved = [];
             let sel = document.getElementById('saved-prefixes');
             if (sel) {
                 sel.innerHTML = '<option value="">-- Saved Prefixes Here --</option>';
@@ -2137,9 +2198,10 @@
                 list.style.fontSize = fontSizeVal;
                 list.style.lineHeight = lineHeightVal;
                 list.style.paddingLeft = '0';
+                list.style.width = '100%';
                 list.innerHTML = points.map((pt, idx) => {
                     let mb = (idx < points.length - 1) ? '6px' : '0px';
-                    return `<div class="bullet-row-item" style="display: flex; align-items: flex-start; margin: 0 0 ${mb} 0; padding: 0; text-indent: 0; text-align: left; color: #222; font-family: 'Mandali', sans-serif; font-size: ${fontSizeVal}; line-height: ${lineHeightVal};"><span class="bullet-sym-span" style="color: ${symColor}; font-weight: bold; margin-right: 8px; flex-shrink: 0;">${symbol}</span><span class="bullet-txt-span" style="flex: 1; text-align: left;">${escapeHTML(pt)}</span></div>`;
+                    return `<div class="bullet-row-item" style="display: flex; align-items: flex-start; width: 100%; box-sizing: border-box; margin: 0 0 ${mb} 0; padding: 0; text-indent: 0; text-align: left; color: #222; font-family: 'Mandali', sans-serif; font-size: ${fontSizeVal}; line-height: ${lineHeightVal};"><span class="bullet-sym-span" style="color: ${symColor}; font-weight: bold; margin-right: 8px; flex-shrink: 0;">${symbol}</span><span class="bullet-txt-span" style="flex: 1; text-align: left;">${escapeHTML(pt)}</span></div>`;
                 }).join('');
                 if(document.getElementById('in-bullets-box-check').checked) { container.className = 'bullets-box'; container.style.backgroundColor = document.getElementById('in-bullets-bg-color').value; } 
                 else { container.className = 'bullets-none'; container.style.backgroundColor = 'transparent'; }
@@ -2314,12 +2376,7 @@
         document.getElementById('in-bullets-symbol').addEventListener('change', updateBullets);
         document.getElementById('in-bullets-symbol-color').addEventListener('input', updateBullets);
 
-        var imgState = window.imgState || {
-            1: { uploaded: false, rawSrc: "", cachedImg: null },
-            2: { uploaded: false, rawSrc: "", cachedImg: null },
-            3: { uploaded: false, rawSrc: "", cachedImg: null },
-            4: { uploaded: false, rawSrc: "", cachedImg: null }
-        };
+        // imgState is already initialized at the top of the script.
 
         function hexToRgbObj(hex) {
             hex = (hex || '#ffffff').trim().replace('#', '');
@@ -2635,16 +2692,31 @@
                 }
             }
 
-            if (effType === 'none' && effectiveHlEffect === 'none') {
+            const isCollageActive = (collageMode === 'collage2' || collageMode === 'collage4');
+            if (effType === 'none' && effectiveHlEffect === 'none' && !isCollageActive) {
                 return state.rawSrc;
             }
 
             const natW = srcImg.naturalWidth || srcImg.width;
             const natH = srcImg.naturalHeight || srcImg.height;
+            let sx = 0, sy = 0, sw = natW, sh = natH;
+
+            if (isCollageActive) {
+                const targetAspect = (typeof getCollageCellAspectRatio === 'function') ? getCollageCellAspectRatio(collageMode) : (4 / 3);
+                const srcAspect = natW / Math.max(1, natH);
+                if (srcAspect > targetAspect) {
+                    sw = Math.max(1, Math.round(natH * targetAspect));
+                    sx = Math.max(0, Math.round((natW - sw) / 2));
+                } else if (srcAspect < targetAspect) {
+                    sh = Math.max(1, Math.round(natW / targetAspect));
+                    sy = Math.max(0, Math.round((natH - sh) / 2));
+                }
+            }
+
             const maxDim = 1500;
-            const scale = Math.min(1, maxDim / Math.max(natW, natH));
-            const W = Math.max(1, Math.round(natW * scale));
-            const H = Math.max(1, Math.round(natH * scale));
+            const scale = Math.min(1, maxDim / Math.max(sw, sh));
+            const W = Math.max(1, Math.round(sw * scale));
+            const H = Math.max(1, Math.round(sh * scale));
 
             const canvas = document.createElement('canvas');
             canvas.width = W;
@@ -2658,7 +2730,7 @@
             } else if (effType === 'contrast-fade') {
                 ctx.filter = 'contrast(118%) saturate(118%) brightness(102%)';
             }
-            ctx.drawImage(srcImg, 0, 0, W, H);
+            ctx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, W, H);
             ctx.restore();
 
             // Pixel fallback for grayscale if ctx.filter is unsupported in an older WebView
@@ -2719,12 +2791,12 @@
                 if (effectiveHlEffect === 'frosted-blur') {
                     ctx.save();
                     const bH = Math.round(H * hlDepthRatio);
-                    let sy = (hlPos === 'top') ? 0 : (hlPos === 'center' ? Math.round((H - bH) / 2) : (H - bH));
+                    let blurY = (hlPos === 'top') ? 0 : (hlPos === 'center' ? Math.round((H - bH) / 2) : (H - bH));
                     ctx.beginPath();
-                    ctx.rect(0, sy, W, bH);
+                    ctx.rect(0, blurY, W, bH);
                     ctx.clip();
                     ctx.filter = 'blur(8px)';
-                    ctx.drawImage(srcImg, 0, 0, W, H);
+                    ctx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, W, H);
                     ctx.restore();
                 }
 
@@ -2765,14 +2837,17 @@
             imgState[imgNum].loadSeq = (imgState[imgNum].loadSeq || 0) + 1;
             const mySeq = imgState[imgNum].loadSeq;
 
+            const cropBtnEl = document.getElementById(`btn-crop-img-${imgNum}`);
             if (!dataUrl || !dataUrl.startsWith('data:image')) {
                 imgState[imgNum].uploaded = false;
                 imgState[imgNum].rawSrc = "";
                 imgState[imgNum].cachedImg = null;
                 if (imgEl) { imgEl.src = ""; imgEl.style.display = 'none'; }
+                if (cropBtnEl) cropBtnEl.style.display = 'none';
                 if (onDone) onDone();
                 return;
             }
+            if (cropBtnEl) cropBtnEl.style.display = 'inline-block';
             imgState[imgNum].uploaded = true;
             imgState[imgNum].rawSrc = dataUrl;
             if (imgEl) {
@@ -2991,14 +3066,21 @@
             else if(frame === 'leaf') { bRadius = '0 50% 0 50%'; }
             else if(frame === 'arch') { bRadius = '100px 100px 0 0'; }
 
+            const collageModeNow = document.getElementById('in-collage-mode') ? document.getElementById('in-collage-mode').value : 'single';
             if (imgEl) {
                 imgEl.style.borderRadius = bRadius;
-                imgEl.style.aspectRatio = aRatio;
+                imgEl.style.aspectRatio = (collageModeNow === 'single') ? aRatio : 'auto';
+                imgEl.style.height = (collageModeNow === 'single') ? 'auto' : '100%';
                 imgEl.style.border = 'none';
             }
             if (mediaBox) {
                 mediaBox.style.borderRadius = bRadius;
-                mediaBox.style.aspectRatio = aRatio;
+                if (collageModeNow !== 'single' && frame !== 'circle') {
+                    const cellAR = (typeof getCollageCellAspectRatio === 'function') ? getCollageCellAspectRatio(collageModeNow) : (4 / 3);
+                    mediaBox.style.aspectRatio = cellAR < 1 ? '3 / 4' : '4 / 3';
+                } else {
+                    mediaBox.style.aspectRatio = aRatio;
+                }
                 if(isStroke) {
                     mediaBox.style.border = `${document.getElementById(`img-stroke-w-${imgNum}`).value}px solid ${document.getElementById(`img-stroke-color-${imgNum}`).value}`;
                 } else {
@@ -3019,6 +3101,7 @@
                       });
                   };
                   reader.readAsDataURL(e.target.files[0]);
+                  e.target.value = '';
               } 
           });
           document.getElementById(`check-cap-${imgNum}`).addEventListener('change', function() { document.getElementById(`out-caption-${imgNum}`).style.display = this.checked ? 'block' : 'none'; });
@@ -3053,6 +3136,10 @@
             alignControls.style.display = (mode === 'single') ? 'none' : 'block';
             bgControl.style.display = (mode === 'single') ? 'none' : 'block';
             
+            for (let k = 1; k <= 4; k++) {
+                applyImageFrameAndStroke(k);
+            }
+            if (typeof refreshAllUploadedImageEffects === 'function') refreshAllUploadedImageEffects();
             rebuildNewsBody();
         });
         document.getElementById('collage-align').addEventListener('change', rebuildNewsBody);
@@ -3189,20 +3276,38 @@
               }
               
               if(imgList.length > 0) {
-                  imgList.forEach(container => {
-                      container.style.margin = '0'; container.style.width = '100%';
-                      innerGrid.appendChild(container);
-                  });
-                  
+                  const cellAspectNum = getCollageCellAspectRatio(collageMode);
+                  const cellAspectCSS = (cellAspectNum < 1) ? '3 / 4' : '4 / 3';
+
                   if(collageMode === 'collage2') {
-                      let img1 = document.getElementById('out-image-1');
-                      let isLandscape = img1.naturalWidth >= img1.naturalHeight;
-                      innerGrid.style.flexDirection = isLandscape ? 'column' : 'row';
-                      innerGrid.style.display = 'flex';
+                      let isLandscape = isCollage2Landscape();
+                      innerGrid.style.display = 'grid';
+                      innerGrid.style.gridTemplateColumns = isLandscape ? '1fr' : 'repeat(2, minmax(0, 1fr))';
+                      innerGrid.style.flexDirection = '';
                   } else {
                       innerGrid.style.display = 'grid';
-                      innerGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                      innerGrid.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+                      innerGrid.style.flexDirection = '';
                   }
+
+                  imgList.forEach(container => {
+                      container.style.margin = '0';
+                      container.style.width = '100%';
+                      container.style.height = 'auto';
+                      const mBox = container.querySelector('.img-media-box');
+                      const mImg = mBox ? mBox.querySelector('img') : null;
+                      if (mBox) {
+                          mBox.style.width = '100%';
+                          mBox.style.aspectRatio = cellAspectCSS;
+                          mBox.style.overflow = 'hidden';
+                      }
+                      if (mImg) {
+                          mImg.style.width = '100%';
+                          mImg.style.height = '100%';
+                          mImg.style.objectFit = 'cover';
+                      }
+                      innerGrid.appendChild(container);
+                  });
                   
                   let elCollage = prepElement('out-collage-wrapper', document.getElementById('collage-align').value, document.getElementById('cmt').value, document.getElementById('cmr').value, document.getElementById('cmb').value, document.getElementById('cml').value);
                   if(elCollage) injections.push({ idx: Math.floor(totalWords * (parseInt(document.getElementById('collage-para').value) / 100)), el: elCollage });
@@ -3424,7 +3529,8 @@
         }
 
         function saveBaseLogo(srcData, type) {
-            let saved = JSON.parse(safeGetLocalStorage('savedLogos_' + type)) || [];
+            let saved = safeGetLocalStorageJSON('savedLogos_' + type, []);
+            if (!Array.isArray(saved)) saved = [];
             if(!saved.includes(srcData)) { 
                 saved.push(srcData); 
                 if(saved.length > 5) saved.shift(); 
@@ -3438,7 +3544,8 @@
         }
 
         function renderSavedLogos(type) {
-            let saved = JSON.parse(safeGetLocalStorage('savedLogos_' + type)) || []; 
+            let saved = safeGetLocalStorageJSON('savedLogos_' + type, []);
+            if (!Array.isArray(saved)) saved = []; 
             let container = document.getElementById(type === 'top' ? 'saved-top-logos' : 'saved-stamp-logos');
             let aiContainer = document.getElementById('ai-saved-logo-gallery'); 
             
@@ -3501,6 +3608,7 @@
                     inp.style.display = i <= c ? 'block' : 'none';
                 }
             }
+            if (typeof updateAiAssetBadges === 'function') updateAiAssetBadges();
             if (typeof saveCurrentStepToQueue === 'function') saveCurrentStepToQueue();
         }
 
@@ -3524,10 +3632,17 @@
                     prefixBadge.innerText = "";
                 }
             }
-            let b1 = document.getElementById('status-ai-img-1'); if (b1) b1.innerText = aiImg1Data ? "✔ Photo 1 Loaded" : "";
-            let b2 = document.getElementById('status-ai-img-2'); if (b2) b2.innerText = aiImg2Data ? "✔ Photo 2 Loaded" : "";
-            let b3 = document.getElementById('status-ai-img-3'); if (b3) b3.innerText = aiImg3Data ? "✔ Photo 3 Loaded" : "";
-            let b4 = document.getElementById('status-ai-img-4'); if (b4) b4.innerText = aiImg4Data ? "✔ Photo 4 Loaded" : "";
+            const aiDataArr = [null, aiImg1Data, aiImg2Data, aiImg3Data, aiImg4Data];
+            for (let i = 1; i <= 4; i++) {
+                let bEl = document.getElementById(`status-ai-img-${i}`);
+                if (bEl) bEl.innerText = aiDataArr[i] ? `✔ Photo ${i} Loaded` : "";
+                let cBtn = document.getElementById(`btn-crop-ai-img-${i}`);
+                let inpEl = document.getElementById(`ai-img-file-${i}`);
+                if (cBtn) {
+                    const inpVisible = inpEl && inpEl.style.display !== 'none';
+                    cBtn.style.display = (aiDataArr[i] && inpVisible) ? 'inline-block' : 'none';
+                }
+            }
         }
 
         function onAiLogoAllToggle() {
@@ -3562,6 +3677,7 @@
                 let reader = new FileReader(); 
                 reader.onload = ev => { aiImg1Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
+                e.target.value = '';
             }
         });
         document.getElementById('ai-img-file-2').addEventListener('change', e => {
@@ -3569,6 +3685,7 @@
                 let reader = new FileReader(); 
                 reader.onload = ev => { aiImg2Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
+                e.target.value = '';
             }
         });
         document.getElementById('ai-img-file-3').addEventListener('change', e => {
@@ -3576,6 +3693,7 @@
                 let reader = new FileReader(); 
                 reader.onload = ev => { aiImg3Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
+                e.target.value = '';
             }
         });
         document.getElementById('ai-img-file-4').addEventListener('change', e => {
@@ -3583,6 +3701,7 @@
                 let reader = new FileReader(); 
                 reader.onload = ev => { aiImg4Data = ev.target.result; updateAiAssetBadges(); saveCurrentStepToQueue(); }; 
                 reader.readAsDataURL(e.target.files[0]); 
+                e.target.value = '';
             }
         });
         
@@ -3824,7 +3943,10 @@
         // STATE CAPTURE & RESTORE (MATCHES saveProjectData SCHEMA)
         // ==========================================
         let generatedClippingsList = [];
+        let generatedClippingsMeta = [];
         let activeGeneratedClipIndex = -1;
+        let cachedGeminiModels = [];
+        let cachedGeminiModelsKey = "";
         let isApplyingClipState = false;
 
         function getCurrentEditorStateObject() {
@@ -3881,11 +4003,13 @@
                 for (let k = 1; k <= 4; k++) {
                     imgState[k].uploaded = false; imgState[k].rawSrc = ""; imgState[k].cachedImg = null;
                     document.getElementById(`out-image-${k}`).src = ""; document.getElementById(`out-image-${k}`).style.display = 'none';
+                    const cropBtn = document.getElementById(`btn-crop-img-${k}`);
+                    if (cropBtn) cropBtn.style.display = 'none';
                 }
                 document.getElementById('out-logo-top').src = ""; document.getElementById('out-logo-top').style.display = 'none'; document.getElementById('out-logo-box').style.display = 'none';
                 stampUploaded = false; document.getElementById('out-logo-stamp').src = ""; document.getElementById('out-logo-stamp').style.display = 'none';
 
-                document.getElementById('in-wrap-w').value = data.wrapW; document.getElementById('in-overall-box-check').checked = data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor;
+                document.getElementById('in-wrap-w').value = data.wrapW || 800; document.getElementById('in-overall-box-check').checked = !!data.ovrCheck; document.getElementById('in-overall-color').value = data.ovrColor || '#fcfad9';
                 document.getElementById('in-bg-type').value = data.bgType || 'solid'; document.getElementById('in-overall-color2').value = data.ovrColor2 || '#e3f2fd'; document.getElementById('in-bg-direction').value = data.bgDir || 'to bottom';
                 document.getElementById('in-logo-type').value = data.logoType || 'top'; 
                 
@@ -4101,25 +4225,7 @@
 
             let modelsToTry = [];
             try {
-                const modelsRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
-                if (modelsRes.ok) {
-                    const modelsData = await modelsRes.json();
-                    const validModels = modelsData.models.filter(m => 
-                        m.supportedGenerationMethods && 
-                        m.supportedGenerationMethods.includes("generateContent") && 
-                        m.name.includes("gemini")
-                    );
-
-                    if (validModels.length > 0) {
-                        validModels.sort((a, b) => b.name.localeCompare(a.name));
-                        let flashModels = validModels.filter(m => m.name.includes("flash"));
-                        let otherModels = validModels.filter(m => !m.name.includes("flash"));
-                        modelsToTry = [...flashModels, ...otherModels].map(m => m.name.split('/')[1]);
-                    }
-                } else {
-                    const errData = await modelsRes.json();
-                    throw new Error(errData.error ? errData.error.message : "Invalid API Key");
-                }
+                modelsToTry = await fetchAvailableGeminiModels(apiKey);
             } catch (e) {
                 alert("API కీ ఎర్రర్: " + e.message + "\n\nదయచేసి మీ API కీ కరెక్ట్ గా ఉందో లేదో సరిచూసుకోండి.");
                 btn.innerText = oldText;
@@ -4129,7 +4235,10 @@
             }
 
             generatedClippingsList = [];
+            generatedClippingsMeta = [];
             activeGeneratedClipIndex = -1;
+            cachedGeminiModels = modelsToTry;
+            cachedGeminiModelsKey = apiKey;
 
             try {
                 for (let cIdx = 0; cIdx < batchItemsToRun.length; cIdx++) {
@@ -4182,6 +4291,8 @@
                         imgState[i].uploaded = false; imgState[i].rawSrc = ""; imgState[i].cachedImg = null;
                         document.getElementById(`out-image-${i}`).src = "";
                         document.getElementById(`out-image-${i}`).style.display = 'none';
+                        const cropBtn = document.getElementById(`btn-crop-img-${i}`);
+                        if (cropBtn) cropBtn.style.display = 'none';
                     }
 
                     if (aiImgVal !== '0') {
@@ -4217,71 +4328,57 @@
                         ? `ONE-LINE CATCHY HEADLINE MODE: The 'Headline' MUST be punchy, dramatic, and highly catchy, strictly constrained to fit on ONE SINGLE SHORT LINE (do not make it a lengthy two-line heading). It should perfectly suit the core essence of the news report, without colons (:).`
                         : `The "Headline" MUST be a single continuous sentence/phrase. Do NOT use colons (:) to divide the headline into two parts (e.g., Do NOT write "విషయం: ఇంకో విషయం").`;
 
-                    const prompt = `Act as a veteran, senior Telugu investigative journalist and newspaper editor.
-Read the raw, unorganized input text below and rewrite it into a professional Telugu news report.
+                    const prompt = `Act as a veteran, senior Telugu investigative journalist and chief sub-editor at a leading Telugu daily newspaper.
+Read the raw, unorganized input text below and craft a thorough, publication-ready Telugu news report.
 
 STRICT RULES (MUST FOLLOW):
-1. NO ENGLISH: Use pure Telugu. Absolutely no English words. Transliterate technical terms if absolutely necessary.
-2. SINGLE PARAGRAPH: The "BodyMatter" MUST be a single, continuous paragraph. Do not use line breaks (\\n) or split it into multiple paragraphs.
+1. NO ENGLISH: Use pure, authoritative journalistic Telugu. Absolutely no English words. Transliterate technical terms or proper nouns only if necessary.
+2. DETAILED & COMPREHENSIVE SINGLE-PARAGRAPH BODY: Do NOT write a short or skeletal summary. Write a rich, full-length, detailed professional news article in "BodyMatter" that incorporates and professionally elaborates on EVERY single fact, name, place, date, figure, quote, event, and context from the Input Text (without inventing false facts). Use crisp inverted-pyramid journalism style with smooth transitions. The "BodyMatter" MUST remain ONE single continuous paragraph (no \\n line breaks).
 3. CONDITIONAL SUBHEAD: Only generate "Subheading" if this flag is true: ${wantsSubHead}. If false, leave it empty ("").
-4. CONDITIONAL BULLETS: Only extract "Bullets" if this flag is true: ${wantsBullets}. If false, leave it as an empty array [].
-5. STRICT JSON FORMAT: Output ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json. Start directly with { and end with }.
-6. HEADLINE FORMAT: ${headlineRuleText}
+4. VALID & EQUAL-WIDTH BULLETS: Only extract "Bullets" if this flag is true: ${wantsBullets}. If false, leave it as an empty array []. When true, write 3 to 4 high-value, factual key points directly from the report, and make ALL bullet points roughly EQUAL in word/character length (around 35 to 48 Telugu characters each) so every bullet line has a clean, uniform visual width.
+5. FRESH JOURNALISTIC STYLE: Avoid clichés or generic phrasing; write crisp, impactful, original Telugu newspaper prose.
+6. STRICT JSON FORMAT: Output ONLY a valid JSON object. Do not include markdown formatting like \`\`\`json. Start directly with { and end with }.
+7. HEADLINE FORMAT: ${headlineRuleText}
 
 JSON Format:
 {
   "Headline": "Catchy, professional main headline in Telugu as a single continuous line without colons",
-  "Subheading": "Italic-style subheading (if required)",
-  "BodyMatter": "The entire news report in one single continuous paragraph.",
-  "Bullets": ["Point 1", "Point 2"]
+  "Subheading": "Crisp journalistic subheading (if required)",
+  "BodyMatter": "Comprehensive, detailed full-length news report in one single continuous paragraph.",
+  "Bullets": ["Equal length valid point 1", "Equal length valid point 2", "Equal length valid point 3"]
 }
 
 Input Text:
 ${clipCfg.rawText.trim()}`;
 
                     let success = false;
-                    let aiText = "";
+                    let newsData = null;
                     let lastErrorMsg = "";
 
                     for (let i = 0; i < modelsToTry.length; i++) {
                         let activeModel = modelsToTry[i];
+                        btn.innerText = `⏳ Clipping ${cIdx + 1}/${batchItemsToRun.length} (${activeModel} - ${i + 1}/${modelsToTry.length})...`;
                         console.log("Trying Model:", activeModel);
-                        
                         try {
-                            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${activeModel}:generateContent?key=${apiKey}`;
-                            const response = await fetch(apiUrl, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    contents: [{ parts: [{ text: prompt }] }],
-                                    generationConfig: { temperature: 0.7 } 
-                                })
-                            });
-
-                            if (!response.ok) {
-                                const errData = await response.json();
-                                lastErrorMsg = errData.error ? errData.error.message : 'API Request Failed';
-                                continue; 
+                            const resObj = await callGeminiJsonWithFallback(activeModel, apiKey, prompt, 0.7, 'all');
+                            if (resObj.ok && resObj.data) {
+                                newsData = resObj.data;
+                                success = true;
+                                if (i > 0) {
+                                    modelsToTry.splice(i, 1);
+                                    modelsToTry.unshift(activeModel);
+                                    cachedGeminiModels = modelsToTry;
+                                }
+                                break;
+                            } else {
+                                lastErrorMsg = `[${activeModel}] ` + (resObj.error || "API Request Failed");
                             }
-                            
-                            const data = await response.json();
-                            
-                            if(!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
-                                lastErrorMsg = "Google Safety Filter మీ వార్తను (Crime/Political) బ్లాక్ చేసింది.";
-                                continue; 
-                            }
-
-                            aiText = data.candidates[0].content.parts[0].text;
-                            success = true; 
-                            break;
-
                         } catch (error) {
-                            lastErrorMsg = error.message;
-                            continue; 
+                            lastErrorMsg = `[${activeModel}] ` + error.message;
                         }
                     }
 
-                    if (!success) {
+                    if (!success || !newsData) {
                         alert(`క్లిప్పింగ్ #${cIdx + 1} వార్త జెనరేట్ చేయడంలో ఎర్రర్: ` + lastErrorMsg + "\n\n(అందుబాటులో ఉన్న అన్ని మోడల్స్ ఫెయిల్ అయ్యాయి. దయచేసి API కీ చెక్ చేయండి లేదా కాసేపు ఆగి ట్రై చేయండి.)");
                         btn.innerText = oldText;
                         btn.disabled = false;
@@ -4290,35 +4387,40 @@ ${clipCfg.rawText.trim()}`;
                     }
 
                     // 4. Populate the generated JSON into the editor and run rebuildNewsBody()
-                    aiText = aiText.trim();
-                    const firstBrace = aiText.indexOf('{');
-                    const lastBrace = aiText.lastIndexOf('}');
-                    if (firstBrace !== -1 && lastBrace !== -1) { aiText = aiText.substring(firstBrace, lastBrace + 1); }
-                    
-                    aiText = aiText.replace(/[\u0000-\u001F]+/g, " ");
+                    const normNews = normalizeGeminiNewsObject(newsData);
 
-                    const newsData = JSON.parse(aiText);
-
-                    document.getElementById('in-main-headline').value = newsData.Headline || "";
+                    document.getElementById('in-main-headline').value = normNews.Headline || "";
                     document.getElementById('in-main-headline').dispatchEvent(new Event('input'));
 
-                    if (wantsSubHead && newsData.Subheading) {
-                        document.getElementById('in-sub-headline').value = newsData.Subheading;
+                    if (wantsSubHead && normNews.Subheading) {
+                        document.getElementById('in-sub-headline').value = normNews.Subheading;
                     } else { document.getElementById('in-sub-headline').value = ""; }
                     document.getElementById('in-sub-headline').dispatchEvent(new Event('input'));
 
-                    rawNewsText = (newsData.BodyMatter || "").replace(/\\n/g, '\n');
+                    rawNewsText = (normNews.BodyMatter || "").replace(/\\n/g, '\n');
                     document.getElementById('in-news-body').value = rawNewsText;
 
-                    if (wantsBullets && newsData.Bullets && Array.isArray(newsData.Bullets) && newsData.Bullets.length > 0) {
-                        document.getElementById('in-bullets').value = newsData.Bullets.join("\n");
+                    if (wantsBullets && normNews.Bullets && normNews.Bullets.length > 0) {
+                        document.getElementById('in-bullets').value = normNews.Bullets.join("\n");
                     } else { document.getElementById('in-bullets').value = ""; }
                     updateBullets();
                     rebuildNewsBody();
 
-                    // 5. Capture and save the COMPLETE state of this generated clipping into generatedClippingsList
+                    // 5. Capture and save the COMPLETE state & AI history metadata
                     const completeClipState = getCurrentEditorStateObject();
                     generatedClippingsList.push(completeClipState);
+                    generatedClippingsMeta.push({
+                        rawText: clipCfg.rawText.trim(),
+                        wantsSubHead: wantsSubHead,
+                        wantsBullets: wantsBullets,
+                        wantsShortHead: wantsShortHead,
+                        history: {
+                            headlines: completeClipState.mainHl ? [completeClipState.mainHl] : [],
+                            subheadings: completeClipState.subHl ? [completeClipState.subHl] : [],
+                            bullets: completeClipState.bullets ? [completeClipState.bullets] : [],
+                            bodies: completeClipState.newsBody ? [completeClipState.newsBody] : []
+                        }
+                    });
                 }
 
                 // After all clippings are generated, display the gallery bar and select the first clipping (or only clipping)
@@ -4334,7 +4436,7 @@ ${clipCfg.rawText.trim()}`;
 
             } catch (error) {
                 console.error("Generation Error:", error);
-                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: JSON Parsing Failed");
+                alert("వార్త జెనరేట్ చేయడంలో ఎర్రర్: " + (error && error.message ? error.message : "తెలియని సాంకేతిక లోపం"));
             } finally {
                 btn.innerText = oldText;
                 btn.disabled = false;
@@ -4511,6 +4613,9 @@ ${clipCfg.rawText.trim()}`;
         // 6. EXPORT / DOWNLOAD LOGIC (SINGLE & BATCH)
         // ==========================================
         async function renderCurrentCaptureToDataUrl() {
+            if (typeof html2canvas === 'undefined') {
+                throw new Error("html2canvas లైబ్రరీ లోడ్ కాలేదు. ఇంటర్నెట్ చెక్ చేసి పేజీని రీలోడ్ చేయండి.");
+            }
             await ensureAllImageEffectsRendered();
             await document.fonts.ready;
             await new Promise(r => setTimeout(r, 200));
@@ -4620,6 +4725,7 @@ ${clipCfg.rawText.trim()}`;
 
         async function downloadClipping() {
           if (!navigator.onLine) { alert("⚠️ ఎక్స్పోర్ట్ చేయడానికి ఇంటర్నెట్ కనెక్షన్ అవసరం."); return; }
+          if (typeof html2canvas === 'undefined') { alert("⚠️ ఎక్స్పోర్ట్ లైబ్రరీ (html2canvas) లోడ్ కాలేదు. దయచేసి ఇంటర్నెట్ చెక్ చేసి పేజీని రీలోడ్ చేయండి."); return; }
           syncActiveGeneratedClipping();
 
           const btn = document.getElementById('main-download-btn'); 
@@ -4666,13 +4772,13 @@ ${clipCfg.rawText.trim()}`;
               document.getElementById('modal-title').innerText = "✅ Image Ready! (Full HD)";
               document.getElementById('modal-desc').innerHTML = "👇 కింది ఫోటో పైన గట్టిగా నొక్కిపట్టి (Long Press) <br>'Save Image' లేదా 'Share' చేసుకోండి.";
               document.getElementById('modal-buttons').style.display = 'flex';
-              
-              scaleContainer.style.transform = oldScale; 
           } catch (err) {
               console.error(err); alert("ఇమేజ్ జనరేట్ చేయడంలో సాంకేతిక లోపం వచ్చింది.");
               document.getElementById('download-modal').style.display = 'none';
               updateScaling(); 
           } finally {
+              const scEl = document.getElementById('scale-container');
+              if (scEl && scEl.style.transform === 'none') updateScaling();
               btn.innerText = originalText;
               btn.disabled = false;
               btn.style.opacity = '1';
@@ -4693,6 +4799,709 @@ ${clipCfg.rawText.trim()}`;
                     const blobUrl = window.URL.createObjectURL(blob); const link = document.createElement('a'); link.style.display = 'none'; link.href = blobUrl; link.download = 'News_Clipping_Full_HD_' + new Date().getTime() + '.jpg'; document.body.appendChild(link); link.click(); setTimeout(() => { window.URL.revokeObjectURL(blobUrl); document.body.removeChild(link); }, 2000);
                 }).catch(err => { const link = document.createElement('a'); link.href = currentImageDataUrl; link.download = 'News_Clipping_Full_HD.jpg'; document.body.appendChild(link); link.click(); document.body.removeChild(link); });
             } catch(e) { alert("WebView సెక్యూరిటీ వల్ల బ్లాక్ చేయబడింది. ఫోటో పైన గట్టిగా నొక్కి పట్టి (Long Press) 'Save Image' చేసుకోండి."); }
+        }
+
+        // ==========================================
+        // COLLAGE UNIFORM ASPECT RATIO HELPERS
+        // ==========================================
+        function isCollage2Landscape() {
+            const cImg1 = imgState[1] && imgState[1].cachedImg;
+            const domImg1 = document.getElementById('out-image-1');
+            const w = (cImg1 && cImg1.naturalWidth) || (domImg1 && domImg1.naturalWidth) || 4;
+            const h = (cImg1 && cImg1.naturalHeight) || (domImg1 && domImg1.naturalHeight) || 3;
+            return w >= h;
+        }
+
+        function getCollageCellAspectRatio(collageMode) {
+            if (collageMode === 'collage2') {
+                return isCollage2Landscape() ? (4 / 3) : (3 / 4);
+            }
+            return 4 / 3;
+        }
+
+        // ==========================================
+        // SINGLE-CLIPPING RE-GENERATE (FULL OR PART-WISE WITH HISTORY AVOIDANCE)
+        // ==========================================
+        function extractGeminiTextFromResponse(data) {
+            const parts = data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts;
+            if (!Array.isArray(parts) || parts.length === 0) return "";
+            const nonThought = parts.filter(p => !p.thought && typeof p.text === 'string' && p.text.trim() !== '');
+            if (nonThought.length > 0) return nonThought.map(p => p.text).join('\n');
+            const anyText = parts.filter(p => typeof p.text === 'string' && p.text.trim() !== '');
+            return anyText.length > 0 ? anyText.map(p => p.text).join('\n') : "";
+        }
+
+        function fetchWithTimeout(url, options = {}, timeoutMs = 18000) {
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            let timerId = null;
+            const fetchPromise = fetch(url, controller ? { ...options, signal: controller.signal } : options);
+            const timeoutPromise = new Promise((_, reject) => {
+                timerId = setTimeout(() => {
+                    if (controller) { try { controller.abort(); } catch (e) {} }
+                    reject(new Error("Request Timed Out (మోడల్ రెస్పాన్స్ ఆలస్యమైంది, తర్వాతి మోడల్ ట్రై చేస్తోంది)"));
+                }, timeoutMs);
+            });
+            return Promise.race([fetchPromise, timeoutPromise]).finally(() => {
+                if (timerId) clearTimeout(timerId);
+            });
+        }
+
+        function parseGeminiJsonSafe(rawText) {
+            if (!rawText || typeof rawText !== 'string') return null;
+            let txt = rawText.trim();
+            txt = txt.replace(/```json/gi, '').replace(/```/g, '').trim();
+            const fb = txt.indexOf('{');
+            const lb = txt.lastIndexOf('}');
+            if (fb !== -1 && lb !== -1 && lb > fb) {
+                txt = txt.substring(fb, lb + 1);
+            }
+            const cleanCtrl = txt.replace(/[\u0000-\u001F]+/g, " ");
+            try {
+                const p = JSON.parse(cleanCtrl);
+                if (p && typeof p === 'object') return p;
+            } catch (e1) {
+                try {
+                    const noTrailing = cleanCtrl
+                        .replace(/,\s*([}\]])/g, '$1')
+                        .replace(/[\u201C\u201D]/g, '"');
+                    const p2 = JSON.parse(noTrailing);
+                    if (p2 && typeof p2 === 'object') return p2;
+                } catch (e2) {}
+            }
+            // Fallback regex key extractor when unescaped quotes exist inside Telugu text values
+            const fallbackObj = {};
+            let matchedAny = false;
+            const grabStringField = (keyPattern, nextKeysPattern) => {
+                const rx = new RegExp(`["']?(?:${keyPattern})["']?\\s*:\\s*"([\\s\\S]*?)"(?=\\s*(?:,\\s*["']?(?:${nextKeysPattern})["']?\\s*:|\\s*\\}))`, 'i');
+                const m = cleanCtrl.match(rx);
+                return m ? m[1].replace(/\\"/g, '"').trim() : undefined;
+            };
+            const allKeys = 'Headline|mainHeadline|mainHl|title|heading|Subheading|SubHeadline|subHl|subtitle|sub_heading|BodyMatter|Body|newsBody|matter|content|article|body_matter|Bullets|BulletPoints|bullets|points|highlights';
+            const hl = grabStringField('Headline|mainHeadline|mainHl|title|heading', allKeys);
+            if (hl !== undefined) { fallbackObj.Headline = hl; matchedAny = true; }
+            const sh = grabStringField('Subheading|SubHeadline|subHl|subtitle|sub_heading', allKeys);
+            if (sh !== undefined) { fallbackObj.Subheading = sh; matchedAny = true; }
+            const bm = grabStringField('BodyMatter|Body|newsBody|matter|content|article|body_matter', allKeys);
+            if (bm !== undefined) { fallbackObj.BodyMatter = bm; matchedAny = true; }
+            const blMatch = cleanCtrl.match(/["']?(?:Bullets|BulletPoints|bullets|points|highlights)["']?\s*:\s*\[([\s\S]*?)\]/i);
+            if (blMatch) {
+                const items = [];
+                const itemRx = /"((?:[^"\\]|\\.)*)"/g;
+                let im;
+                while ((im = itemRx.exec(blMatch[1])) !== null) {
+                    if (im[1].trim()) items.push(im[1].replace(/\\"/g, '"').trim());
+                }
+                fallbackObj.Bullets = items;
+                matchedAny = true;
+            }
+            return matchedAny ? fallbackObj : null;
+        }
+
+        function normalizeGeminiNewsObject(obj) {
+            if (!obj || typeof obj !== 'object') return { Headline: "", Subheading: "", BodyMatter: "", Bullets: [] };
+            if (Array.isArray(obj) && obj.length > 0 && typeof obj[0] === 'object') obj = obj[0];
+            if (obj.news && typeof obj.news === 'object') obj = obj.news;
+            if (obj.report && typeof obj.report === 'object') obj = obj.report;
+            if (obj.data && typeof obj.data === 'object') obj = obj.data;
+
+            const getVal = (keys) => {
+                for (const k of keys) {
+                    if (obj[k] !== undefined && obj[k] !== null) return obj[k];
+                    const foundKey = Object.keys(obj).find(ok => ok.toLowerCase().replace(/[_\s-]/g, '') === k.toLowerCase().replace(/[_\s-]/g, ''));
+                    if (foundKey && obj[foundKey] !== undefined && obj[foundKey] !== null) return obj[foundKey];
+                }
+                return undefined;
+            };
+            const rawHl = getVal(['Headline', 'mainHeadline', 'mainHl', 'title', 'heading', 'హెడ్లైన్', 'శీర్షిక']);
+            const rawSub = getVal(['Subheading', 'SubHeadline', 'subHl', 'subtitle', 'sub_heading', 'సబ్హెడ్డింగ్', 'ఉపశీర్షిక']);
+            const rawBody = getVal(['BodyMatter', 'Body', 'newsBody', 'matter', 'content', 'article', 'body_matter', 'బాడీమేటర్', 'వార్త']);
+            const rawBullets = getVal(['Bullets', 'BulletPoints', 'bullets', 'points', 'highlights', 'బుల్లెట్స్']);
+
+            let bulletsArr = [];
+            if (Array.isArray(rawBullets)) {
+                bulletsArr = rawBullets.map(b => String(b || '').replace(/^[•➔➢■◆✔❖✦\-*]+\s*/, '').trim()).filter(Boolean);
+            } else if (typeof rawBullets === 'string' && rawBullets.trim() !== '') {
+                bulletsArr = rawBullets.split(/\r?\n/).map(b => b.replace(/^[•➔➢■◆✔❖✦\-*]+\s*/, '').trim()).filter(Boolean);
+            }
+
+            return {
+                Headline: typeof rawHl === 'string' ? rawHl.trim() : (rawHl ? String(rawHl).trim() : ""),
+                Subheading: typeof rawSub === 'string' ? rawSub.trim() : (rawSub ? String(rawSub).trim() : ""),
+                BodyMatter: typeof rawBody === 'string' ? rawBody.trim() : (rawBody ? String(rawBody).trim() : ""),
+                Bullets: bulletsArr
+            };
+        }
+
+        function isNormalizedNewsValidForPart(norm, requiredPart) {
+            if (!norm) return false;
+            const part = requiredPart || 'all';
+            if (part === 'all') return !!(norm.Headline && norm.BodyMatter);
+            if (part === 'Headline') return !!norm.Headline;
+            if (part === 'Subheading') return !!norm.Subheading;
+            if (part === 'Bullets') return Array.isArray(norm.Bullets) && norm.Bullets.length > 0;
+            if (part === 'BodyMatter') return !!norm.BodyMatter;
+            return !!(norm.Headline || norm.BodyMatter);
+        }
+
+        async function callGeminiJsonWithFallback(modelName, apiKey, promptText, temperatureVal, requiredPart = 'all') {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            const safetySettings = [
+                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+            ];
+
+            let response;
+            try {
+                response = await fetchWithTimeout(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }],
+                        safetySettings: safetySettings,
+                        generationConfig: { temperature: temperatureVal }
+                    })
+                }, 30000);
+            } catch (netErr) {
+                return { ok: false, error: netErr.message || "Network Timeout" };
+            }
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                const errMsg = errData.error ? errData.error.message : `HTTP ${response.status}`;
+                return { ok: false, error: errMsg };
+            }
+
+            const data = await response.json();
+            const extractedText = extractGeminiTextFromResponse(data);
+            if (!extractedText) {
+                return { ok: false, error: "Empty or Blocked Response" };
+            }
+
+            const parsed = parseGeminiJsonSafe(extractedText);
+            if (parsed && typeof parsed === 'object') {
+                const norm = normalizeGeminiNewsObject(parsed);
+                if (isNormalizedNewsValidForPart(norm, requiredPart)) {
+                    return { ok: true, data: norm };
+                }
+                return { ok: false, error: "Incomplete JSON fields from model" };
+            }
+            return { ok: false, error: "JSON Parsing Failed" };
+        }
+
+        async function fetchAvailableGeminiModels(apiKey) {
+            if (cachedGeminiModels.length > 0 && cachedGeminiModelsKey === apiKey) {
+                return cachedGeminiModels;
+            }
+            const modelsRes = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, {}, 12000);
+            if (!modelsRes.ok) {
+                const errData = await modelsRes.json().catch(() => ({}));
+                throw new Error(errData.error ? errData.error.message : "Invalid API Key");
+            }
+            const modelsData = await modelsRes.json();
+            const excludePattern = /tts|image|vision|embedding|aqa|robotics|computer-use|audio|live|veo|imagen|learnlm|thinking/i;
+            const validModels = (modelsData.models || []).filter(m =>
+                m.supportedGenerationMethods &&
+                m.supportedGenerationMethods.includes("generateContent") &&
+                m.name && m.name.includes("gemini") &&
+                !excludePattern.test(m.name)
+            );
+            if (validModels.length === 0) throw new Error("No Gemini models available for this API Key");
+
+            // Dynamically rank all available models from most advanced to older without hardcoding specific model names:
+            // Stable Flash models first (fast + free-tier quota friendly), ordered by version number descending, then Pro/Preview models
+            const getDynamicModelRank = (m) => {
+                const id = (m.name.split('/')[1] || m.name).toLowerCase();
+                const verMatch = id.match(/(\d+(?:\.\d+)?)/);
+                const versionNum = verMatch ? parseFloat(verMatch[1]) : 1.0;
+                const isStable = (!id.includes('preview') && !id.includes('exp') && !id.includes('test')) ? 1 : 0;
+                const isFlash = id.includes('flash') ? 1 : 0;
+                const isStandard = (!id.includes('lite') && !id.includes('8b')) ? 1 : 0;
+                const isBaseAlias = /^gemini-\d+(?:\.\d+)?-(?:flash|pro)(-latest)?$/.test(id) ? 1 : 0;
+                return (isStable * 2000) + (isFlash * 1000) + (isBaseAlias * 400) + (versionNum * 100) + (isStandard * 20);
+            };
+
+            validModels.sort((a, b) => getDynamicModelRank(b) - getDynamicModelRank(a) || b.name.localeCompare(a.name));
+            cachedGeminiModels = validModels.slice(0, 8).map(m => m.name.split('/')[1]);
+            cachedGeminiModelsKey = apiKey;
+            return cachedGeminiModels;
+        }
+
+        async function regenerateActiveClipping() {
+            if (activeGeneratedClipIndex < 0 || activeGeneratedClipIndex >= generatedClippingsList.length) {
+                alert("దయచేసి ముందుగా ఏదైనా ఒక క్లిప్పింగ్‌ను సెలెక్ట్ చేయండి!");
+                return;
+            }
+            const apiKey = document.getElementById('ai-api-key').value.trim();
+            if (!apiKey) { alert("దయచేసి Gemini API Key ఎంటర్ చేయండి!"); return; }
+
+            syncActiveGeneratedClipping();
+            const idx = activeGeneratedClipIndex;
+            const clipState = generatedClippingsList[idx];
+            if (!generatedClippingsMeta[idx]) {
+                generatedClippingsMeta[idx] = {
+                    rawText: document.getElementById('ai-raw-text').value.trim() || clipState.newsBody || "",
+                    wantsSubHead: true,
+                    wantsBullets: true,
+                    wantsShortHead: false,
+                    history: {
+                        headlines: clipState.mainHl ? [clipState.mainHl] : [],
+                        subheadings: clipState.subHl ? [clipState.subHl] : [],
+                        bullets: clipState.bullets ? [clipState.bullets] : [],
+                        bodies: clipState.newsBody ? [clipState.newsBody] : []
+                    }
+                };
+            }
+            const meta = generatedClippingsMeta[idx];
+            const rawSource = (meta.rawText && meta.rawText.trim()) || clipState.newsBody || "";
+            if (!rawSource) { alert("ఈ క్లిప్పింగ్‌కు రఫ్ మేటర్ అందుబాటులో లేదు."); return; }
+
+            const part = document.getElementById('regen-part-select').value || 'all';
+            const btn = document.getElementById('btn-regen-single-clip');
+            const oldBtnText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "⏳ Regenerating...";
+
+            try {
+                const modelsToTry = await fetchAvailableGeminiModels(apiKey);
+
+                const headlineRuleText = meta.wantsShortHead
+                    ? `ONE-LINE CATCHY HEADLINE MODE: The 'Headline' MUST be punchy, dramatic, and highly catchy, strictly constrained to fit on ONE SINGLE SHORT LINE without colons (:).`
+                    : `The "Headline" MUST be a single continuous sentence/phrase without colons (:).`;
+
+                const prevH = meta.history.headlines.slice(-4);
+                const prevS = meta.history.subheadings.slice(-4);
+                const prevB = meta.history.bullets.slice(-4);
+                const prevM = meta.history.bodies.slice(-3);
+
+                let targetInstructions = "";
+                let jsonSchema = "";
+
+                if (part === 'all') {
+                    targetInstructions = `Re-generate ALL parts: "Headline", "Subheading" (if ${meta.wantsSubHead}, else ""), "BodyMatter", and "Bullets" (if ${meta.wantsBullets}, else []).
+Every single part MUST be freshly written with completely different wording, sentence structure, headline angle, and phrasing from ALL previous versions below.
+BodyMatter MUST be a comprehensive, detailed, full-length professional Telugu news report (single continuous paragraph, no \\n) covering every fact in the Input Text.
+Bullets MUST be 3 to 4 valid, high-value factual points of roughly EQUAL character length (35-48 Telugu characters each).`;
+                    jsonSchema = `{
+  "Headline": "...",
+  "Subheading": "...",
+  "BodyMatter": "...",
+  "Bullets": ["...", "...", "..."]
+}`;
+                } else if (part === 'Headline') {
+                    targetInstructions = `Re-generate ONLY a brand-new "Headline". Keep it completely different in wording and angle from previous headlines. ${headlineRuleText}`;
+                    jsonSchema = `{ "Headline": "..." }`;
+                } else if (part === 'Subheading') {
+                    targetInstructions = `Re-generate ONLY a brand-new, crisp journalistic "Subheading" in pure Telugu, completely different from previous subheadings.`;
+                    jsonSchema = `{ "Subheading": "..." }`;
+                } else if (part === 'Bullets') {
+                    targetInstructions = `Re-generate ONLY brand-new "Bullets" (3 to 4 valid, high-value factual points from the news report). Every bullet MUST be roughly EQUAL in character/word length (35-48 Telugu characters each) and completely different in phrasing from previous bullets.`;
+                    jsonSchema = `{ "Bullets": ["...", "...", "..."] }`;
+                } else if (part === 'BodyMatter') {
+                    targetInstructions = `Re-generate ONLY a brand-new "BodyMatter". Write it like a veteran Telugu newspaper journalist: full-length, rich, detailed single continuous paragraph (no \\n) using all facts from the Input Text, with completely fresh sentence structure and wording different from previous body versions.`;
+                    jsonSchema = `{ "BodyMatter": "..." }`;
+                }
+
+                const historyBlock = `
+PREVIOUS VERSIONS TO AVOID REPEATING (DO NOT REUSE SAME PHRASING OR HEADLINES):
+- Previous Headlines: ${JSON.stringify(prevH)}
+- Previous Subheadings: ${JSON.stringify(prevS)}
+- Previous Bullets: ${JSON.stringify(prevB)}
+- Previous Body Versions: ${JSON.stringify(prevM)}
+`;
+
+                const regenPrompt = `Act as a veteran, senior Telugu investigative journalist and chief sub-editor at a leading Telugu daily newspaper.
+TASK: ${targetInstructions}
+
+STRICT RULES:
+1. NO ENGLISH: Use pure, authoritative journalistic Telugu.
+2. UNIQUENESS: Output MUST be distinctly different from all previous versions listed below.
+3. STRICT JSON ONLY: Output ONLY valid JSON matching the schema below. Start with { and end with }.
+
+Schema:
+${jsonSchema}
+
+${historyBlock}
+
+Original Input Text:
+${rawSource}`;
+
+                let newData = null;
+                let success = false;
+                let lastErrorMsg = "";
+                for (let i = 0; i < modelsToTry.length; i++) {
+                    try {
+                        const activeModel = modelsToTry[i];
+                        btn.innerText = `⏳ ${activeModel} (${i + 1}/${modelsToTry.length})...`;
+                        const resObj = await callGeminiJsonWithFallback(activeModel, apiKey, regenPrompt, 0.85, part);
+                        if (resObj.ok && resObj.data) {
+                            newData = resObj.data;
+                            success = true;
+                            if (i > 0) {
+                                modelsToTry.splice(i, 1);
+                                modelsToTry.unshift(activeModel);
+                                cachedGeminiModels = modelsToTry;
+                            }
+                            break;
+                        } else {
+                            lastErrorMsg = `[${activeModel}] ` + (resObj.error || "API Request Failed");
+                        }
+                    } catch (err) {
+                        lastErrorMsg = err.message;
+                    }
+                }
+
+                if (!success || !newData) {
+                    alert("రీ-జనరేట్ చేయడంలో ఎర్రర్: " + lastErrorMsg);
+                    return;
+                }
+
+                if (part === 'all' || part === 'Headline') {
+                    if (newData.Headline) {
+                        clipState.mainHl = newData.Headline;
+                        meta.history.headlines.push(newData.Headline);
+                    }
+                }
+                if (part === 'all' || part === 'Subheading') {
+                    if (part === 'Subheading' || meta.wantsSubHead) {
+                        clipState.subHl = newData.Subheading || "";
+                        if (clipState.subHl) meta.history.subheadings.push(clipState.subHl);
+                    } else {
+                        clipState.subHl = "";
+                    }
+                }
+                if (part === 'all' || part === 'Bullets') {
+                    if ((part === 'Bullets' || meta.wantsBullets) && Array.isArray(newData.Bullets) && newData.Bullets.length > 0) {
+                        clipState.bullets = newData.Bullets.join("\n");
+                        meta.history.bullets.push(clipState.bullets);
+                    } else if (part === 'all' && !meta.wantsBullets) {
+                        clipState.bullets = "";
+                    }
+                }
+                if (part === 'all' || part === 'BodyMatter') {
+                    if (newData.BodyMatter) {
+                        clipState.newsBody = newData.BodyMatter.replace(/\\n/g, '\n');
+                        meta.history.bodies.push(clipState.newsBody);
+                    }
+                }
+
+                generatedClippingsList[idx] = clipState;
+                applyEditorStateObject(clipState);
+                renderGeneratedClippingsBar();
+            } catch (e) {
+                console.error("Regenerate Error:", e);
+                alert("రీ-జనరేట్ చేయడంలో ఎర్రర్: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = oldBtnText;
+            }
+        }
+
+        // ==========================================
+        // INTERACTIVE CANVAS IMAGE CROPPER
+        // ==========================================
+        let cropSession = {
+            active: false,
+            sourceType: 'editor',
+            imgNum: 1,
+            imgObj: null,
+            scale: 1,
+            dispW: 0,
+            dispH: 0,
+            aspectRatio: null,
+            box: { x: 0, y: 0, w: 100, h: 100 },
+            dragMode: null,
+            startX: 0,
+            startY: 0,
+            startBox: null
+        };
+
+        function openImageCropModal(sourceType, imgNum) {
+            let srcData = "";
+            if (sourceType === 'editor') {
+                srcData = imgState[imgNum] && imgState[imgNum].rawSrc;
+            } else {
+                const aiArr = [null, aiImg1Data, aiImg2Data, aiImg3Data, aiImg4Data];
+                srcData = aiArr[imgNum];
+            }
+            if (!srcData || !srcData.startsWith('data:image')) {
+                alert("ముందుగా ఇమేజ్‌ను అప్‌లోడ్ చేయండి!");
+                return;
+            }
+
+            const img = new Image();
+            img.onload = () => {
+                cropSession.active = true;
+                cropSession.sourceType = sourceType;
+                cropSession.imgNum = imgNum;
+                cropSession.imgObj = img;
+                cropSession.aspectRatio = null;
+
+                document.querySelectorAll('#crop-aspect-bar .crop-aspect-btn').forEach((b, i) => {
+                    b.classList.toggle('active', i === 0);
+                });
+
+                const maxW = Math.min(460, window.innerWidth * 0.85);
+                const maxH = Math.min(360, window.innerHeight * 0.50);
+                const natW = img.naturalWidth || img.width;
+                const natH = img.naturalHeight || img.height;
+                const s = Math.min(maxW / natW, maxH / natH, 1);
+
+                cropSession.scale = s;
+                cropSession.dispW = Math.max(60, Math.round(natW * s));
+                cropSession.dispH = Math.max(60, Math.round(natH * s));
+
+                const padX = Math.round(cropSession.dispW * 0.08);
+                const padY = Math.round(cropSession.dispH * 0.08);
+                cropSession.box = {
+                    x: padX,
+                    y: padY,
+                    w: Math.max(30, cropSession.dispW - padX * 2),
+                    h: Math.max(30, cropSession.dispH - padY * 2)
+                };
+
+                const canvas = document.getElementById('crop-canvas');
+                canvas.width = cropSession.dispW;
+                canvas.height = cropSession.dispH;
+                document.getElementById('crop-modal').style.display = 'flex';
+                drawCropCanvas();
+            };
+            img.src = srcData;
+        }
+
+        function closeImageCropModal() {
+            cropSession.active = false;
+            document.getElementById('crop-modal').style.display = 'none';
+        }
+
+        function setCropAspectRatio(ratioStr, btnEl) {
+            document.querySelectorAll('#crop-aspect-bar .crop-aspect-btn').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+
+            if (ratioStr === 'free') {
+                cropSession.aspectRatio = null;
+                drawCropCanvas();
+                return;
+            }
+            const parts = ratioStr.split(':');
+            const targetRatio = parseFloat(parts[0]) / parseFloat(parts[1]);
+            cropSession.aspectRatio = targetRatio;
+
+            const dw = cropSession.dispW;
+            const dh = cropSession.dispH;
+            let nw = Math.round(dw * 0.85);
+            let nh = Math.round(nw / targetRatio);
+            if (nh > dh * 0.85) {
+                nh = Math.round(dh * 0.85);
+                nw = Math.round(nh * targetRatio);
+            }
+            cropSession.box = {
+                x: Math.round((dw - nw) / 2),
+                y: Math.round((dh - nh) / 2),
+                w: Math.max(24, nw),
+                h: Math.max(24, nh)
+            };
+            drawCropCanvas();
+        }
+
+        function drawCropCanvas() {
+            if (!cropSession.active || !cropSession.imgObj) return;
+            const canvas = document.getElementById('crop-canvas');
+            const ctx = canvas.getContext('2d');
+            const { dispW, dispH, box, imgObj } = cropSession;
+
+            ctx.clearRect(0, 0, dispW, dispH);
+            ctx.drawImage(imgObj, 0, 0, dispW, dispH);
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.58)';
+            ctx.fillRect(0, 0, dispW, box.y);
+            ctx.fillRect(0, box.y + box.h, dispW, dispH - (box.y + box.h));
+            ctx.fillRect(0, box.y, box.x, box.h);
+            ctx.fillRect(box.x + box.w, box.y, dispW - (box.x + box.w), box.h);
+
+            ctx.strokeStyle = '#00c6ff';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(box.x, box.y, box.w, box.h);
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(box.x + box.w / 3, box.y); ctx.lineTo(box.x + box.w / 3, box.y + box.h);
+            ctx.moveTo(box.x + 2 * box.w / 3, box.y); ctx.lineTo(box.x + 2 * box.w / 3, box.y + box.h);
+            ctx.moveTo(box.x, box.y + box.h / 3); ctx.lineTo(box.x + box.w, box.y + box.h / 3);
+            ctx.moveTo(box.x, box.y + 2 * box.h / 3); ctx.lineTo(box.x + box.w, box.y + 2 * box.h / 3);
+            ctx.stroke();
+
+            const hs = 14;
+            ctx.fillStyle = '#ffeb3b';
+            [
+                [box.x, box.y],
+                [box.x + box.w, box.y],
+                [box.x, box.y + box.h],
+                [box.x + box.w, box.y + box.h]
+            ].forEach(([hx, hy]) => {
+                ctx.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
+            });
+        }
+
+        (function initCropPointerEvents() {
+            const canvas = document.getElementById('crop-canvas');
+            if (!canvas) return;
+            let usingTouch = false;
+
+            function getPointFromClient(clientX, clientY) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / Math.max(1, rect.width);
+                const scaleY = canvas.height / Math.max(1, rect.height);
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY,
+                    hitRadius: 28 * Math.max(scaleX, scaleY)
+                };
+            }
+
+            function startDrag(clientX, clientY) {
+                if (!cropSession.active) return;
+                const pt = getPointFromClient(clientX, clientY);
+                const b = cropSession.box;
+                const hit = pt.hitRadius;
+
+                if (Math.abs(pt.x - b.x) < hit && Math.abs(pt.y - b.y) < hit) cropSession.dragMode = 'nw';
+                else if (Math.abs(pt.x - (b.x + b.w)) < hit && Math.abs(pt.y - b.y) < hit) cropSession.dragMode = 'ne';
+                else if (Math.abs(pt.x - b.x) < hit && Math.abs(pt.y - (b.y + b.h)) < hit) cropSession.dragMode = 'sw';
+                else if (Math.abs(pt.x - (b.x + b.w)) < hit && Math.abs(pt.y - (b.y + b.h)) < hit) cropSession.dragMode = 'se';
+                else if (pt.x >= b.x - 10 && pt.x <= b.x + b.w + 10 && pt.y >= b.y - 10 && pt.y <= b.y + b.h + 10) cropSession.dragMode = 'move';
+                else cropSession.dragMode = null;
+
+                cropSession.startX = pt.x;
+                cropSession.startY = pt.y;
+                cropSession.startBox = { ...b };
+            }
+
+            function moveDrag(clientX, clientY) {
+                if (!cropSession.active || !cropSession.dragMode) return;
+                const pt = getPointFromClient(clientX, clientY);
+                const dx = pt.x - cropSession.startX;
+                const dy = pt.y - cropSession.startY;
+                const sb = cropSession.startBox;
+                const dw = cropSession.dispW;
+                const dh = cropSession.dispH;
+                const minSz = 24;
+                let nb = { ...sb };
+
+                if (cropSession.dragMode === 'move') {
+                    nb.x = Math.max(0, Math.min(dw - sb.w, sb.x + dx));
+                    nb.y = Math.max(0, Math.min(dh - sb.h, sb.y + dy));
+                } else {
+                    if (cropSession.dragMode.includes('e')) {
+                        nb.w = Math.max(minSz, Math.min(dw - sb.x, sb.w + dx));
+                    }
+                    if (cropSession.dragMode.includes('s')) {
+                        nb.h = Math.max(minSz, Math.min(dh - sb.y, sb.h + dy));
+                    }
+                    if (cropSession.dragMode.includes('w')) {
+                        const newX = Math.max(0, Math.min(sb.x + sb.w - minSz, sb.x + dx));
+                        nb.w = sb.x + sb.w - newX;
+                        nb.x = newX;
+                    }
+                    if (cropSession.dragMode.includes('n')) {
+                        const newY = Math.max(0, Math.min(sb.y + sb.h - minSz, sb.y + dy));
+                        nb.h = sb.y + sb.h - newY;
+                        nb.y = newY;
+                    }
+                    if (cropSession.aspectRatio) {
+                        const ar = cropSession.aspectRatio;
+                        nb.h = Math.max(minSz, Math.round(nb.w / ar));
+                        if (nb.y + nb.h > dh) {
+                            nb.h = dh - nb.y;
+                            nb.w = Math.max(minSz, Math.round(nb.h * ar));
+                        }
+                        if (nb.x + nb.w > dw) {
+                            nb.w = dw - nb.x;
+                            nb.h = Math.max(minSz, Math.round(nb.w / ar));
+                        }
+                    }
+                }
+                cropSession.box = nb;
+                drawCropCanvas();
+            }
+
+            function endDrag() {
+                cropSession.dragMode = null;
+            }
+
+            // Explicit Touch Events for reliable iOS Safari / Android WebView / CodePen iframe dragging
+            canvas.addEventListener('touchstart', (e) => {
+                if (!cropSession.active || !e.touches || e.touches.length === 0) return;
+                usingTouch = true;
+                e.preventDefault();
+                e.stopPropagation();
+                startDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!cropSession.active || !cropSession.dragMode || !e.touches || e.touches.length === 0) return;
+                e.preventDefault();
+                e.stopPropagation();
+                moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (!cropSession.active) return;
+                endDrag();
+                setTimeout(() => { usingTouch = false; }, 350);
+            }, { passive: false });
+            canvas.addEventListener('touchcancel', endDrag);
+
+            // Mouse / Desktop Pointer Events
+            canvas.addEventListener('mousedown', (e) => {
+                if (!cropSession.active || usingTouch) return;
+                e.preventDefault();
+                startDrag(e.clientX, e.clientY);
+            });
+            window.addEventListener('mousemove', (e) => {
+                if (!cropSession.active || !cropSession.dragMode || usingTouch) return;
+                moveDrag(e.clientX, e.clientY);
+            });
+            window.addEventListener('mouseup', () => {
+                if (!usingTouch) endDrag();
+            });
+        })();
+
+        function applyImageCrop() {
+            if (!cropSession.active || !cropSession.imgObj) return;
+            const { box, scale, imgObj, sourceType, imgNum } = cropSession;
+            const natW = imgObj.naturalWidth || imgObj.width;
+            const natH = imgObj.naturalHeight || imgObj.height;
+
+            const sx = Math.max(0, Math.round(box.x / scale));
+            const sy = Math.max(0, Math.round(box.y / scale));
+            const sw = Math.max(1, Math.min(natW - sx, Math.round(box.w / scale)));
+            const sh = Math.max(1, Math.min(natH - sy, Math.round(box.h / scale)));
+
+            const outC = document.createElement('canvas');
+            outC.width = sw;
+            outC.height = sh;
+            const oCtx = outC.getContext('2d');
+            oCtx.drawImage(imgObj, sx, sy, sw, sh, 0, 0, sw, sh);
+            const croppedDataUrl = outC.toDataURL('image/png');
+            outC.width = 0; outC.height = 0;
+
+            if (sourceType === 'editor') {
+                setRawImageSource(imgNum, croppedDataUrl, () => {
+                    rebuildNewsBody();
+                    if (typeof syncActiveGeneratedClipping === 'function') syncActiveGeneratedClipping();
+                });
+            } else {
+                if (imgNum === 1) aiImg1Data = croppedDataUrl;
+                else if (imgNum === 2) aiImg2Data = croppedDataUrl;
+                else if (imgNum === 3) aiImg3Data = croppedDataUrl;
+                else if (imgNum === 4) aiImg4Data = croppedDataUrl;
+                updateAiAssetBadges();
+                saveCurrentStepToQueue();
+            }
+            closeImageCropModal();
         }
 
         async function shareImage() {
